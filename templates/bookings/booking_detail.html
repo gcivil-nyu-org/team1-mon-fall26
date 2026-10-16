@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Request</title>
+</head>
+<body>
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>Booking Request #{{ booking.pk }}</h1>
+    <h2>Status</h2>
+    <p>{{ booking.get_status_display }}</p>
+    <h2>Pet</h2>
+    <p>{{ booking.pet.name }}</p>
+    <h2>Caregiver</h2>
+    <p>{{ booking.caregiver.name }}</p>
+    <h2>Service</h2>
+    <p>{{ booking.service_type.name }}</p>
+    <h2>When</h2>
+    <p>{{ booking.start_time }} &ndash; {{ booking.end_time }}</p>
+    {% if booking.notes %}
+    <h2>Request Details</h2>
+    <p>{{ booking.notes|linebreaksbr }}</p>
+    {% endif %}
+    <p><a href="{% url 'bookings:booking_list' %}">Back to my bookings</a></p>
+</body>
+</html>

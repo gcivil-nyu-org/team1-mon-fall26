@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings</title>
+</head>
+<body>
+    <h1>My Bookings</h1>
+    <p><a href="{% url 'bookings:booking_create' %}">Request care</a></p>
+    {% if bookings %}
+    <table>
+        <thead>
+            <tr>
+                <th>Pet</th>
+                <th>Caregiver</th>
+                <th>Service</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.pet.name }}</td>
+                <td>{{ booking.caregiver.name }}</td>
+                <td>{{ booking.service_type.name }}</td>
+                <td>{{ booking.start_time }}</td>
+                <td>{{ booking.end_time }}</td>
+                <td>{{ booking.get_status_display }}</td>
+                <td><a href="{% url 'bookings:booking_detail' booking.pk %}">Details</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>You have not requested any bookings yet.</p>
+    {% endif %}
+</body>
+</html>

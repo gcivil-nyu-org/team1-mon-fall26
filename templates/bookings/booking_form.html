@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Care</title>
+</head>
+<body>
+    <h1>Request Care</h1>
+    <p>Choose your pet, a caregiver and the service you need. The caregiver will see your request as Pending until they respond.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send Request</button>
+    </form>
+    <p><a href="{% url 'bookings:booking_list' %}">View my bookings</a></p>
+</body>
+</html>
