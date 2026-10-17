@@ -37,3 +37,5 @@ Thumbs.db
 
 #Local logs 
 *.log
+#Uploaded files
+media/

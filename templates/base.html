@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PawPal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+  {# Teammates: name your URLs "caregiver_list" and "booking_list" and these links start working. #}
+  {% url 'caregiver_list' as find_caregivers_url %}
+  {% url 'booking_list' as my_requests_url %}
+  {% with section=request.resolver_match.app_name %}
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}">
+      <span class="brand-mark">{% include "partials/paw_icon.html" %}</span>
+      <span class="brand-name">PawPal</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main">
+      <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
+      <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' %}active{% endif %}">Find caregivers</a>
+      <a href="{{ my_requests_url|default:'#' }}" class="{% if section == 'bookings' %}active{% endif %}">My requests</a>
+    </nav>
+
+    <div class="account">
+      {% if user.is_authenticated %}
+        <details class="account-menu">
+          <summary>
+            {# Only pet owner pages exist so far; show the real role once accounts are built. #}
+            <span class="account-role">Pet owner</span>
+            <span class="avatar">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+          </summary>
+          <div class="account-dropdown">
+            <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
+            <form method="post" action="{% url 'admin:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="link-button">Log out</button>
+            </form>
+          </div>
+        </details>
+      {% else %}
+        <a class="btn btn-dark btn-small" href="{% url 'admin:login' %}?next={{ request.path }}">Log in</a>
+      {% endif %}
+    </div>
+  </header>
+  {% endwith %}
+
+  <main class="{% block main_class %}page{% endblock %}">
+    {% block messages %}
+      {% include "partials/messages.html" %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

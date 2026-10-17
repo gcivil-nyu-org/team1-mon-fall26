@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{% if pet %}Edit {{ pet.name }}{% else %}Add a new pet{% endif %} · PawPal{% endblock %}
+
+{% block main_class %}page page-narrow{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% if pet %}{{ pet.get_absolute_url }}{% else %}{% url 'pets:list' %}{% endif %}">
+    <span aria-hidden="true">&lsaquo;</span> {% if pet %}Back to {{ pet.name }}{% else %}Back to my pets{% endif %}
+  </a>
+
+  <div class="page-heading">
+    <div>
+      <h1>{% if pet %}Edit {{ pet.name }}'s profile{% else %}Add a new pet{% endif %}</h1>
+      <p class="muted">Tell caregivers who they'll be looking after. <span class="required">*</span> Required</p>
+    </div>
+    <div class="bubbles" aria-hidden="true">
+      <span class="bubble bubble-pink"></span>
+      <span class="bubble bubble-mint"></span>
+      <span class="bubble bubble-yellow">{% include "partials/paw_icon.html" %}</span>
+    </div>
+  </div>
+
+  {% if form.errors %}
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon" aria-hidden="true">!</span>
+      <span><strong>Almost there.</strong> Required fields can't be left blank.</span>
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="card form-card" novalidate>
+    {% csrf_token %}
+
+    <div class="field photo-field{% if form.photo.errors %} has-error{% endif %}">
+      <div class="photo-preview" data-photo-preview>
+        {% if pet.photo %}
+          <img src="{{ pet.photo.url }}" alt="Current photo of {{ pet.name }}">
+        {% else %}
+          {% include "partials/paw_icon.html" %}
+        {% endif %}
+      </div>
+      <div class="photo-controls">
+        <div class="label-row">
+          <span class="field-label">{{ form.photo.label }}</span>
+          <span class="tag">Optional</span>
+        </div>
+        <p class="muted small">A clear photo helps caregivers recognize your pet. JPG or PNG, up to 5 MB.</p>
+        <label class="btn btn-outline btn-small" for="{{ form.photo.id_for_label }}">
+          {% if pet.photo %}Change photo{% else %}Upload photo{% endif %}
+        </label>
+        {{ form.photo }}
+        <span class="file-name" data-file-name></span>
+        {% if pet.photo %}
+          <label class="checkbox">{{ form.remove_photo }} Remove current photo</label>
+        {% endif %}
+        {% for error in form.photo.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="field{% if form.name.errors %} has-error{% endif %}">
+      <label for="{{ form.name.id_for_label }}">{{ form.name.label }} <span class="required">*</span></label>
+      {{ form.name }}
+      {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <fieldset class="field{% if form.pet_type.errors %} has-error{% endif %}">
+      <legend>{{ form.pet_type.label }} <span class="required">*</span></legend>
+      <div class="chips">
+        {% for radio in form.pet_type %}
+          <label class="chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      {% for error in form.pet_type.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="field{% if form.age.errors %} has-error{% endif %}">
+      <label for="{{ form.age.id_for_label }}">{{ form.age.label }} <span class="required">*</span></label>
+      <div class="age-row">
+        {{ form.age }}
+        <label class="visually-hidden" for="{{ form.age_unit.id_for_label }}">Age unit</label>
+        {{ form.age_unit }}
+      </div>
+      {% for error in form.age.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="field{% if form.special_care_instructions.errors %} has-error{% endif %}">
+      <div class="label-row">
+        <label for="{{ form.special_care_instructions.id_for_label }}">{{ form.special_care_instructions.label }}</label>
+        <span class="tag">Optional</span>
+      </div>
+      {{ form.special_care_instructions }}
+      {% for error in form.special_care_instructions.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-outline" href="{% if pet %}{{ pet.get_absolute_url }}{% else %}{% url 'pets:list' %}{% endif %}">Cancel</a>
+      <button type="submit" class="btn btn-dark">{% if pet %}Save changes{% else %}Save pet profile{% endif %}</button>
+    </div>
+  </form>
+
+  <script>
+    // Show the chosen photo right away, before the form is saved.
+    (function () {
+      var input = document.getElementById("{{ form.photo.id_for_label }}");
+      var preview = document.querySelector("[data-photo-preview]");
+      var fileName = document.querySelector("[data-file-name]");
+      if (!input || !preview) return;
+      input.addEventListener("change", function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        fileName.textContent = file.name;
+        var img = preview.querySelector("img") || document.createElement("img");
+        img.alt = "Selected photo";
+        img.src = URL.createObjectURL(file);
+        preview.replaceChildren(img);
+      });
+    })();
+  </script>
+{% endblock %}

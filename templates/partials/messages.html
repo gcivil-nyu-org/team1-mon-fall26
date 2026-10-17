@@ -1,0 +1,6 @@
+{% for message in messages %}
+  <div class="alert alert-{{ message.tags|default:'info' }}" role="status">
+    <span class="alert-icon" aria-hidden="true">{% if message.tags == 'success' %}✓{% else %}!{% endif %}</span>
+    <span>{{ message }}</span>
+  </div>
+{% endfor %}

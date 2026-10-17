@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}My pets · PawPal{% endblock %}
+
+{% block main_class %}page page-wide{% endblock %}
+
+{# Messages are shown below the banner instead of at the top of the page. #}
+{% block messages %}{% endblock %}
+
+{% block content %}
+  {% url 'caregiver_list' as find_caregivers_url %}
+  <div class="dashboard">
+    <div class="dashboard-main">
+      <section class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">My pets</p>
+          <h1>Meet your crew</h1>
+          <p>Caregivers see these profiles when you request care, so keep them up to date.</p>
+          <a class="btn btn-light" href="{% url 'pets:create' %}"><span aria-hidden="true">+</span> Add a pet</a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <span class="shape shape-sun"></span>
+          <span class="shape shape-dot"></span>
+          <span class="shape shape-block"></span>
+          {% include "partials/paw_icon.html" with class="hero-paw" %}
+        </div>
+      </section>
+
+      {% include "partials/messages.html" %}
+
+      {% if pets %}
+        <div class="pet-grid">
+          {% for pet in pets %}
+            <article class="card pet-card theme-{{ pet.theme }}{% if pet.pk == new_pet_id %} is-new{% endif %}">
+              {% if pet.pk == new_pet_id %}<span class="new-badge">New!</span>{% endif %}
+              <div class="pet-card-head">
+                {% if pet.photo %}<img class="pet-initial pet-photo" src="{{ pet.photo.url }}" alt="Photo of {{ pet.name }}">{% else %}<span class="pet-initial" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+                <div>
+                  <h2>{{ pet.name }}</h2>
+                  <div class="tags">
+                    <span class="tag">{{ pet.pet_type }}</span>
+                    {% if pet.age_display %}<span class="tag">{{ pet.age_display }}</span>{% endif %}
+                  </div>
+                </div>
+              </div>
+              {% if pet.special_care_instructions %}
+                <p class="pet-card-text">{{ pet.special_care_instructions }}</p>
+              {% else %}
+                <p class="pet-card-text muted"><em>No care needs added yet</em></p>
+              {% endif %}
+              <a class="text-link stretched" href="{{ pet.get_absolute_url }}">View profile <span aria-hidden="true">&rarr;</span></a>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card empty-state">
+          <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+          <h2>No pets yet</h2>
+          <p class="muted">Add your first pet so caregivers know who they'll be looking after.</p>
+          <a class="btn btn-dark" href="{% url 'pets:create' %}">Add a pet</a>
+        </div>
+      {% endif %}
+    </div>
+
+    {# The booking requests panel. The bookings app will fill this in. #}
+    <aside class="card side-panel">
+      <h2>My booking requests</h2>
+      {% block booking_requests %}
+        <p class="muted">No requests yet. When you request care from a caregiver, it'll show up here.</p>
+      {% endblock %}
+      <a class="btn btn-outline btn-block" href="{{ find_caregivers_url|default:'#' }}">New request</a>
+    </aside>
+  </div>
+{% endblock %}

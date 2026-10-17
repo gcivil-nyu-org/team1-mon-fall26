@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pet.name }} · PawPal{% endblock %}
+
+{% block main_class %}page page-medium{% endblock %}
+
+{% block content %}
+  {% url 'caregiver_list' as find_caregivers_url %}
+  <a class="back-link" href="{% url 'pets:list' %}"><span aria-hidden="true">&lsaquo;</span> Back to my pets</a>
+
+  <article class="card pet-profile theme-{{ pet.theme }}">
+    <header class="pet-profile-header">
+      {% if pet.photo %}<img class="pet-initial pet-initial-large pet-photo" src="{{ pet.photo.url }}" alt="Photo of {{ pet.name }}">{% else %}<span class="pet-initial pet-initial-large" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+      <div class="pet-profile-title">
+        <h1>{{ pet.name }}</h1>
+        <p>{{ pet.pet_type }}{% if pet.age_display %} · {{ pet.age_display }} old{% endif %}</p>
+      </div>
+      <a class="btn btn-light btn-small" href="{% url 'pets:edit' pet.pk %}">
+        <span aria-hidden="true">&#9998;</span> Edit profile
+      </a>
+      <span class="deco deco-blob" aria-hidden="true"></span>
+      <span class="deco deco-sun" aria-hidden="true"></span>
+      <span class="deco deco-dot" aria-hidden="true"></span>
+    </header>
+
+    <div class="pet-profile-body">
+      <dl class="info-tiles">
+        <div class="tile tile-name"><dt>Name</dt><dd>{{ pet.name }}</dd></div>
+        <div class="tile tile-type"><dt>Type</dt><dd>{{ pet.pet_type }}</dd></div>
+        <div class="tile tile-age"><dt>Age</dt><dd>{{ pet.age_display|default:"Not added" }}</dd></div>
+      </dl>
+
+      <h2>Care needs</h2>
+      <p>{{ pet.special_care_instructions|default:"No care needs added yet."|linebreaksbr }}</p>
+    </div>
+  </article>
+
+  <section class="cta-banner">
+    <span class="deco deco-corner" aria-hidden="true"></span>
+    <div>
+      <h2>Need someone to look after {{ pet.name }}?</h2>
+      <p>Find a caregiver and send a booking request.</p>
+    </div>
+    <a class="btn btn-light" href="{{ find_caregivers_url|default:'#' }}">Find a caregiver</a>
+  </section>
+{% endblock %}
