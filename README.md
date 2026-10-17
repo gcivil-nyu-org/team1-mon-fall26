@@ -117,7 +117,7 @@ PawPal's interface and user experience are being designed collaboratively using 
 
 The team will use shared designs and interface references to guide frontend development and maintain consistency across the application.
 
-**Figma Design:** https://www.figma.com/design/b9Ots2MJKqVovgatTdLhjc/PawPal-UI-Design?node-id=5301-28&t=tG12sqdT8IOVGzhz-1
+**Figma Design:** Link to be added.
 
 ## Development Workflow
 
