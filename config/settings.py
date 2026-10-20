@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "pawpal-env.eba-x2trrt2m.us-east-2.elasticbeanstalk.com",
+]
 
 
 # Application definition
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,7 +126,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Uploaded files (pet and caregiver photos)
