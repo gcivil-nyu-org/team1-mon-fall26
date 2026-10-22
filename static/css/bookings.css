@@ -383,3 +383,10 @@
   .booking-detail-header { flex-wrap: wrap; }
   .booking-detail-header .status-pill { margin-left: 0; }
 }
+
+/* ---------- My requests: Active and History ---------- */
+
+.booking-section { margin-bottom: 24px; }
+.booking-section h2 { font-size: 18px; margin-bottom: 8px; }
+.booking-section > .muted.small { margin: -4px 0 10px; }
+.booking-row.status-completed { background: #f6f2fd; border-color: #e1d8f7; }

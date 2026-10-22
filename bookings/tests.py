@@ -216,7 +216,7 @@ class BookingListAndDetailViewTests(BookingTestData):
         other = self.make_booking(owner=self.other_owner, pet=self.other_pet)
         self.client.force_login(self.owner)
         response = self.client.get(reverse("bookings:booking_list"))
-        self.assertEqual(len(response.context["bookings"]), 1)
+        self.assertEqual(len(response.context["active"]) + len(response.context["history"]), 1)
         self.assertNotContains(response, "Rex")
         detail = self.client.get(other.get_absolute_url())
         self.assertEqual(detail.status_code, 404)

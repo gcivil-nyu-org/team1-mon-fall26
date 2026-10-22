@@ -61,12 +61,23 @@ def booking_create(request):
     return render(request, "bookings/booking_form.html", {"form": form})
 
 
+# Requests that still need attention or care that hasn't happened yet.
+ACTIVE_STATUSES = (Booking.Status.PENDING, Booking.Status.ACCEPTED)
+
+
 @login_required
 def booking_list(request):
+    """Story #41: the owner's requests with their status, split into active and history."""
+    bookings = owner_bookings(request.user)
+    active_filter = Q(status__in=ACTIVE_STATUSES, end_time__gt=timezone.now())
     return render(
         request,
         "bookings/booking_list.html",
-        {"bookings": owner_bookings(request.user)},
+        {
+            "active": bookings.filter(active_filter).order_by("start_time"),
+            # Completed, declined and cancelled requests, and care that already ended.
+            "history": bookings.exclude(active_filter).order_by("-start_time"),
+        },
     )
 
 

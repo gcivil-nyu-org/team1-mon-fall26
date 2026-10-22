@@ -62,6 +62,16 @@
           <span><strong>Request declined.</strong> {{ booking.caregiver.name }} can't take this one. You can send a request to another caregiver.</span>
         </div>
         <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}?pet={{ booking.pet.pk }}">Request another caregiver</a>
+      {% elif booking.status == "completed" %}
+        <div class="alert alert-success booking-outcome" role="status">
+          <span class="alert-icon" aria-hidden="true">✓</span>
+          <span><strong>Care completed.</strong> {{ booking.caregiver.name }} marked this booking as completed on {{ booking.updated_at|date:"M j, g:i A" }}.</span>
+        </div>
+      {% elif booking.status == "cancelled" %}
+        <div class="alert alert-info booking-outcome" role="status">
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <span><strong>Request cancelled.</strong> This booking won't go ahead.</span>
+        </div>
       {% endif %}
     </div>
   </article>
