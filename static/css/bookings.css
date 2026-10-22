@@ -383,3 +383,34 @@
   .booking-detail-header { flex-wrap: wrap; }
   .booking-detail-header .status-pill { margin-left: 0; }
 }
+
+.commitment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.commitment-row:last-of-type {
+    border-bottom: none;
+}
+
+.commitment-row p {
+    margin: 6px 0 0;
+}
+
+.commitment-row a {
+    color: var(--purple);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .commitment-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

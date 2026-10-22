@@ -153,7 +153,41 @@ def caregiver_requests(request):
         },
     )
 
+@login_required
+def caregiver_commitments(request):
+    profile = getattr(request.user, "caregiver_profile", None)
 
+    if profile is None:
+        return redirect("create_caregiver_profile")
+
+    now = timezone.now()
+
+    accepted = caregiver_bookings(request.user).filter(
+        status=Booking.Status.ACCEPTED
+    )
+
+    upcoming = accepted.filter(
+        start_time__gt=now
+    ).order_by("start_time")
+
+    in_progress = accepted.filter(
+        start_time__lte=now,
+        end_time__gt=now
+    ).order_by("end_time")
+
+    past = accepted.filter(
+        end_time__lte=now
+    ).order_by("-start_time")
+
+    return render(
+        request,
+        "bookings/caregiver_commitments.html",
+        {
+            "upcoming": upcoming,
+            "in_progress": in_progress,
+            "past": past,
+        }
+    )
 def owner_name(user):
     """A user's name as "Kat W.", falling back to their username."""
     first, last = user.first_name.strip(), user.last_name.strip()

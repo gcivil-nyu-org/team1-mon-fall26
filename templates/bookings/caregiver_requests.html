@@ -104,7 +104,7 @@
     <section class="card upcoming-care">
       <div class="upcoming-header">
         <h2>Upcoming care</h2>
-        <a class="text-link" href="?status=accepted">View all <span aria-hidden="true">&rarr;</span></a>
+        <a class="text-link" href="{% url 'bookings:caregiver_commitments' %}">View all <span aria-hidden="true">&rarr;</span></a>
       </div>
       {% if upcoming %}
         <ul class="upcoming-list">

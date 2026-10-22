@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}My Care Commitments · PawPal{% endblock %}
+{% block main_class %}page page-medium{% endblock %}
+
+{% block content %}
+
+<a class="back-link" href="{% url 'bookings:caregiver_requests' %}">
+    &lsaquo; Back to care requests
+</a>
+
+<div class="page-heading">
+    <div>
+        <h1>My Care Commitments</h1>
+        <p class="muted">
+            Keep track of the pets you're caring for.
+        </p>
+    </div>
+</div>
+
+<section class="card" style="padding: 28px; margin-bottom: 24px;">
+    <h2>Upcoming Care ({{ upcoming.count }})</h2>
+
+    {% for booking in upcoming %}
+        <div class="commitment-row">
+            <div>
+                <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                <p class="muted">
+                    {{ booking.start_time|date:"M j, Y · g:i A" }}
+                    – {{ booking.end_time|date:"M j, Y · g:i A" }}
+                </p>
+                <p class="muted">
+                    Owner: {{ booking.owner.get_full_name|default:booking.owner.username }}
+                </p>
+            </div>
+            <a href="{% url 'bookings:booking_detail' booking.pk %}">
+                View details →
+            </a>
+        </div>
+    {% empty %}
+        <p class="muted">No upcoming commitments yet.</p>
+    {% endfor %}
+</section>
+
+<section class="card" style="padding: 28px; margin-bottom: 24px;">
+    <h2>In Progress ({{ in_progress.count }})</h2>
+
+    {% for booking in in_progress %}
+        <div class="commitment-row">
+            <div>
+                <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                <p class="muted">
+                    Until {{ booking.end_time|date:"M j, Y · g:i A" }}
+                </p>
+            </div>
+            <a href="{% url 'bookings:booking_detail' booking.pk %}">
+                View details →
+            </a>
+        </div>
+    {% empty %}
+        <p class="muted">No care currently in progress.</p>
+    {% endfor %}
+</section>
+
+<section class="card" style="padding: 28px;">
+    <h2>Past Care ({{ past.count }})</h2>
+
+    {% for booking in past %}
+        <div class="commitment-row">
+            <div>
+                <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                <p class="muted">
+                    {{ booking.start_time|date:"M j, Y" }}
+                </p>
+            </div>
+            <a href="{% url 'bookings:booking_detail' booking.pk %}">
+                View details →
+            </a>
+        </div>
+    {% empty %}
+        <p class="muted">No past commitments yet.</p>
+    {% endfor %}
+</section>
+
+{% endblock %}
