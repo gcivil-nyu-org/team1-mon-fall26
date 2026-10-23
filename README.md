@@ -91,6 +91,7 @@ team1-mon-fall26/
 ├── templates/          # Shared HTML templates
 ├── manage.py           # Django management utility
 ├── requirements.txt    # Python dependencies
+├── requirements-dev.txt # Test, lint and coverage tools (CI)
 ├── .gitignore          # Git exclusion rules
 └── README.md           # Project documentation
 ```
@@ -132,10 +133,11 @@ The team follows a feature-branch workflow:
 
 1. Switch to the `develop` branch and pull the latest changes.
 2. Create a new feature branch.
-3. Implement and test your changes.
-4. Commit and push your feature branch.
-5. Open a pull request targeting `develop`.
-6. Complete the required review process before merging.
+3. Implement your changes and add unit tests for them.
+4. Run the checks below and make sure they pass.
+5. Commit and push your feature branch.
+6. Open a pull request targeting `develop`.
+7. Complete the required review process before merging.
 
 Example:
 
@@ -146,6 +148,33 @@ git switch -c feature/example-feature
 ```
 
 Avoid committing directly to `main`.
+
+### Running the Checks Locally
+
+Every pull request runs the **Django tests** workflow (`.github/workflows/django-tests.yml`). Run the same checks before you push so the PR doesn't fail:
+
+```bash
+# Once: install the test and lint tools (includes requirements.txt)
+python -m pip install -r requirements-dev.txt
+
+# 1. Lint (settings in .flake8)
+flake8 .
+
+# 2. Formatting (report only for now, CI doesn't fail on it yet)
+black --check --diff --extend-exclude 'migrations|staticfiles' .
+
+# 3. Every model change has a migration
+python manage.py makemigrations --check --dry-run
+
+# 4. Tests with coverage (CI fails below 90%)
+coverage run manage.py test
+coverage report
+```
+
+- Run one app's tests with `python manage.py test bookings`, or one class with `python manage.py test bookings.tests.BookingModelTests`.
+- `coverage html` writes a page to `htmlcov/index.html` showing which lines aren't tested.
+- If `makemigrations --check` fails, run `python manage.py makemigrations` and commit the new migration file.
+- Put tests in each app's `tests.py`, or in extra `test_*.py` files in the app folder. Django finds both.
 
 ## Development Notes
 
