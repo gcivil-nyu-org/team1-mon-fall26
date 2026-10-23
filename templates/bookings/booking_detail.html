@@ -51,6 +51,21 @@
             <button type="submit" name="action" value="decline" class="btn btn-outline">Decline</button>
             <button type="submit" name="action" value="accept" class="btn btn-dark">Accept request</button>
           </form>
+        {% elif can_complete %}
+          <form method="post" action="{% url 'bookings:booking_complete' booking.pk %}" class="respond-actions">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-dark">Mark as completed</button>
+          </form>
+        {% elif booking.status == "completed" %}
+          <div class="alert alert-success booking-outcome" role="status">
+            <span class="alert-icon" aria-hidden="true">✓</span>
+            <span><strong>Care completed.</strong> You marked this booking as completed on {{ booking.updated_at|date:"M j, g:i A" }}.</span>
+          </div>
+        {% elif booking.status == "cancelled" %}
+          <div class="alert alert-info booking-outcome" role="status">
+            <span class="alert-icon" aria-hidden="true">!</span>
+            <span><strong>Booking cancelled.</strong> {{ booking.owner.get_full_name|default:booking.owner.username }} cancelled this booking on {{ booking.updated_at|date:"M j, g:i A" }}. You don't need to provide this care.</span>
+          </div>
         {% endif %}
       {% elif booking.status == "pending" %}
         <p class="booking-note muted">Sent {{ booking.created_at|date:"M j, g:i A" }}. {{ booking.caregiver.name }} will accept or decline your request.</p>
@@ -65,6 +80,22 @@
           <span><strong>Request declined.</strong> {{ booking.caregiver.name }} can't take this one. You can send a request to another caregiver.</span>
         </div>
         <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}?pet={{ booking.pet.pk }}">Request another caregiver</a>
+      {% elif booking.status == "completed" %}
+        <div class="alert alert-success booking-outcome" role="status">
+          <span class="alert-icon" aria-hidden="true">✓</span>
+          <span><strong>Care completed.</strong> {{ booking.caregiver.name }} marked this booking as completed on {{ booking.updated_at|date:"M j, g:i A" }}.</span>
+        </div>
+      {% elif booking.status == "cancelled" %}
+        <div class="alert alert-info booking-outcome" role="status">
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <span><strong>Request cancelled.</strong> You cancelled this booking on {{ booking.updated_at|date:"M j, g:i A" }}. {{ booking.caregiver.name }} can see it was cancelled.</span>
+        </div>
+      {% endif %}
+
+      {% if can_cancel %}
+        <div class="booking-cancel-row">
+          <a class="btn btn-outline" href="{% url 'bookings:booking_cancel' booking.pk %}">Cancel booking</a>
+        </div>
       {% endif %}
     </div>
   </article>

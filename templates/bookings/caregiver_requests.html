@@ -87,8 +87,18 @@
               <button type="submit" name="action" value="accept" class="btn btn-dark">Accept</button>
               <button type="submit" name="action" value="decline" class="btn btn-outline">Decline</button>
             </form>
+          {% elif can_complete %}
+            <form method="post" action="{% url 'bookings:booking_complete' b.pk %}" class="request-actions request-actions-single">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn-dark">Mark as completed</button>
+            </form>
           {% elif b.status == "pending" %}
             <p class="muted request-closed">This request's start time has passed.</p>
+          {% elif b.status == "cancelled" %}
+            <p class="muted request-closed">{{ b.owner|first_name }} cancelled this booking on {{ b.updated_at|date:"M j, g:i A" }}.</p>
+          {% elif b.status == "completed" %}
+            <p class="muted request-closed">You marked this booking as completed on {{ b.updated_at|date:"M j, g:i A" }}.</p>
           {% endif %}
         </aside>
         {% endwith %}

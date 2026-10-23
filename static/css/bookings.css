@@ -383,3 +383,17 @@
   .booking-detail-header { flex-wrap: wrap; }
   .booking-detail-header .status-pill { margin-left: 0; }
 }
+
+/* ---------- My requests: Active and History ---------- */
+
+.booking-section { margin-bottom: 24px; }
+.booking-section h2 { font-size: 18px; margin-bottom: 8px; }
+.booking-section > .muted.small { margin: -4px 0 10px; }
+.booking-row.status-completed { background: #f6f2fd; border-color: #e1d8f7; }
+
+/* Cancel (#43) and complete (#109) */
+.booking-cancel-row { display: flex; justify-content: flex-end; margin-top: 24px; }
+.booking-cancel h1 { margin-top: 0; }
+.request-actions-single { grid-template-columns: 1fr; }
+.request-row .status-cancelled, .request-panel .status-cancelled { background: #fdecea; color: var(--error); }
+.request-row .status-completed, .request-panel .status-completed { background: #f1ecfc; color: var(--purple-dark); }

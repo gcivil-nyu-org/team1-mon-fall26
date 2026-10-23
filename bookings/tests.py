@@ -216,7 +216,7 @@ class BookingListAndDetailViewTests(BookingTestData):
         other = self.make_booking(owner=self.other_owner, pet=self.other_pet)
         self.client.force_login(self.owner)
         response = self.client.get(reverse("bookings:booking_list"))
-        self.assertEqual(len(response.context["bookings"]), 1)
+        self.assertEqual(len(response.context["active"]) + len(response.context["history"]), 1)
         self.assertNotContains(response, "Rex")
         detail = self.client.get(other.get_absolute_url())
         self.assertEqual(detail.status_code, 404)
@@ -315,7 +315,8 @@ class IncomingRequestsViewTests(CaregiverTestData):
             for tab in self.client.get(self.url).context["tabs"]
         }
         self.assertEqual(
-            counts, {"pending": 1, "accepted": 1, "declined": 1, "all": 3}
+            counts,
+            {"pending": 1, "accepted": 1, "declined": 1, "completed": 0, "all": 3},
         )
 
     def test_accepted_and_declined_tabs(self):
