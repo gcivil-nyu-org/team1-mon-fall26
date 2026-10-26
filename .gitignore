@@ -40,6 +40,9 @@ Thumbs.db
 #Uploaded files
 media/
 
+#Built by collectstatic on each deploy; never commit it, or deploys keep serving old CSS
+staticfiles/
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
