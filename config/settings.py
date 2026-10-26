@@ -163,7 +163,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Uploaded files (pet and caregiver photos)
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT_PATH", str(BASE_DIR / "media")))
 
 
 LOGIN_URL = "login"
