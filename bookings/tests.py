@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -6,13 +7,22 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from caregivers.models import CaregiverProfile, ServiceType
+from caregivers.geocoding import Location
+from caregivers.models import CaregiverProfile, CaregiverService, ServiceType
 from pets.models import Pet, PetType
 
 from .forms import BookingRequestForm
 from .models import Booking
 
-FMT = "%Y-%m-%dT%H:%M"
+
+def times(start, end):
+    """Form data for a start and an end, each as a date box and a time box."""
+    return {
+        "start_time_0": start.strftime("%Y-%m-%d"),
+        "start_time_1": start.strftime("%H:%M"),
+        "end_time_0": end.strftime("%Y-%m-%d"),
+        "end_time_1": end.strftime("%H:%M"),
+    }
 
 
 class BookingTestData(TestCase):
@@ -39,8 +49,7 @@ class BookingTestData(TestCase):
             "pet": self.pet.pk,
             "caregiver": self.caregiver.pk,
             "service_type": self.walk.pk,
-            "start_time": start.strftime(FMT),
-            "end_time": (start + timedelta(hours=1)).strftime(FMT),
+            **times(start, start + timedelta(hours=1)),
             "notes": "Please bring treats.",
         }
         data.update(overrides)
@@ -87,7 +96,8 @@ class BookingRequestFormTests(BookingTestData):
 
     def test_pet_caregiver_service_and_times_are_required(self):
         form = self.make_form(
-            pet="", caregiver="", service_type="", start_time="", end_time=""
+            pet="", caregiver="", service_type="",
+            start_time_0="", start_time_1="", end_time_0="", end_time_1="",
         )
         self.assertFalse(form.is_valid())
         for field in ("pet", "caregiver", "service_type", "start_time", "end_time"):
@@ -95,25 +105,19 @@ class BookingRequestFormTests(BookingTestData):
 
     def test_start_time_must_be_in_future(self):
         past = timezone.localtime() - timedelta(hours=1)
-        form = self.make_form(
-            start_time=past.strftime(FMT),
-            end_time=(past + timedelta(hours=2)).strftime(FMT),
-        )
+        form = self.make_form(**times(past, past + timedelta(hours=2)))
         self.assertFalse(form.is_valid())
         self.assertIn("start_time", form.errors)
 
     def test_times_are_entered_in_local_time(self):
         # A time later today in New York must be accepted (not read as UTC).
         soon = timezone.localtime() + timedelta(minutes=30)
-        form = self.make_form(
-            start_time=soon.strftime(FMT),
-            end_time=(soon + timedelta(hours=1)).strftime(FMT),
-        )
+        form = self.make_form(**times(soon, soon + timedelta(hours=1)))
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_end_time_must_be_after_start(self):
-        data = self.form_data()
-        form = self.make_form(end_time=data["start_time"])
+        start = timezone.localtime() + timedelta(days=2)
+        form = self.make_form(**times(start, start))
         self.assertFalse(form.is_valid())
         self.assertIn("end_time", form.errors)
 
@@ -145,7 +149,19 @@ class BookingCreateViewTests(BookingTestData):
     def test_login_required(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response["Location"])
+        self.assertIn("/accounts/login/", response["Location"])
+
+    def test_form_only_offers_the_caregivers_services(self):
+        CaregiverService.objects.create(
+            caregiver=self.caregiver, service_type=self.walk, price=Decimal("25"), is_active=True
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(self.url, {"caregiver": self.caregiver.pk})
+        self.assertEqual(
+            response.context["services_by_caregiver"], {self.caregiver.pk: [self.walk.pk]}
+        )
+        self.assertContains(response, "Back to find caregivers")
+        self.assertContains(response, "Note for the caregiver")
 
     def test_get_shows_form_with_own_pets_only(self):
         self.client.force_login(self.owner)
@@ -214,7 +230,7 @@ class BookingListAndDetailViewTests(BookingTestData):
         other = self.make_booking(owner=self.other_owner, pet=self.other_pet)
         self.client.force_login(self.owner)
         response = self.client.get(reverse("bookings:booking_list"))
-        self.assertEqual(len(response.context["bookings"]), 1)
+        self.assertEqual(len(response.context["active"]) + len(response.context["history"]), 1)
         self.assertNotContains(response, "Rex")
         detail = self.client.get(other.get_absolute_url())
         self.assertEqual(detail.status_code, 404)
@@ -236,6 +252,16 @@ class BookingPanelTests(BookingTestData):
         self.assertContains(response, "My booking requests")
         self.assertContains(response, "Biscuit · Dog walking")
         self.assertContains(response, reverse("bookings:booking_create"))
+
+    def test_panel_splits_upcoming_and_past(self):
+        upcoming = self.make_booking()
+        past = self.make_booking(status=Booking.Status.DECLINED)
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("pets:list"))
+        self.assertContains(response, "Upcoming")
+        self.assertContains(response, "Past")
+        self.assertEqual(list(response.context["upcoming"]), [upcoming])
+        self.assertEqual(list(response.context["past"]), [past])
 
     def test_nav_links_to_my_requests(self):
         self.client.force_login(self.owner)
@@ -313,7 +339,8 @@ class IncomingRequestsViewTests(CaregiverTestData):
             for tab in self.client.get(self.url).context["tabs"]
         }
         self.assertEqual(
-            counts, {"pending": 1, "accepted": 1, "declined": 1, "all": 3}
+            counts,
+            {"pending": 1, "accepted": 1, "declined": 1, "completed": 0, "all": 3},
         )
 
     def test_accepted_and_declined_tabs(self):
@@ -458,7 +485,19 @@ class RespondToRequestTests(CaregiverTestData):
         booking = self.make_booking(start_time=start, end_time=start + timedelta(hours=2))
         self.respond(booking, "accept")
         booking.refresh_from_db()
-        self.assertEqual(booking.status, Booking.Status.PENDING)
+        # Nobody answered in time, so it was declined instead of accepted.
+        self.assertEqual(booking.status, Booking.Status.DECLINED)
+
+    def test_unanswered_request_is_declined_once_it_starts(self):
+        start = timezone.now() - timedelta(minutes=5)
+        expired = self.make_booking(start_time=start, end_time=start + timedelta(hours=1))
+        upcoming = self.make_booking()
+        self.client.force_login(self.owner)
+        self.client.get(reverse("bookings:booking_list"))
+        expired.refresh_from_db()
+        upcoming.refresh_from_db()
+        self.assertEqual(expired.status, Booking.Status.DECLINED)
+        self.assertEqual(upcoming.status, Booking.Status.PENDING)
 
     def test_other_caregiver_cannot_respond(self):
         booking = self.make_booking()
@@ -560,14 +599,26 @@ class RespondToRequestTests(CaregiverTestData):
 
 
 class CaregiverProfileOwnershipTests(TestCase):
-    def test_new_profile_is_linked_to_signed_in_user(self):
+    # The profile form looks up the address; never call the real service here.
+    @mock.patch("caregivers.forms.geocode")
+    def test_new_profile_is_linked_to_signed_in_user(self, geocode):
+        geocode.return_value = Location(
+            latitude=Decimal("40.837"), longitude=Decimal("-73.866"),
+            neighborhood="Parkchester", borough="Bronx",
+        )
         user = get_user_model().objects.create_user("new", password="pw-12345!")
         self.client.force_login(user)
         response = self.client.post(
             reverse("create_caregiver_profile"),
-            {"name": "Ana", "service_area": "Bronx", "years_of_experience": 2},
+            {
+                "first_name": "Ana",
+                "last_name": "Diaz",
+                "years_of_experience": 2,
+                "address": "1500 Unionport Rd, Bronx",
+                "service_radius_miles": 3,
+            },
         )
-        profile = CaregiverProfile.objects.get(name="Ana")
+        profile = CaregiverProfile.objects.get(name="Ana Diaz")
         self.assertEqual(profile.user, user)
         self.assertRedirects(
             response, reverse("caregiver", args=[profile.pk]), fetch_redirect_response=False

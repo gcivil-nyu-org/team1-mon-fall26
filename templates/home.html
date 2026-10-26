@@ -8,16 +8,24 @@
       <p class="eyebrow">Welcome to PawPal</p>
       <h1>Trusted care for your pets, right in your neighborhood</h1>
       <p>Create profiles for your pets, find caregivers near you, and request care in a few taps.</p>
+
       <div class="home-hero-actions">
         <a class="btn btn-light" href="{% url 'pets:list' %}">
-            Go to my pets
+          Go to my pets
         </a>
 
-        <a class="btn btn-light" href="{% url 'create_caregiver_profile' %}">
+        {% if user.is_authenticated and user.caregiver_profile %}
+          <a class="btn btn-light" href="{% url 'caregiver' user.caregiver_profile.pk %}">
+            My caregiver profile
+          </a>
+        {% else %}
+          <a class="btn btn-light" href="{% url 'create_caregiver_profile' %}">
             Become a caregiver
-        </a>
+          </a>
+        {% endif %}
+      </div>
     </div>
-    </div>
+
     <div class="hero-art" aria-hidden="true">
       <span class="shape shape-sun"></span>
       <span class="shape shape-dot"></span>

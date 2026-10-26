@@ -1,0 +1,41 @@
+{% comment %}
+  Short care summary for the caregiver's request panel (Figma "Care requests").
+  Emergency contacts are only shown while an accepted booking is happening (#88).
+  Usage: include with pet=booking.pet show_contacts=booking.shows_emergency_contacts
+{% endcomment %}
+<div class="care-summary">
+  <section class="care-summary-item">
+    {% include "pets/partials/care_icon.html" with kind="feeding" %}
+    <div>
+      <h3>Feeding</h3>
+      {% if pet.has_feeding_info %}
+        {% if pet.feeding_summary %}<p>{{ pet.feeding_summary }}</p>{% endif %}
+        {% if pet.feeding_instructions %}<p>{{ pet.feeding_instructions|linebreaksbr }}</p>{% endif %}
+      {% else %}
+        <p class="muted">No feeding instructions added.</p>
+      {% endif %}
+    </div>
+  </section>
+  <section class="care-summary-item">
+    {% include "pets/partials/care_icon.html" with kind="medication" %}
+    <div>
+      <h3>Medication &amp; special care</h3>
+      <p>{{ pet.medication_summary|default:"No medication." }}</p>
+      {% if pet.special_care_instructions %}<p>{{ pet.special_care_instructions|linebreaksbr }}</p>{% endif %}
+    </div>
+  </section>
+  <section class="care-summary-item">
+    {% include "pets/partials/care_icon.html" with kind="emergency" %}
+    <div>
+      <h3>Emergency &amp; vet</h3>
+      {% if not show_contacts %}
+        <p class="muted">Contacts are only shown during the booking.</p>
+      {% elif pet.has_vet_info or pet.has_emergency_contact %}
+        {% if pet.has_vet_info %}<p>{{ pet.vet_name }}{% if pet.vet_name and pet.vet_phone %} · {% endif %}{% if pet.vet_phone %}<a class="phone-link" href="tel:{{ pet.vet_phone|cut:' ' }}">{{ pet.vet_phone }}</a>{% endif %}</p>{% endif %}
+        {% if pet.has_emergency_contact %}<p>Emergency: {{ pet.emergency_contact_name }}{% if pet.emergency_contact_phone %} · <a class="phone-link" href="tel:{{ pet.emergency_contact_phone|cut:' ' }}">{{ pet.emergency_contact_phone }}</a>{% endif %}</p>{% endif %}
+      {% else %}
+        <p class="muted">No contacts added. Ask the owner before the visit.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>

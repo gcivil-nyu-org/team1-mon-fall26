@@ -1,0 +1,580 @@
+/* ==========================================================================
+   Caregiver profile form (create and edit), from the Figma
+   "Create Caregiver Profile" frame. Builds on style.css.
+   ========================================================================== */
+
+.page-caregiver-form {
+  max-width: 1200px;
+  padding: 16px 32px 64px;
+}
+
+/* ---------- Heading ---------- */
+
+.caregiver-heading {
+  margin: 0 0 24px;
+}
+
+.caregiver-eyebrow {
+  display: block;
+  color: #5c3d2e;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+}
+
+.caregiver-heading h1 {
+  margin: 4px 0 6px;
+  font-size: 46px;
+  line-height: 1.05;
+  letter-spacing: -0.23px;
+}
+
+.caregiver-heading p {
+  color: #6a5a54;
+  font-size: 16px;
+}
+
+/* ---------- Layout ---------- */
+
+.caregiver-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 22px;
+  align-items: start;
+}
+
+.caregiver-form-column {
+  display: grid;
+  gap: 22px;
+}
+
+.caregiver-section {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.caregiver-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  line-height: 1.55;
+  letter-spacing: -0.12px;
+}
+
+.caregiver-section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.caregiver-section-heading .step-dot {
+  margin-top: 2px;
+}
+
+.caregiver-note {
+  padding-top: 2px;
+  color: #6a5a54;
+  font-size: 15px;
+}
+
+.step-dot {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  transform: rotate(-6deg);
+}
+
+.step-yellow { background: var(--yellow); }
+.step-pink { background: var(--pink); }
+.step-mint { background: var(--mint); }
+.step-blue { background: #bde0f5; }
+
+/* ---------- Fields ---------- */
+
+.caregiver-section .field {
+  margin: 0;
+}
+
+.caregiver-section .field label,
+.caregiver-section .field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.caregiver-section .label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.label-row-inline .field-label {
+  margin: 0;
+}
+
+.caregiver-section .field input[type="text"],
+.caregiver-section .field input[type="number"],
+.caregiver-section .field select,
+.caregiver-section .field textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 16px;
+  background-color: #fffcfa;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.caregiver-section .field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.caregiver-section .field select {
+  padding-right: 40px;
+  background-position: right 16px center;
+}
+
+.caregiver-section .field ::placeholder {
+  color: #757575;
+}
+
+.caregiver-years select {
+  max-width: 300px;
+}
+
+.caregiver-two-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.optional-tag {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f8e6df;
+  color: #6a5a54;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.caregiver-hint {
+  margin-top: 6px;
+  color: #6a5a54;
+  font-size: 13px;
+}
+
+.caregiver-section .errorlist {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Photo ---------- */
+
+.caregiver-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.caregiver-photo-placeholder {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  border: 2px dashed #d9b3a3;
+  border-radius: 50%;
+  background: #fffcfa;
+  color: #8a6f64;
+}
+
+.caregiver-photo-placeholder .camera-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.caregiver-photo-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caregiver-photo-controls input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.caregiver-section .field .caregiver-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 8px 0 0;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.caregiver-upload .camera-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.caregiver-upload:focus-within {
+  outline: 3px solid rgba(244, 162, 122, 0.4);
+}
+
+/* ---------- Chips (services, pets, skills) ---------- */
+
+.caregiver-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.caregiver-chip {
+  position: relative;
+}
+
+.caregiver-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.caregiver-chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 8px 18px;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.caregiver-chip span:hover {
+  background: var(--bg);
+}
+
+.caregiver-chip input:checked + span {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--orange);
+}
+
+.caregiver-chip input:focus-visible + span {
+  outline: 3px solid rgba(244, 162, 122, 0.5);
+}
+
+.chip-icon {
+  flex: none;
+}
+
+.chip-icon-check,
+.caregiver-chip input:checked + span .chip-icon-plus {
+  display: none;
+}
+
+.caregiver-chip input:checked + span .chip-icon-check {
+  display: block;
+}
+
+.caregiver-skills {
+  padding-top: 22px;
+  border-top: 1.5px solid #f2e2da;
+}
+
+.caregiver-skills h3 {
+  font-size: 20px;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+
+.caregiver-skills .caregiver-note {
+  margin: -4px 0 14px;
+}
+
+/* ---------- Save ---------- */
+
+.page-caregiver-form .form-actions {
+  margin-top: 0;
+}
+
+.caregiver-save {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+  box-shadow: 0 4px 0 var(--orange);
+}
+
+/* ---------- Sidebar: accepting switch ---------- */
+
+.caregiver-preview-column {
+  position: sticky;
+  top: 18px;
+}
+
+.caregiver-accepting {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+  cursor: pointer;
+}
+
+.caregiver-accepting-text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.caregiver-accepting-text strong {
+  font-size: 16px;
+}
+
+.caregiver-accepting-text span {
+  color: #6a5a54;
+  font-size: 14px;
+}
+
+.caregiver-accepting input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.caregiver-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  background: #ead3c9;
+  transition: background 0.15s ease;
+}
+
+.caregiver-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s ease;
+}
+
+.caregiver-accepting input:checked + .caregiver-switch {
+  background: var(--ink);
+}
+
+.caregiver-accepting input:checked + .caregiver-switch::after {
+  left: 25px;
+}
+
+.caregiver-accepting input:focus-visible + .caregiver-switch {
+  outline: 3px solid rgba(244, 162, 122, 0.5);
+}
+
+/* ---------- Sidebar: preview card ---------- */
+
+.caregiver-preview-label {
+  margin: 28px 0 14px;
+  color: #5c3d2e;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.12px;
+  text-transform: uppercase;
+}
+
+.caregiver-preview-card {
+  overflow: hidden;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+  transform: rotate(1deg);
+}
+
+.caregiver-preview-banner {
+  position: relative;
+  height: 92px;
+  overflow: hidden;
+  background: #cfe6f5;
+}
+
+.preview-sun {
+  position: absolute;
+  left: 180px;
+  top: 22px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+
+.preview-cloud {
+  position: absolute;
+  left: 230px;
+  top: -50px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #b3d6ee;
+}
+
+.caregiver-preview-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 24px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 0 4px #fff;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.caregiver-preview-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caregiver-preview-body {
+  display: grid;
+  gap: 14px;
+  padding: 14px 24px 24px;
+}
+
+.caregiver-preview-body h3 {
+  font-size: 26px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.caregiver-preview-meta {
+  margin-top: -12px;
+  color: #6a5a54;
+  font-size: 14px;
+}
+
+.caregiver-preview-bio {
+  color: #3d322e;
+  font-size: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.caregiver-preview-group p {
+  margin-bottom: 8px;
+  color: #6a5a54;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.caregiver-preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.caregiver-preview-tags span {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tags-services span { background: #dceefa; color: var(--ink); }
+.tags-pets span { background: #fff0c2; color: #6b4500; }
+.tags-skills span { background: #e9e1f7; color: #4c3480; }
+
+/* ---------- Smaller screens ---------- */
+
+@media (max-width: 960px) {
+  .caregiver-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .caregiver-preview-column {
+    position: static;
+  }
+
+  .caregiver-preview-card {
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-caregiver-form {
+    padding: 8px 16px 48px;
+  }
+
+  .caregiver-heading h1 {
+    font-size: 34px;
+  }
+
+  .caregiver-section {
+    padding: 22px 18px;
+  }
+
+  .caregiver-two-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Address box: hide Chrome's suggestion arrow. Suggestions still appear while typing. */
+[data-address-lookup] input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}

@@ -8,14 +8,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
+
+from accounts.views import home_view
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    # The welcome page (templates/home.html) isn't in the Figma design, so "/" sends
+    # people straight to their start page instead.
+    path('', home_view, name='home'),
     path('admin/', admin.site.urls),
-    path("caregivers/", include("caregivers.url")),
+    path("caregivers/", include("caregivers.urls")),
     path("pets/", include("pets.urls")),
     path("bookings/", include("bookings.urls")),
+    path("accounts/", include("accounts.urls"))
 ]
 
 # Serve uploaded photos while developing locally.

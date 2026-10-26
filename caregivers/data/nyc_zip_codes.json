@@ -1,0 +1,1313 @@
+{
+ "source": "NYC Open Data, Modified ZIP Code Tabulation Areas (MODZCTA), dataset pri4-ifjk; centers computed from the polygons",
+ "zip_codes": {
+  "10001": {
+   "latitude": 40.7507,
+   "longitude": -73.9971,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10002": {
+   "latitude": 40.7158,
+   "longitude": -73.9862,
+   "neighborhood": "Lower East Side",
+   "borough": "Manhattan"
+  },
+  "10003": {
+   "latitude": 40.7318,
+   "longitude": -73.9892,
+   "neighborhood": "Greenwich Village",
+   "borough": "Manhattan"
+  },
+  "10004": {
+   "latitude": 40.7037,
+   "longitude": -74.013,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10005": {
+   "latitude": 40.7061,
+   "longitude": -74.0089,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10006": {
+   "latitude": 40.7097,
+   "longitude": -74.013,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10007": {
+   "latitude": 40.7139,
+   "longitude": -74.0075,
+   "neighborhood": "Tribeca-Civic Center",
+   "borough": "Manhattan"
+  },
+  "10009": {
+   "latitude": 40.7264,
+   "longitude": -73.9787,
+   "neighborhood": "East Village",
+   "borough": "Manhattan"
+  },
+  "10010": {
+   "latitude": 40.7391,
+   "longitude": -73.9826,
+   "neighborhood": "Gramercy",
+   "borough": "Manhattan"
+  },
+  "10011": {
+   "latitude": 40.7417,
+   "longitude": -74.0001,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10012": {
+   "latitude": 40.7256,
+   "longitude": -73.9981,
+   "neighborhood": "SoHo-Little Italy-Hudson Square",
+   "borough": "Manhattan"
+  },
+  "10013": {
+   "latitude": 40.7201,
+   "longitude": -74.0048,
+   "neighborhood": "Tribeca-Civic Center",
+   "borough": "Manhattan"
+  },
+  "10014": {
+   "latitude": 40.734,
+   "longitude": -74.0063,
+   "neighborhood": "West Village",
+   "borough": "Manhattan"
+  },
+  "10016": {
+   "latitude": 40.7452,
+   "longitude": -73.9783,
+   "neighborhood": "Murray Hill-Kips Bay",
+   "borough": "Manhattan"
+  },
+  "10017": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10018": {
+   "latitude": 40.7552,
+   "longitude": -73.9927,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10019": {
+   "latitude": 40.7653,
+   "longitude": -73.986,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10020": {
+   "latitude": 40.7653,
+   "longitude": -73.986,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10021": {
+   "latitude": 40.7692,
+   "longitude": -73.9587,
+   "neighborhood": "Upper East Side-Lenox Hill-Roosevelt Island",
+   "borough": "Manhattan"
+  },
+  "10022": {
+   "latitude": 40.7587,
+   "longitude": -73.9681,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10023": {
+   "latitude": 40.7759,
+   "longitude": -73.9827,
+   "neighborhood": "Upper West Side-Lincoln Square",
+   "borough": "Manhattan"
+  },
+  "10024": {
+   "latitude": 40.7921,
+   "longitude": -73.9749,
+   "neighborhood": "Upper West Side (Central)",
+   "borough": "Manhattan"
+  },
+  "10025": {
+   "latitude": 40.7986,
+   "longitude": -73.9666,
+   "neighborhood": "Upper West Side-Manhattan Valley",
+   "borough": "Manhattan"
+  },
+  "10026": {
+   "latitude": 40.8024,
+   "longitude": -73.9527,
+   "neighborhood": "Harlem (South)",
+   "borough": "Manhattan"
+  },
+  "10027": {
+   "latitude": 40.8118,
+   "longitude": -73.9532,
+   "neighborhood": "Manhattanville-West Harlem",
+   "borough": "Manhattan"
+  },
+  "10028": {
+   "latitude": 40.7764,
+   "longitude": -73.9535,
+   "neighborhood": "Upper East Side-Yorkville",
+   "borough": "Manhattan"
+  },
+  "10029": {
+   "latitude": 40.7918,
+   "longitude": -73.944,
+   "neighborhood": "East Harlem (South)",
+   "borough": "Manhattan"
+  },
+  "10030": {
+   "latitude": 40.8183,
+   "longitude": -73.9428,
+   "neighborhood": "Harlem (North)",
+   "borough": "Manhattan"
+  },
+  "10031": {
+   "latitude": 40.8253,
+   "longitude": -73.95,
+   "neighborhood": "Hamilton Heights-Sugar Hill",
+   "borough": "Manhattan"
+  },
+  "10032": {
+   "latitude": 40.8388,
+   "longitude": -73.9428,
+   "neighborhood": "Washington Heights (South)",
+   "borough": "Manhattan"
+  },
+  "10033": {
+   "latitude": 40.8505,
+   "longitude": -73.934,
+   "neighborhood": "Washington Heights (North)",
+   "borough": "Manhattan"
+  },
+  "10034": {
+   "latitude": 40.8672,
+   "longitude": -73.924,
+   "neighborhood": "Inwood",
+   "borough": "Manhattan"
+  },
+  "10035": {
+   "latitude": 40.7955,
+   "longitude": -73.9296,
+   "neighborhood": "East Harlem (North)",
+   "borough": "Manhattan"
+  },
+  "10036": {
+   "latitude": 40.7592,
+   "longitude": -73.9897,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10037": {
+   "latitude": 40.813,
+   "longitude": -73.9374,
+   "neighborhood": "Harlem (North)",
+   "borough": "Manhattan"
+  },
+  "10038": {
+   "latitude": 40.7097,
+   "longitude": -74.0024,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10039": {
+   "latitude": 40.8308,
+   "longitude": -73.9362,
+   "neighborhood": "Highbridge",
+   "borough": "Bronx"
+  },
+  "10040": {
+   "latitude": 40.8583,
+   "longitude": -73.9305,
+   "neighborhood": "Washington Heights (North)",
+   "borough": "Manhattan"
+  },
+  "10044": {
+   "latitude": 40.7619,
+   "longitude": -73.9499,
+   "neighborhood": "Upper East Side-Lenox Hill-Roosevelt Island",
+   "borough": "Manhattan"
+  },
+  "10065": {
+   "latitude": 40.7646,
+   "longitude": -73.9631,
+   "neighborhood": "Upper East Side-Lenox Hill-Roosevelt Island",
+   "borough": "Manhattan"
+  },
+  "10069": {
+   "latitude": 40.7759,
+   "longitude": -73.9903,
+   "neighborhood": "Upper West Side-Lincoln Square",
+   "borough": "Manhattan"
+  },
+  "10075": {
+   "latitude": 40.7731,
+   "longitude": -73.9559,
+   "neighborhood": "Upper East Side-Carnegie Hill",
+   "borough": "Manhattan"
+  },
+  "10103": {
+   "latitude": 40.7653,
+   "longitude": -73.986,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10110": {
+   "latitude": 40.7592,
+   "longitude": -73.9897,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10111": {
+   "latitude": 40.7653,
+   "longitude": -73.986,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10112": {
+   "latitude": 40.7653,
+   "longitude": -73.986,
+   "neighborhood": "Hell's Kitchen",
+   "borough": "Manhattan"
+  },
+  "10115": {
+   "latitude": 40.8118,
+   "longitude": -73.9532,
+   "neighborhood": "Manhattanville-West Harlem",
+   "borough": "Manhattan"
+  },
+  "10118": {
+   "latitude": 40.7507,
+   "longitude": -73.9971,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10119": {
+   "latitude": 40.7507,
+   "longitude": -73.9971,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10128": {
+   "latitude": 40.7815,
+   "longitude": -73.9502,
+   "neighborhood": "Upper East Side-Yorkville",
+   "borough": "Manhattan"
+  },
+  "10152": {
+   "latitude": 40.7587,
+   "longitude": -73.9681,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10153": {
+   "latitude": 40.7587,
+   "longitude": -73.9681,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10154": {
+   "latitude": 40.7587,
+   "longitude": -73.9681,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10162": {
+   "latitude": 40.7731,
+   "longitude": -73.9559,
+   "neighborhood": "Upper East Side-Carnegie Hill",
+   "borough": "Manhattan"
+  },
+  "10165": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10167": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10168": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10169": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10170": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10171": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10172": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10173": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10174": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10177": {
+   "latitude": 40.7525,
+   "longitude": -73.973,
+   "neighborhood": "East Midtown-Turtle Bay",
+   "borough": "Manhattan"
+  },
+  "10199": {
+   "latitude": 40.7507,
+   "longitude": -73.9971,
+   "neighborhood": "Chelsea-Hudson Yards",
+   "borough": "Manhattan"
+  },
+  "10271": {
+   "latitude": 40.7061,
+   "longitude": -74.0089,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10278": {
+   "latitude": 40.7139,
+   "longitude": -74.0075,
+   "neighborhood": "Tribeca-Civic Center",
+   "borough": "Manhattan"
+  },
+  "10279": {
+   "latitude": 40.7139,
+   "longitude": -74.0075,
+   "neighborhood": "Tribeca-Civic Center",
+   "borough": "Manhattan"
+  },
+  "10280": {
+   "latitude": 40.7093,
+   "longitude": -74.0167,
+   "neighborhood": "Financial District-Battery Park City",
+   "borough": "Manhattan"
+  },
+  "10282": {
+   "latitude": 40.7164,
+   "longitude": -74.0151,
+   "neighborhood": "Tribeca-Civic Center",
+   "borough": "Manhattan"
+  },
+  "10301": {
+   "latitude": 40.6282,
+   "longitude": -74.0962,
+   "neighborhood": "West New Brighton-Silver Lake-Grymes Hill",
+   "borough": "Staten Island"
+  },
+  "10302": {
+   "latitude": 40.6306,
+   "longitude": -74.1378,
+   "neighborhood": "Port Richmond",
+   "borough": "Staten Island"
+  },
+  "10303": {
+   "latitude": 40.6321,
+   "longitude": -74.1691,
+   "neighborhood": "Mariner's Harbor-Arlington-Graniteville",
+   "borough": "Staten Island"
+  },
+  "10304": {
+   "latitude": 40.606,
+   "longitude": -74.0943,
+   "neighborhood": "Grasmere-Arrochar-South Beach-Dongan Hills",
+   "borough": "Staten Island"
+  },
+  "10305": {
+   "latitude": 40.5955,
+   "longitude": -74.0754,
+   "neighborhood": "Grasmere-Arrochar-South Beach-Dongan Hills",
+   "borough": "Staten Island"
+  },
+  "10306": {
+   "latitude": 40.5716,
+   "longitude": -74.1255,
+   "neighborhood": "Oakwood-Richmondtown",
+   "borough": "Staten Island"
+  },
+  "10307": {
+   "latitude": 40.5077,
+   "longitude": -74.2393,
+   "neighborhood": "Tottenville-Charleston",
+   "borough": "Staten Island"
+  },
+  "10308": {
+   "latitude": 40.5516,
+   "longitude": -74.1505,
+   "neighborhood": "Great Kills-Eltingville",
+   "borough": "Staten Island"
+  },
+  "10309": {
+   "latitude": 40.5314,
+   "longitude": -74.2206,
+   "neighborhood": "Tottenville-Charleston",
+   "borough": "Staten Island"
+  },
+  "10310": {
+   "latitude": 40.6324,
+   "longitude": -74.1162,
+   "neighborhood": "West New Brighton-Silver Lake-Grymes Hill",
+   "borough": "Staten Island"
+  },
+  "10311": {
+   "latitude": 40.5993,
+   "longitude": -74.1665,
+   "neighborhood": "New Springville-Willowbrook-Bulls Head-Travis",
+   "borough": "Staten Island"
+  },
+  "10312": {
+   "latitude": 40.5451,
+   "longitude": -74.1817,
+   "neighborhood": "Arden Heights-Rossville",
+   "borough": "Staten Island"
+  },
+  "10314": {
+   "latitude": 40.5993,
+   "longitude": -74.1665,
+   "neighborhood": "New Springville-Willowbrook-Bulls Head-Travis",
+   "borough": "Staten Island"
+  },
+  "10451": {
+   "latitude": 40.8207,
+   "longitude": -73.9239,
+   "neighborhood": "Concourse-Concourse Village",
+   "borough": "Bronx"
+  },
+  "10452": {
+   "latitude": 40.8374,
+   "longitude": -73.9235,
+   "neighborhood": "Highbridge",
+   "borough": "Bronx"
+  },
+  "10453": {
+   "latitude": 40.8523,
+   "longitude": -73.9136,
+   "neighborhood": "University Heights (South)-Morris Heights",
+   "borough": "Bronx"
+  },
+  "10454": {
+   "latitude": 40.8055,
+   "longitude": -73.9166,
+   "neighborhood": "Mott Haven-Port Morris",
+   "borough": "Bronx"
+  },
+  "10455": {
+   "latitude": 40.8147,
+   "longitude": -73.9086,
+   "neighborhood": "Melrose",
+   "borough": "Bronx"
+  },
+  "10456": {
+   "latitude": 40.8299,
+   "longitude": -73.9081,
+   "neighborhood": "Morrisania",
+   "borough": "Bronx"
+  },
+  "10457": {
+   "latitude": 40.8472,
+   "longitude": -73.8987,
+   "neighborhood": "Mount Hope",
+   "borough": "Bronx"
+  },
+  "10458": {
+   "latitude": 40.8625,
+   "longitude": -73.8882,
+   "neighborhood": "Belmont",
+   "borough": "Bronx"
+  },
+  "10459": {
+   "latitude": 40.8258,
+   "longitude": -73.893,
+   "neighborhood": "Longwood",
+   "borough": "Bronx"
+  },
+  "10460": {
+   "latitude": 40.8418,
+   "longitude": -73.8796,
+   "neighborhood": "West Farms",
+   "borough": "Bronx"
+  },
+  "10461": {
+   "latitude": 40.8474,
+   "longitude": -73.8406,
+   "neighborhood": "Morris Park",
+   "borough": "Bronx"
+  },
+  "10462": {
+   "latitude": 40.8429,
+   "longitude": -73.8588,
+   "neighborhood": "Parkchester",
+   "borough": "Bronx"
+  },
+  "10463": {
+   "latitude": 40.8808,
+   "longitude": -73.9065,
+   "neighborhood": "Kingsbridge-Marble Hill",
+   "borough": "Bronx"
+  },
+  "10464": {
+   "latitude": 40.8691,
+   "longitude": -73.8023,
+   "neighborhood": "Co-op City",
+   "borough": "Bronx"
+  },
+  "10465": {
+   "latitude": 40.8239,
+   "longitude": -73.8229,
+   "neighborhood": "Throgs Neck-Schuylerville",
+   "borough": "Bronx"
+  },
+  "10466": {
+   "latitude": 40.891,
+   "longitude": -73.8459,
+   "neighborhood": "Wakefield-Woodlawn",
+   "borough": "Bronx"
+  },
+  "10467": {
+   "latitude": 40.8809,
+   "longitude": -73.874,
+   "neighborhood": "Norwood",
+   "borough": "Bronx"
+  },
+  "10468": {
+   "latitude": 40.8682,
+   "longitude": -73.8998,
+   "neighborhood": "University Heights (North)-Fordham",
+   "borough": "Bronx"
+  },
+  "10469": {
+   "latitude": 40.8688,
+   "longitude": -73.847,
+   "neighborhood": "Pelham Gardens",
+   "borough": "Bronx"
+  },
+  "10470": {
+   "latitude": 40.896,
+   "longitude": -73.868,
+   "neighborhood": "Wakefield-Woodlawn",
+   "borough": "Bronx"
+  },
+  "10471": {
+   "latitude": 40.8995,
+   "longitude": -73.9015,
+   "neighborhood": "Riverdale-Spuyten Duyvil",
+   "borough": "Bronx"
+  },
+  "10472": {
+   "latitude": 40.8296,
+   "longitude": -73.8694,
+   "neighborhood": "Soundview-Bruckner-Bronx River",
+   "borough": "Bronx"
+  },
+  "10473": {
+   "latitude": 40.8181,
+   "longitude": -73.8587,
+   "neighborhood": "Soundview-Clason Point",
+   "borough": "Bronx"
+  },
+  "10474": {
+   "latitude": 40.8106,
+   "longitude": -73.8846,
+   "neighborhood": "Hunts Point",
+   "borough": "Bronx"
+  },
+  "10475": {
+   "latitude": 40.8689,
+   "longitude": -73.8249,
+   "neighborhood": "Co-op City",
+   "borough": "Bronx"
+  },
+  "11001": {
+   "latitude": 40.714,
+   "longitude": -73.7333,
+   "neighborhood": "Queens Village",
+   "borough": "Queens"
+  },
+  "11003": {
+   "latitude": 40.6942,
+   "longitude": -73.736,
+   "neighborhood": "Cambria Heights",
+   "borough": "Queens"
+  },
+  "11004": {
+   "latitude": 40.7481,
+   "longitude": -73.7109,
+   "neighborhood": "Glen Oaks-Floral Park-New Hyde Park",
+   "borough": "Queens"
+  },
+  "11005": {
+   "latitude": 40.7481,
+   "longitude": -73.7109,
+   "neighborhood": "Glen Oaks-Floral Park-New Hyde Park",
+   "borough": "Queens"
+  },
+  "11040": {
+   "latitude": 40.7481,
+   "longitude": -73.7109,
+   "neighborhood": "Glen Oaks-Floral Park-New Hyde Park",
+   "borough": "Queens"
+  },
+  "11101": {
+   "latitude": 40.7471,
+   "longitude": -73.9386,
+   "neighborhood": "Long Island City-Hunters Point",
+   "borough": "Queens"
+  },
+  "11102": {
+   "latitude": 40.7725,
+   "longitude": -73.9259,
+   "neighborhood": "Old Astoria-Hallets Point",
+   "borough": "Queens"
+  },
+  "11103": {
+   "latitude": 40.7626,
+   "longitude": -73.9134,
+   "neighborhood": "Astoria (East)-Woodside (North)",
+   "borough": "Queens"
+  },
+  "11104": {
+   "latitude": 40.7447,
+   "longitude": -73.9202,
+   "neighborhood": "Sunnyside",
+   "borough": "Queens"
+  },
+  "11105": {
+   "latitude": 40.779,
+   "longitude": -73.9063,
+   "neighborhood": "Astoria (North)-Ditmars-Steinway",
+   "borough": "Queens"
+  },
+  "11106": {
+   "latitude": 40.7618,
+   "longitude": -73.9318,
+   "neighborhood": "Queensbridge-Ravenswood-Dutch Kills",
+   "borough": "Queens"
+  },
+  "11109": {
+   "latitude": 40.7462,
+   "longitude": -73.957,
+   "neighborhood": "Long Island City-Hunters Point",
+   "borough": "Queens"
+  },
+  "11201": {
+   "latitude": 40.6946,
+   "longitude": -73.9896,
+   "neighborhood": "Downtown Brooklyn-DUMBO-Boerum Hill",
+   "borough": "Brooklyn"
+  },
+  "11203": {
+   "latitude": 40.6496,
+   "longitude": -73.9344,
+   "neighborhood": "East Flatbush-Rugby",
+   "borough": "Brooklyn"
+  },
+  "11204": {
+   "latitude": 40.6188,
+   "longitude": -73.9848,
+   "neighborhood": "Bensonhurst",
+   "borough": "Brooklyn"
+  },
+  "11205": {
+   "latitude": 40.6946,
+   "longitude": -73.9662,
+   "neighborhood": "Clinton Hill",
+   "borough": "Brooklyn"
+  },
+  "11206": {
+   "latitude": 40.702,
+   "longitude": -73.9424,
+   "neighborhood": "South Williamsburg",
+   "borough": "Brooklyn"
+  },
+  "11207": {
+   "latitude": 40.6708,
+   "longitude": -73.8943,
+   "neighborhood": "East New York (North)",
+   "borough": "Brooklyn"
+  },
+  "11208": {
+   "latitude": 40.6682,
+   "longitude": -73.8711,
+   "neighborhood": "East New York-City Line",
+   "borough": "Brooklyn"
+  },
+  "11209": {
+   "latitude": 40.6218,
+   "longitude": -74.03,
+   "neighborhood": "Bay Ridge",
+   "borough": "Brooklyn"
+  },
+  "11210": {
+   "latitude": 40.6282,
+   "longitude": -73.9463,
+   "neighborhood": "Midwood",
+   "borough": "Brooklyn"
+  },
+  "11211": {
+   "latitude": 40.7124,
+   "longitude": -73.9534,
+   "neighborhood": "Williamsburg",
+   "borough": "Brooklyn"
+  },
+  "11212": {
+   "latitude": 40.6629,
+   "longitude": -73.913,
+   "neighborhood": "Brownsville",
+   "borough": "Brooklyn"
+  },
+  "11213": {
+   "latitude": 40.6711,
+   "longitude": -73.9363,
+   "neighborhood": "Crown Heights (North)",
+   "borough": "Brooklyn"
+  },
+  "11214": {
+   "latitude": 40.5987,
+   "longitude": -73.9962,
+   "neighborhood": "Gravesend (West)",
+   "borough": "Brooklyn"
+  },
+  "11215": {
+   "latitude": 40.6625,
+   "longitude": -73.9869,
+   "neighborhood": "Windsor Terrace-South Slope",
+   "borough": "Brooklyn"
+  },
+  "11216": {
+   "latitude": 40.6808,
+   "longitude": -73.9493,
+   "neighborhood": "Bedford-Stuyvesant (West)",
+   "borough": "Brooklyn"
+  },
+  "11217": {
+   "latitude": 40.6824,
+   "longitude": -73.9794,
+   "neighborhood": "Fort Greene",
+   "borough": "Brooklyn"
+  },
+  "11218": {
+   "latitude": 40.6435,
+   "longitude": -73.976,
+   "neighborhood": "Kensington",
+   "borough": "Brooklyn"
+  },
+  "11219": {
+   "latitude": 40.6327,
+   "longitude": -73.9967,
+   "neighborhood": "Borough Park",
+   "borough": "Brooklyn"
+  },
+  "11220": {
+   "latitude": 40.6411,
+   "longitude": -74.0165,
+   "neighborhood": "Sunset Park (Central)",
+   "borough": "Brooklyn"
+  },
+  "11221": {
+   "latitude": 40.6913,
+   "longitude": -73.9279,
+   "neighborhood": "Bedford-Stuyvesant (East)",
+   "borough": "Brooklyn"
+  },
+  "11222": {
+   "latitude": 40.7283,
+   "longitude": -73.9476,
+   "neighborhood": "Greenpoint",
+   "borough": "Brooklyn"
+  },
+  "11223": {
+   "latitude": 40.5972,
+   "longitude": -73.9734,
+   "neighborhood": "Gravesend (East)-Homecrest",
+   "borough": "Brooklyn"
+  },
+  "11224": {
+   "latitude": 40.5767,
+   "longitude": -73.9886,
+   "neighborhood": "Coney Island-Sea Gate",
+   "borough": "Brooklyn"
+  },
+  "11225": {
+   "latitude": 40.6631,
+   "longitude": -73.9542,
+   "neighborhood": "Prospect Lefferts Gardens-Wingate",
+   "borough": "Brooklyn"
+  },
+  "11226": {
+   "latitude": 40.6465,
+   "longitude": -73.9567,
+   "neighborhood": "East Flatbush-Erasmus",
+   "borough": "Brooklyn"
+  },
+  "11228": {
+   "latitude": 40.6167,
+   "longitude": -74.0131,
+   "neighborhood": "Dyker Heights",
+   "borough": "Brooklyn"
+  },
+  "11229": {
+   "latitude": 40.6012,
+   "longitude": -73.9445,
+   "neighborhood": "Madison",
+   "borough": "Brooklyn"
+  },
+  "11230": {
+   "latitude": 40.6222,
+   "longitude": -73.9651,
+   "neighborhood": "Mapleton-Midwood (West)",
+   "borough": "Brooklyn"
+  },
+  "11231": {
+   "latitude": 40.6776,
+   "longitude": -74.0044,
+   "neighborhood": "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
+   "borough": "Brooklyn"
+  },
+  "11232": {
+   "latitude": 40.656,
+   "longitude": -74.0053,
+   "neighborhood": "Sunset Park (West)",
+   "borough": "Brooklyn"
+  },
+  "11233": {
+   "latitude": 40.6783,
+   "longitude": -73.9199,
+   "neighborhood": "Ocean Hill",
+   "borough": "Brooklyn"
+  },
+  "11234": {
+   "latitude": 40.607,
+   "longitude": -73.9107,
+   "neighborhood": "Marine Park-Mill Basin-Bergen Beach",
+   "borough": "Brooklyn"
+  },
+  "11235": {
+   "latitude": 40.5839,
+   "longitude": -73.9497,
+   "neighborhood": "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
+   "borough": "Brooklyn"
+  },
+  "11236": {
+   "latitude": 40.64,
+   "longitude": -73.9015,
+   "neighborhood": "Canarsie",
+   "borough": "Brooklyn"
+  },
+  "11237": {
+   "latitude": 40.7042,
+   "longitude": -73.9209,
+   "neighborhood": "Bushwick (West)",
+   "borough": "Brooklyn"
+  },
+  "11238": {
+   "latitude": 40.6792,
+   "longitude": -73.9638,
+   "neighborhood": "Prospect Heights",
+   "borough": "Brooklyn"
+  },
+  "11239": {
+   "latitude": 40.6475,
+   "longitude": -73.8824,
+   "neighborhood": "Spring Creek-Starrett City",
+   "borough": "Brooklyn"
+  },
+  "11243": {
+   "latitude": 40.6824,
+   "longitude": -73.9794,
+   "neighborhood": "Fort Greene",
+   "borough": "Brooklyn"
+  },
+  "11249": {
+   "latitude": 40.7124,
+   "longitude": -73.9534,
+   "neighborhood": "Williamsburg",
+   "borough": "Brooklyn"
+  },
+  "11351": {
+   "latitude": 40.7864,
+   "longitude": -73.811,
+   "neighborhood": "Whitestone-Beechhurst",
+   "borough": "Queens"
+  },
+  "11354": {
+   "latitude": 40.7686,
+   "longitude": -73.8272,
+   "neighborhood": "Flushing-Willets Point",
+   "borough": "Queens"
+  },
+  "11355": {
+   "latitude": 40.7515,
+   "longitude": -73.821,
+   "neighborhood": "Queensboro Hill",
+   "borough": "Queens"
+  },
+  "11356": {
+   "latitude": 40.7849,
+   "longitude": -73.8415,
+   "neighborhood": "College Point",
+   "borough": "Queens"
+  },
+  "11357": {
+   "latitude": 40.7864,
+   "longitude": -73.811,
+   "neighborhood": "Whitestone-Beechhurst",
+   "borough": "Queens"
+  },
+  "11358": {
+   "latitude": 40.7605,
+   "longitude": -73.7964,
+   "neighborhood": "Auburndale",
+   "borough": "Queens"
+  },
+  "11359": {
+   "latitude": 40.782,
+   "longitude": -73.7808,
+   "neighborhood": "Bay Terrace-Clearview",
+   "borough": "Queens"
+  },
+  "11360": {
+   "latitude": 40.782,
+   "longitude": -73.7808,
+   "neighborhood": "Bay Terrace-Clearview",
+   "borough": "Queens"
+  },
+  "11361": {
+   "latitude": 40.7637,
+   "longitude": -73.7724,
+   "neighborhood": "Bayside",
+   "borough": "Queens"
+  },
+  "11362": {
+   "latitude": 40.7565,
+   "longitude": -73.737,
+   "neighborhood": "Douglaston-Little Neck",
+   "borough": "Queens"
+  },
+  "11363": {
+   "latitude": 40.7728,
+   "longitude": -73.7464,
+   "neighborhood": "Douglaston-Little Neck",
+   "borough": "Queens"
+  },
+  "11364": {
+   "latitude": 40.7453,
+   "longitude": -73.7606,
+   "neighborhood": "Oakland Gardens-Hollis Hills",
+   "borough": "Queens"
+  },
+  "11365": {
+   "latitude": 40.7398,
+   "longitude": -73.7948,
+   "neighborhood": "Fresh Meadows-Utopia",
+   "borough": "Queens"
+  },
+  "11366": {
+   "latitude": 40.7281,
+   "longitude": -73.785,
+   "neighborhood": "Fresh Meadows-Utopia",
+   "borough": "Queens"
+  },
+  "11367": {
+   "latitude": 40.7304,
+   "longitude": -73.8263,
+   "neighborhood": "Kew Gardens Hills",
+   "borough": "Queens"
+  },
+  "11368": {
+   "latitude": 40.7496,
+   "longitude": -73.8526,
+   "neighborhood": "Corona",
+   "borough": "Queens"
+  },
+  "11369": {
+   "latitude": 40.7689,
+   "longitude": -73.8728,
+   "neighborhood": "East Elmhurst",
+   "borough": "Queens"
+  },
+  "11370": {
+   "latitude": 40.7757,
+   "longitude": -73.8873,
+   "neighborhood": "Astoria (North)-Ditmars-Steinway",
+   "borough": "Queens"
+  },
+  "11371": {
+   "latitude": 40.7689,
+   "longitude": -73.8728,
+   "neighborhood": "East Elmhurst",
+   "borough": "Queens"
+  },
+  "11372": {
+   "latitude": 40.7517,
+   "longitude": -73.8836,
+   "neighborhood": "Jackson Heights",
+   "borough": "Queens"
+  },
+  "11373": {
+   "latitude": 40.7388,
+   "longitude": -73.8785,
+   "neighborhood": "Elmhurst",
+   "borough": "Queens"
+  },
+  "11374": {
+   "latitude": 40.7264,
+   "longitude": -73.8615,
+   "neighborhood": "Rego Park",
+   "borough": "Queens"
+  },
+  "11375": {
+   "latitude": 40.7209,
+   "longitude": -73.8462,
+   "neighborhood": "Forest Hills",
+   "borough": "Queens"
+  },
+  "11377": {
+   "latitude": 40.7448,
+   "longitude": -73.9052,
+   "neighborhood": "Woodside",
+   "borough": "Queens"
+  },
+  "11378": {
+   "latitude": 40.7248,
+   "longitude": -73.9094,
+   "neighborhood": "Maspeth",
+   "borough": "Queens"
+  },
+  "11379": {
+   "latitude": 40.7168,
+   "longitude": -73.8796,
+   "neighborhood": "Middle Village",
+   "borough": "Queens"
+  },
+  "11385": {
+   "latitude": 40.7011,
+   "longitude": -73.8902,
+   "neighborhood": "Glendale",
+   "borough": "Queens"
+  },
+  "11411": {
+   "latitude": 40.6942,
+   "longitude": -73.736,
+   "neighborhood": "Cambria Heights",
+   "borough": "Queens"
+  },
+  "11412": {
+   "latitude": 40.6981,
+   "longitude": -73.759,
+   "neighborhood": "St. Albans",
+   "borough": "Queens"
+  },
+  "11413": {
+   "latitude": 40.6697,
+   "longitude": -73.7508,
+   "neighborhood": "Laurelton",
+   "borough": "Queens"
+  },
+  "11414": {
+   "latitude": 40.6582,
+   "longitude": -73.8449,
+   "neighborhood": "Howard Beach-Lindenwood",
+   "borough": "Queens"
+  },
+  "11415": {
+   "latitude": 40.7083,
+   "longitude": -73.8282,
+   "neighborhood": "Kew Gardens",
+   "borough": "Queens"
+  },
+  "11416": {
+   "latitude": 40.6847,
+   "longitude": -73.8496,
+   "neighborhood": "Ozone Park (North)",
+   "borough": "Queens"
+  },
+  "11417": {
+   "latitude": 40.6765,
+   "longitude": -73.8445,
+   "neighborhood": "Ozone Park",
+   "borough": "Queens"
+  },
+  "11418": {
+   "latitude": 40.7002,
+   "longitude": -73.8361,
+   "neighborhood": "Richmond Hill",
+   "borough": "Queens"
+  },
+  "11419": {
+   "latitude": 40.6887,
+   "longitude": -73.8229,
+   "neighborhood": "South Richmond Hill",
+   "borough": "Queens"
+  },
+  "11420": {
+   "latitude": 40.6735,
+   "longitude": -73.8178,
+   "neighborhood": "South Ozone Park",
+   "borough": "Queens"
+  },
+  "11421": {
+   "latitude": 40.6941,
+   "longitude": -73.8587,
+   "neighborhood": "Woodhaven",
+   "borough": "Queens"
+  },
+  "11422": {
+   "latitude": 40.6608,
+   "longitude": -73.7361,
+   "neighborhood": "Rosedale",
+   "borough": "Queens"
+  },
+  "11423": {
+   "latitude": 40.7156,
+   "longitude": -73.7685,
+   "neighborhood": "Hollis",
+   "borough": "Queens"
+  },
+  "11424": {
+   "latitude": 40.7083,
+   "longitude": -73.8282,
+   "neighborhood": "Kew Gardens",
+   "borough": "Queens"
+  },
+  "11425": {
+   "latitude": 40.6218,
+   "longitude": -74.03,
+   "neighborhood": "Bay Ridge",
+   "borough": "Brooklyn"
+  },
+  "11426": {
+   "latitude": 40.7365,
+   "longitude": -73.7224,
+   "neighborhood": "Bellerose",
+   "borough": "Queens"
+  },
+  "11427": {
+   "latitude": 40.7309,
+   "longitude": -73.7456,
+   "neighborhood": "Oakland Gardens-Hollis Hills",
+   "borough": "Queens"
+  },
+  "11428": {
+   "latitude": 40.721,
+   "longitude": -73.7422,
+   "neighborhood": "Queens Village",
+   "borough": "Queens"
+  },
+  "11429": {
+   "latitude": 40.714,
+   "longitude": -73.7333,
+   "neighborhood": "Queens Village",
+   "borough": "Queens"
+  },
+  "11430": {
+   "latitude": 40.6569,
+   "longitude": -73.7834,
+   "neighborhood": "Springfield Gardens (South)-Brookville",
+   "borough": "Queens"
+  },
+  "11432": {
+   "latitude": 40.7154,
+   "longitude": -73.7931,
+   "neighborhood": "Jamaica",
+   "borough": "Queens"
+  },
+  "11433": {
+   "latitude": 40.6982,
+   "longitude": -73.7871,
+   "neighborhood": "South Jamaica",
+   "borough": "Queens"
+  },
+  "11434": {
+   "latitude": 40.6569,
+   "longitude": -73.7834,
+   "neighborhood": "Springfield Gardens (South)-Brookville",
+   "borough": "Queens"
+  },
+  "11435": {
+   "latitude": 40.7013,
+   "longitude": -73.8096,
+   "neighborhood": "Jamaica Hills-Briarwood",
+   "borough": "Queens"
+  },
+  "11436": {
+   "latitude": 40.6758,
+   "longitude": -73.7966,
+   "neighborhood": "Baisley Park",
+   "borough": "Queens"
+  },
+  "11451": {
+   "latitude": 40.6982,
+   "longitude": -73.7871,
+   "neighborhood": "South Jamaica",
+   "borough": "Queens"
+  },
+  "11691": {
+   "latitude": 40.6013,
+   "longitude": -73.7614,
+   "neighborhood": "Far Rockaway-Bayswater",
+   "borough": "Queens"
+  },
+  "11692": {
+   "latitude": 40.5928,
+   "longitude": -73.7922,
+   "neighborhood": "Rockaway Beach-Arverne-Edgemere",
+   "borough": "Queens"
+  },
+  "11693": {
+   "latitude": 40.5965,
+   "longitude": -73.8167,
+   "neighborhood": "Rockaway Beach-Arverne-Edgemere",
+   "borough": "Queens"
+  },
+  "11694": {
+   "latitude": 40.5776,
+   "longitude": -73.8446,
+   "neighborhood": "Breezy Point-Belle Harbor-Rockaway Park-Broad Channel",
+   "borough": "Queens"
+  },
+  "11697": {
+   "latitude": 40.5591,
+   "longitude": -73.9072,
+   "neighborhood": "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
+   "borough": "Brooklyn"
+  },
+  "99999": {
+   "latitude": 40.7095,
+   "longitude": -73.9397,
+   "neighborhood": "East Williamsburg",
+   "borough": "Brooklyn"
+  }
+ }
+}

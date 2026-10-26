@@ -2,6 +2,7 @@
 import os
 import sys
 
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault(
@@ -18,6 +19,7 @@ def main():
             "Did you forget to activat a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
+
 
 if __name__ == "__main__":
     main()

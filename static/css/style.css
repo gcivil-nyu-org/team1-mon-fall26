@@ -98,13 +98,13 @@ a {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
-  padding: 22px 32px;
+  padding: 52px 32px 16px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
   justify-self: start;
 }
@@ -112,39 +112,41 @@ a {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   background: var(--orange);
   color: #fff;
-  font-size: 20px;
-  transform: rotate(-4deg);
-  box-shadow: 0 3px 0 #e48a60;
+  font-size: 30px;
+  transform: rotate(-8deg);
+  box-shadow: 0 3px 0 #d9825a;
 }
 
 .brand-name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 20px;
+  font-size: 26px;
 }
 
 .main-nav {
   display: flex;
   gap: 4px;
-  padding: 4px;
+  padding: 5px;
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: 999px;
-  box-shadow: 0 2px 0 var(--line);
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 3px 0 #f0ddd5;
 }
 
 .main-nav a {
-  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
-  color: var(--ink);
+  color: #5a4038;
 }
 
 .main-nav a:hover {
@@ -177,21 +179,27 @@ a {
 }
 
 .account-role {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  color: #6a5a54;
 }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--yellow);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px var(--line);
-  font-size: 12px;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5;
+  font-size: 15px;
   font-weight: 700;
+}
+
+/* Caregivers get a peach avatar in the header (Figma "Care requests"). */
+.avatar-caregiver {
+  background: #f4a27a;
 }
 
 .account-dropdown {
@@ -388,8 +396,11 @@ a {
   color: var(--error);
 }
 
+/* Rounded dark-red "!" from the Figma alerts. */
 .alert-error .alert-icon {
-  color: var(--ink);
+  color: #8c1d13;
+  font-family: var(--font-display);
+  font-weight: 600;
 }
 
 .alert-success {
@@ -435,6 +446,7 @@ a {
 }
 
 .field input[type="text"],
+.field input[type="tel"],
 .field input[type="number"],
 .field select,
 .field textarea {
@@ -548,6 +560,7 @@ a {
 }
 
 .has-error input[type="text"],
+.has-error input[type="tel"],
 .has-error input[type="number"],
 .has-error textarea {
   background: var(--error-input-bg);
@@ -603,24 +616,74 @@ a {
 
 .file-name {
   display: block;
-  margin-top: 6px;
+  margin-bottom: 8px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--ink);
   overflow-wrap: anywhere;
+}
+
+.file-name:empty {
+  display: none;
 }
 
 .photo-preview {
   display: grid;
   place-items: center;
   flex: none;
-  width: 96px;
-  height: 96px;
+  width: 76px;
+  height: 76px;
   overflow: hidden;
-  border-radius: 18px;
-  background: var(--tag-bg);
-  border: 2px dashed var(--line-strong);
-  color: #c9a99b;
-  font-size: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--line-strong);
+  color: var(--muted);
+}
+
+.photo-preview .camera-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.photo-preview.has-photo {
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1.5px var(--line-strong);
+}
+
+.photo-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.photo-actions .btn {
+  gap: 6px;
+}
+
+.photo-actions .camera-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.remove-photo {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.remove-photo:hover {
+  text-decoration: underline;
+}
+
+.photo-controls .photo-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .photo-preview img {
@@ -631,6 +694,10 @@ a {
 
 .has-error .photo-preview {
   border-color: var(--error);
+}
+
+.checkbox[hidden] {
+  display: none !important;
 }
 
 .checkbox {
@@ -852,6 +919,7 @@ a {
   flex: none;
   width: 42px;
   height: 42px;
+  border-radius: 50%;
   background: var(--theme-bg);
   color: var(--theme-ink);
   font-family: var(--font-display);
@@ -930,12 +998,40 @@ img.pet-initial-large {
 }
 
 .pet-initial-large {
-  width: 78px;
-  height: 78px;
+  width: 82px;
+  height: 82px;
   background: #fff;
-  font-size: 32px;
-  transform: rotate(-3deg);
-  box-shadow: 4px 4px 0 var(--theme-deep);
+  font-size: 34px;
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.45);
+}
+
+.avatar-wrap {
+  position: relative;
+  flex: none;
+}
+
+/* Small yellow camera button on the pet's photo (Figma). */
+.photo-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.photo-badge .camera-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.photo-badge:hover {
+  background: #f5c86a;
 }
 
 .pet-profile-title h1 {
@@ -1084,50 +1180,16 @@ img.pet-initial-large {
   background: var(--yellow);
 }
 
-/* ---------- Color themes per pet type ---------- */
+/* ---------- Pet colors ----------
+   Pet.theme picks one of these per pet (by id). Used by pet cards, profiles,
+   booking rows and avatars, which read the --theme-* variables. */
 
-/* Default (Other and any new types): lavender. */
-.pet-card,
-.pet-profile {
-  --theme-bg: var(--lavender);
-  --theme-ink: var(--purple-dark);
-  --theme-deep: #c6b5ef;
-}
-
-.pet-card.theme-dog,
-.pet-profile.theme-dog {
-  --theme-bg: var(--peach);
-  --theme-ink: #7a3410;
-  --theme-deep: #f6b88a;
-}
-
-.pet-card.theme-cat,
-.pet-profile.theme-cat {
-  --theme-bg: var(--mint);
-  --theme-ink: #14532d;
-  --theme-deep: #93d8b4;
-}
-
-.pet-card.theme-rabbit,
-.pet-profile.theme-rabbit {
-  --theme-bg: var(--pink);
-  --theme-ink: #4a0f2a;
-  --theme-deep: var(--pink-deep);
-}
-
-.pet-card.theme-bird,
-.pet-profile.theme-bird {
-  --theme-bg: var(--yellow-soft);
-  --theme-ink: #6b4a08;
-  --theme-deep: #f2c95f;
-}
-
-.pet-card.theme-fish,
-.pet-profile.theme-fish {
-  --theme-bg: var(--blue-soft);
-  --theme-ink: #1e4a73;
-  --theme-deep: #a9cbea;
-}
+.theme-peach { --theme-bg: var(--peach); --theme-ink: #7a3410; --theme-deep: #f6b88a; }
+.theme-mint { --theme-bg: var(--mint); --theme-ink: #14532d; --theme-deep: #93d8b4; }
+.theme-pink { --theme-bg: var(--pink); --theme-ink: #7a1f45; --theme-deep: var(--pink-deep); }
+.theme-yellow { --theme-bg: var(--yellow-soft); --theme-ink: #6b4a08; --theme-deep: #f2c95f; }
+.theme-blue { --theme-bg: #bde0f5; --theme-ink: #2d3a8c; --theme-deep: #8fc3e6; }
+.theme-lavender { --theme-bg: var(--lavender); --theme-ink: var(--purple-dark); --theme-deep: #c6b5ef; }
 
 /* ---------- Small screens ---------- */
 
@@ -1705,3 +1767,1143 @@ img.pet-initial-large {
 }
 
 
+
+
+/* ---------- Care information (feeding, medication, emergency) ---------- */
+
+/* Round icons: peach bowl, pink pill, blue first-aid kit (Figma). */
+.care-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.care-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.care-icon-feeding { background: #ffd3b0; color: #7a3410; }
+.care-icon-medication { background: #ffc8d9; color: #7a1f45; }
+.care-icon-emergency { background: #bde0f5; color: #2d3a8c; }
+
+.field-hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 14px;
+}
+
+.phone-link {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.phone-link:hover {
+  color: var(--purple);
+  text-decoration: underline;
+}
+
+/* Form: each care section is a tinted box. */
+
+.care-form-section {
+  margin: 0 0 16px;
+  padding: 16px 16px 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fdf6f2;
+}
+
+.care-form-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.care-form-heading h2 {
+  font-size: 17px;
+}
+
+.care-form-note {
+  margin: 8px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.care-form-section .field {
+  margin-bottom: 14px;
+}
+
+.care-form-section input[type="text"],
+.care-form-section input[type="tel"],
+.care-form-section textarea {
+  background: #fff;
+}
+
+.care-form-section textarea {
+  min-height: 64px;
+}
+
+/* Pet page: three cards side by side. */
+
+.care-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.care-card {
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: #fcf6f2;
+}
+
+.care-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pet-profile-body .care-card h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.care-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.care-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.care-facts dd {
+  margin: 1px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pet-profile-body .care-card p {
+  font-size: 12px;
+}
+
+.care-notes {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-strong);
+  color: #4a3f3b;
+}
+
+.care-privacy {
+  margin-top: 10px;
+}
+
+/* The pet page is a little wider than other medium pages so three care cards fit (Figma). */
+.page-pet {
+  max-width: 780px;
+}
+
+/* Caregiver's request panel: short summary cards. */
+
+.care-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.care-summary-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: #fff8f5;
+  box-shadow: 0 0 0 1.5px #f2e2da;
+}
+
+.care-summary-item .care-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+}
+
+.care-summary-item .care-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Two classes deep so the request panel's own h3/p sizes don't override these. */
+.care-summary .care-summary-item h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24.8px;
+  letter-spacing: -0.08px;
+}
+
+.care-summary .care-summary-item p {
+  padding-top: 2px;
+  font-size: 14px;
+  line-height: 21.7px;
+  color: #3d322e;
+}
+
+.care-summary .care-summary-item p + p {
+  padding-top: 0;
+}
+
+/* Caregiver's upcoming visits for this pet */
+
+.care-visits {
+  margin-top: 22px;
+}
+
+.visit-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.visit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.visit:hover {
+  background: var(--bg);
+}
+
+.visit-text {
+  display: grid;
+  flex: 1;
+  font-size: 13px;
+}
+
+.pet-care-link {
+  margin-top: 14px;
+}
+
+@media (max-width: 760px) {
+  .care-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .field-pair {
+    grid-template-columns: 1fr;
+  }
+
+  /* The header stacks on phones, so the sun would sit on the text. */
+  .pet-profile-header .deco-sun {
+    display: none;
+  }
+}
+
+/* Pet type chips on the pet form are a bit smaller, so all six fit on one row (Figma). */
+.pet-type-chips {
+  column-gap: 8px;
+  margin-top: 10px;
+}
+
+.pet-type-chips .chip span {
+  min-height: 36px;
+  padding: 7px 15px;
+}
+
+/* Only the age number turns red on an error, not the years/months menu (Figma). */
+.has-error .age-row select {
+  border-color: var(--line-strong);
+  background-color: var(--input-bg);
+}
+
+.care-summary .phone-link {
+  font-weight: inherit;
+}
+.caregiver-availability {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.caregiver-availability.available {
+    background: #dff5e6;
+    color: #245c3d;
+    border-color: #b8e5c9;
+}
+
+.caregiver-availability.unavailable {
+    background: #f8e5df;
+    color: #805042;
+    border-color: #edcfc4;
+}
+
+.availability-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ---------- My pets page (Figma "Home") ---------- */
+
+.page-dashboard {
+  max-width: 1200px;
+  padding: 16px 32px 64px;
+}
+
+.dashboard {
+  grid-template-columns: minmax(0, 1fr) 392px;
+  gap: 28px;
+}
+
+.plus-icon,
+.arrow-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.dashboard .hero {
+  min-height: 290px;
+  margin-bottom: 24px;
+  padding: 36px;
+  border-radius: 28px;
+  box-shadow: 0 6px 0 var(--purple-dark);
+}
+
+.dashboard .hero-text {
+  max-width: 420px;
+}
+
+.dashboard .hero .eyebrow {
+  margin-bottom: 14px;
+  color: #e9ddff;
+  font-size: 13px;
+  letter-spacing: 1.04px;
+  opacity: 1;
+}
+
+.dashboard .hero h1 {
+  margin-bottom: 14px;
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.24px;
+}
+
+.dashboard .hero p {
+  margin-bottom: 20px;
+  color: #f3ecff;
+  font-size: 16px;
+  opacity: 1;
+}
+
+.dashboard .hero .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+  box-shadow: 0 4px 0 rgba(60, 30, 20, 0.25);
+}
+
+.dashboard .shape-sun {
+  width: 190px;
+  height: 190px;
+  right: -50px;
+  top: -70px;
+}
+
+.dashboard .shape-dot {
+  width: 44px;
+  height: 44px;
+  right: 190px;
+  top: 34px;
+}
+
+.dashboard .shape-block {
+  width: 120px;
+  height: 110px;
+  right: 110px;
+  bottom: -46px;
+  border-radius: 50%;
+}
+
+.dashboard .hero-paw {
+  right: 40px;
+  bottom: 30px;
+  font-size: 72px;
+  transform: rotate(18deg);
+}
+
+.dashboard .alert {
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px 18px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard .alert-success {
+  color: #14532d;
+}
+
+.dashboard .alert-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+}
+
+.dashboard .pet-grid {
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.dashboard .pet-card {
+  padding: 22px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.dashboard .pet-card.is-new {
+  border: 0;
+  box-shadow: 0 0 0 2px var(--ink), 0 6px 0 var(--ink);
+}
+
+.dashboard .pet-card-head {
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dashboard .pet-initial {
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+}
+
+.dashboard .pet-card h2 {
+  margin-bottom: 6px;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.13px;
+}
+
+.dashboard .pet-card .tag {
+  padding: 3px 10px;
+  background: #f8e6df;
+  color: #5a4038;
+  font-size: 13px;
+}
+
+.dashboard .pet-card-text {
+  margin-bottom: 14px;
+  color: #5a4038;
+  font-size: 15px;
+}
+
+.dashboard .pet-card-text.muted {
+  color: #7e6d66;
+}
+
+.dashboard .pet-card .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  color: #5c3d2e;
+  font-size: 15px;
+}
+
+.dashboard .pet-card .arrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.dashboard .new-badge {
+  top: -14px;
+  right: 20px;
+  padding: 3px 12px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 3px 0 #c9922a;
+}
+
+.dashboard .side-panel {
+  padding: 26px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.dashboard .side-panel h2 {
+  margin-bottom: 14px;
+  font-size: 26px;
+  line-height: 1.55;
+  letter-spacing: -0.13px;
+}
+
+.dashboard .panel-heading {
+  margin: 0 0 14px;
+  padding-top: 4px;
+  line-height: 1.55;
+  color: #8a6f64;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+}
+
+.dashboard .side-panel .btn {
+  min-height: 50px;
+  margin-top: 6px;
+  border: 0;
+  font-size: 16px;
+  box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9;
+}
+
+@media (max-width: 1100px) {
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 800px) {
+  .page-dashboard {
+    padding: 8px 16px 48px;
+  }
+
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard .side-panel {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard .hero {
+    padding: 28px 24px;
+  }
+
+  .dashboard .hero h1 {
+    font-size: 36px;
+  }
+}
+
+/* ---------- Add / edit pet form (Figma "Create Pet Profile") ---------- */
+
+.page-pet-form {
+  max-width: 760px;
+  padding: 16px 24px 64px;
+}
+
+.page-pet-form .back-link {
+  gap: 6px;
+  min-height: 44px;
+  margin: 0 0 20px;
+  color: #5c3d2e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.page-pet-form .page-heading {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.page-pet-form .page-heading h1 {
+  margin-bottom: 0;
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -0.22px;
+}
+
+.page-pet-form .page-heading p {
+  padding-top: 8px;
+  color: #6a5a54;
+  font-size: 16px;
+}
+
+.page-pet-form .bubbles {
+  width: 150px;
+  height: 96px;
+}
+
+.page-pet-form .bubbles .bubble-pink {
+  width: 70px;
+  height: 70px;
+  left: 0;
+  top: 18px;
+  bottom: auto;
+}
+
+.page-pet-form .bubbles .bubble-yellow {
+  width: 62px;
+  height: 58px;
+  left: 46px;
+  top: 0;
+}
+
+.page-pet-form .bubbles .bubble-mint {
+  width: 60px;
+  height: 60px;
+  left: 88px;
+  top: 34px;
+  right: auto;
+  bottom: auto;
+}
+
+.page-pet-form .bubbles .bubble-yellow .paw-icon {
+  position: absolute;
+  left: 14px;
+  top: 36px;
+  font-size: 34px;
+  transform: rotate(-12deg);
+}
+
+.page-pet-form .alert {
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 16px;
+}
+
+.page-pet-form .alert-error {
+  color: #8c1d13;
+}
+
+.page-pet-form .alert-icon {
+  width: 30px;
+  height: 30px;
+  color: #8c1d13;
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.page-pet-form .form-card {
+  padding: 36px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.page-pet-form .field {
+  margin-bottom: 28px;
+}
+
+.page-pet-form .field label,
+.page-pet-form .field legend,
+.page-pet-form .field-label {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.page-pet-form .field input[type="text"],
+.page-pet-form .field input[type="tel"],
+.page-pet-form .field input[type="number"],
+.page-pet-form .field select,
+.page-pet-form .field textarea {
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 16px;
+  font-size: 16px;
+}
+
+.page-pet-form .field select {
+  padding-right: 40px;
+  background-position: right 16px center;
+}
+
+.page-pet-form .field ::placeholder {
+  color: #757575;
+}
+
+.page-pet-form .age-row {
+  gap: 10px;
+  max-width: 320px;
+}
+
+.page-pet-form .age-row input {
+  flex: 139 0 0;
+  min-width: 0;
+}
+
+.page-pet-form .age-row select {
+  flex: 171 0 0;
+  min-width: 0;
+}
+
+/* Photo */
+
+.page-pet-form .photo-field {
+  align-items: center;
+  gap: 20px;
+}
+
+.page-pet-form .photo-preview {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #d9b3a3;
+  background: #fffcfa;
+  color: #8a6f64;
+}
+
+.page-pet-form .photo-preview .camera-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.page-pet-form .photo-preview.has-photo {
+  border: 3px solid #fff;
+}
+
+.page-pet-form .photo-label {
+  gap: 10px;
+}
+
+.page-pet-form .tag {
+  padding: 2px 10px;
+  background: #f8e6df;
+  color: #6a5a54;
+  font-size: 13px;
+}
+
+.page-pet-form .photo-controls label.btn {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  font-size: 15px;
+  box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9;
+}
+
+.page-pet-form .photo-actions .camera-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.page-pet-form .photo-controls .photo-hint {
+  color: #6a5a54;
+  font-size: 13px;
+}
+
+/* Care sections */
+
+.page-pet-form .care-form-section {
+  margin-bottom: 28px;
+  padding: 22px 22px 8px;
+  border: 0;
+  border-radius: 22px;
+  background: #fff8f5;
+  box-shadow: 0 0 0 1.5px #f2e2da;
+}
+
+.page-pet-form .care-form-heading {
+  gap: 12px;
+}
+
+.page-pet-form .care-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.page-pet-form .care-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.page-pet-form .care-form-heading h2 {
+  font-size: 22px;
+  line-height: 1.55;
+}
+
+.page-pet-form .care-form-heading .tag {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.page-pet-form .care-form-note {
+  margin: 8px 0 14px;
+  color: #6a5a54;
+  font-size: 15px;
+}
+
+.page-pet-form .care-form-section .field {
+  margin-bottom: 14px;
+}
+
+.page-pet-form .care-form-section .field label {
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.page-pet-form .care-form-section input[type="text"],
+.page-pet-form .care-form-section input[type="tel"],
+.page-pet-form .care-form-section textarea {
+  background: #fff;
+}
+
+.page-pet-form .care-form-section textarea {
+  min-height: 90px;
+}
+
+/* Buttons */
+
+.page-pet-form .form-actions {
+  gap: 12px;
+  margin-top: 0;
+  padding-top: 4px;
+}
+
+.page-pet-form .form-actions .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+}
+
+.page-pet-form .form-actions .btn-outline {
+  border: 0;
+  box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9;
+}
+
+.page-pet-form .form-actions .btn-dark {
+  box-shadow: 0 4px 0 var(--orange);
+}
+
+/* Errors */
+
+.page-pet-form .field-error {
+  margin-top: 8px;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.page-pet-form .has-error input[type="text"],
+.page-pet-form .has-error input[type="tel"],
+.page-pet-form .has-error input[type="number"],
+.page-pet-form .has-error textarea {
+  border-color: #c2281b;
+  background: #fff6f5;
+}
+
+.page-pet-form .has-error .chip span {
+  border: 2px solid #c2281b;
+}
+
+@media (max-width: 560px) {
+  .page-pet-form {
+    padding: 8px 16px 48px;
+  }
+
+  .page-pet-form .page-heading h1 {
+    font-size: 34px;
+  }
+
+  .page-pet-form .form-card {
+    padding: 22px;
+  }
+
+  .page-pet-form .care-form-section {
+    padding: 18px 16px 4px;
+  }
+}
+
+/* ---------- Owner's pet page (Figma "Pet Profile") ---------- */
+
+.page-pet-profile {
+  max-width: 960px;
+  padding: 16px 24px 64px;
+}
+
+.page-pet-profile .back-link {
+  gap: 6px;
+  min-height: 44px;
+  margin: 0 0 24px;
+  color: #5c3d2e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.page-pet-profile .pet-profile {
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+/* Header */
+
+.page-pet-profile .pet-profile-header {
+  gap: 24px;
+  min-height: 192px;
+  padding: 36px;
+}
+
+.page-pet-profile .avatar-wrap {
+  align-self: flex-start;
+}
+
+.page-pet-profile .pet-initial-large {
+  width: 120px;
+  height: 120px;
+  font-size: 56px;
+  transform: rotate(-4deg);
+  box-shadow: 0 6px 0 var(--theme-deep);
+}
+
+.page-pet-profile .photo-badge {
+  right: -6px;
+  bottom: -6px;
+  width: 44px;
+  height: 44px;
+}
+
+.page-pet-profile .photo-badge .camera-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.page-pet-profile .pet-profile-title h1 {
+  font-size: 58px;
+  line-height: 1;
+  letter-spacing: -0.29px;
+}
+
+.page-pet-profile .pet-profile-title p {
+  padding-top: 8px;
+  font-size: 18px;
+}
+
+.page-pet-profile .theme-pink .pet-profile-title h1 { color: #4a0f2a; }
+.page-pet-profile .theme-pink .pet-profile-title p { color: #6b1a3d; }
+.page-pet-profile .theme-pink .pet-profile-header .btn { color: #4a0f2a; }
+
+.page-pet-profile .pet-profile-header .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  color: var(--theme-ink);
+  font-size: 16px;
+  box-shadow: 0 4px 0 var(--theme-deep);
+}
+
+.page-pet-profile .deco-blob {
+  width: 220px;
+  height: 220px;
+  right: -60px;
+  top: -90px;
+}
+
+.page-pet-profile .deco-sun {
+  width: 54px;
+  height: 54px;
+  right: 200px;
+  bottom: 22px;
+}
+
+.page-pet-profile .deco-dot {
+  width: 22px;
+  height: 22px;
+  right: 170px;
+  top: 40px;
+}
+
+/* Tiles and care cards */
+
+.page-pet-profile .pet-profile-body {
+  padding: 32px 32px 36px;
+}
+
+.page-pet-profile .info-tiles {
+  gap: 14px;
+}
+
+.page-pet-profile .tile {
+  padding: 18px 20px;
+  border-radius: 22px;
+}
+
+.page-pet-profile .tile dt {
+  margin-bottom: 2px;
+  font-size: 13px;
+  letter-spacing: 0.78px;
+}
+
+.page-pet-profile .tile-name dt { color: #5c3d2e; }
+.page-pet-profile .tile-type dt { color: #7a4a00; }
+.page-pet-profile .tile-age dt { color: #1f4e79; }
+
+.page-pet-profile .tile dd {
+  font-size: 26px;
+  line-height: 1.55;
+}
+
+.page-pet-profile .care-cards {
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.page-pet-profile .care-card {
+  padding: 22px;
+  border: 0;
+  border-radius: 22px;
+  background: #fff8f5;
+  box-shadow: 0 0 0 1.5px #f2e2da;
+}
+
+.page-pet-profile .care-card-heading {
+  gap: 12px;
+}
+
+.page-pet-profile .care-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.page-pet-profile .care-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.page-pet-profile .pet-profile-body .care-card h2 {
+  font-size: 22px;
+  line-height: 1.55;
+  letter-spacing: -0.11px;
+}
+
+.page-pet-profile .care-facts dt {
+  color: #6a5a54;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.page-pet-profile .care-facts dd {
+  margin-top: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.page-pet-profile .care-notes {
+  border-top: 1.5px solid #f2e2da;
+  color: #3d322e;
+}
+
+.page-pet-profile .pet-profile-body .care-card p {
+  max-width: none;
+  font-size: 15px;
+}
+
+.page-pet-profile .pet-profile-body .care-privacy {
+  max-width: none;
+  margin-top: 16px;
+}
+
+/* "Need someone to look after …?" banner */
+
+.page-pet-profile .cta-banner {
+  min-height: 125px;
+  margin-top: 24px;
+  padding: 28px 32px 28px 72px;
+  border-radius: 28px;
+  box-shadow: 0 6px 0 var(--purple-dark);
+}
+
+.page-pet-profile .cta-banner h2 {
+  margin-bottom: 4px;
+  font-size: 26px;
+  line-height: 1.55;
+  letter-spacing: -0.13px;
+}
+
+.page-pet-profile .cta-banner p {
+  color: #f3ecff;
+  font-size: 16px;
+  opacity: 1;
+}
+
+.page-pet-profile .cta-banner .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+  box-shadow: 0 4px 0 rgba(60, 30, 20, 0.25);
+}
+
+.page-pet-profile .deco-corner {
+  width: 130px;
+  height: 130px;
+  left: -50px;
+  bottom: -70px;
+  background: #f5c04e;
+}
+
+@media (max-width: 760px) {
+  .page-pet-profile .pet-profile-title h1 {
+    font-size: 40px;
+  }
+
+  .page-pet-profile .pet-profile-header {
+    padding: 28px 24px;
+  }
+
+  .page-pet-profile .pet-profile-body {
+    padding: 22px;
+  }
+
+  .page-pet-profile .cta-banner {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-pet-profile {
+    padding: 8px 16px 48px;
+  }
+
+  .page-pet-profile .pet-initial-large {
+    width: 96px;
+    height: 96px;
+    font-size: 44px;
+  }
+
+  .page-pet-profile .tile dd {
+    font-size: 22px;
+  }
+
+  .page-pet-profile .deco-dot {
+    display: none;
+  }
+}

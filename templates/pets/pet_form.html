@@ -2,11 +2,11 @@
 
 {% block title %}{% if pet %}Edit {{ pet.name }}{% else %}Add a new pet{% endif %} · PawPal{% endblock %}
 
-{% block main_class %}page page-narrow{% endblock %}
+{% block main_class %}page page-narrow page-pet-form{% endblock %}
 
 {% block content %}
   <a class="back-link" href="{% if pet %}{{ pet.get_absolute_url }}{% else %}{% url 'pets:list' %}{% endif %}">
-    <span aria-hidden="true">&lsaquo;</span> {% if pet %}Back to {{ pet.name }}{% else %}Back to my pets{% endif %}
+    {% include "partials/chevron_left_icon.html" %} {% if pet %}Back to {{ pet.name }}{% else %}Back to my pets{% endif %}
   </a>
 
   <div class="page-heading">
@@ -24,35 +24,45 @@
   {% if form.errors %}
     <div class="alert alert-error" role="alert">
       <span class="alert-icon" aria-hidden="true">!</span>
-      <span><strong>Almost there.</strong> Required fields can't be left blank.</span>
+      {% if form.name.errors or form.pet_type.errors or form.age.errors %}
+        <span><strong>Almost there.</strong> Required fields can't be left blank.</span>
+      {% else %}
+        <span><strong>Almost there.</strong> Check the highlighted fields.</span>
+      {% endif %}
     </div>
   {% endif %}
 
   <form method="post" enctype="multipart/form-data" class="card form-card" novalidate>
     {% csrf_token %}
 
-    <div class="field photo-field{% if form.photo.errors %} has-error{% endif %}">
-      <div class="photo-preview" data-photo-preview>
+    <div class="field photo-field{% if form.photo.errors %} has-error{% endif %}" data-photo-field>
+      <div class="photo-preview{% if pet.photo %} has-photo{% endif %}" data-photo-preview>
         {% if pet.photo %}
           <img src="{{ pet.photo.url }}" alt="Current photo of {{ pet.name }}">
         {% else %}
-          {% include "partials/paw_icon.html" %}
+          {% include "partials/camera_icon.html" %}
         {% endif %}
       </div>
+      <template data-photo-placeholder>{% include "partials/camera_icon.html" %}</template>
       <div class="photo-controls">
-        <div class="label-row">
-          <span class="field-label">{{ form.photo.label }}</span>
+        <div class="photo-label">
+          <span class="field-label">Pet photo</span>
           <span class="tag">Optional</span>
         </div>
-        <p class="muted small">A clear photo helps caregivers recognize your pet. JPG or PNG, up to 5 MB.</p>
-        <label class="btn btn-outline btn-small" for="{{ form.photo.id_for_label }}">
-          {% if pet.photo %}Change photo{% else %}Upload photo{% endif %}
-        </label>
+        <span class="file-name" data-file-name>{% if pet.photo %}{{ pet.photo.name|cut:"pets/photos/" }}{% endif %}</span>
+        <div class="photo-actions">
+          <label class="btn btn-outline btn-small" for="{{ form.photo.id_for_label }}">
+            {% include "partials/camera_icon.html" %}
+            <span data-photo-button-text>{% if pet.photo %}Change photo{% else %}Upload photo{% endif %}</span>
+          </label>
+          <button type="button" class="link-button remove-photo" data-remove-photo{% if not pet.photo %} hidden{% endif %}>Remove</button>
+        </div>
         {{ form.photo }}
-        <span class="file-name" data-file-name></span>
         {% if pet.photo %}
-          <label class="checkbox">{{ form.remove_photo }} Remove current photo</label>
+          {# Without JavaScript this checkbox is the way to remove the photo. #}
+          <label class="checkbox" data-remove-fallback>{{ form.remove_photo }} Remove current photo</label>
         {% endif %}
+        <p class="photo-hint">JPG or PNG, up to 5 MB</p>
         {% for error in form.photo.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
       </div>
     </div>
@@ -65,7 +75,7 @@
 
     <fieldset class="field{% if form.pet_type.errors %} has-error{% endif %}">
       <legend>{{ form.pet_type.label }} <span class="required">*</span></legend>
-      <div class="chips">
+      <div class="chips pet-type-chips">
         {% for radio in form.pet_type %}
           <label class="chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
         {% endfor %}
@@ -83,14 +93,56 @@
       {% for error in form.age.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
-    <div class="field{% if form.special_care_instructions.errors %} has-error{% endif %}">
-      <div class="label-row">
-        <label for="{{ form.special_care_instructions.id_for_label }}">{{ form.special_care_instructions.label }}</label>
+    <section class="care-form-section care-form-feeding" aria-labelledby="feeding-heading">
+      <div class="care-form-heading">
+        {% include "pets/partials/care_icon.html" with kind="feeding" %}
+        <h2 id="feeding-heading">Feeding</h2>
         <span class="tag">Optional</span>
       </div>
-      {{ form.special_care_instructions }}
-      {% for error in form.special_care_instructions.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
+      <p class="care-form-note">What, how much and when, so your pet keeps their usual routine.</p>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.food %}
+        {% include "pets/partials/care_field.html" with field=form.portion %}
+      </div>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.feeding_times %}
+      </div>
+      {% include "pets/partials/care_field.html" with field=form.feeding_instructions %}
+    </section>
+
+    <section class="care-form-section care-form-medication" aria-labelledby="care-heading">
+      <div class="care-form-heading">
+        {% include "pets/partials/care_icon.html" with kind="medication" %}
+        <h2 id="care-heading">Medication &amp; special care</h2>
+        <span class="tag">Optional</span>
+      </div>
+      <p class="care-form-note">Leave medication blank if {% if pet %}{{ pet.name }} doesn't{% else %}your pet doesn't{% endif %} take any.</p>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.medications %}
+        {% include "pets/partials/care_field.html" with field=form.medication_dose %}
+      </div>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.medication_schedule %}
+      </div>
+      {% include "pets/partials/care_field.html" with field=form.special_care_instructions %}
+    </section>
+
+    <section class="care-form-section care-form-emergency" aria-labelledby="emergency-heading">
+      <div class="care-form-heading">
+        {% include "pets/partials/care_icon.html" with kind="emergency" %}
+        <h2 id="emergency-heading">Emergency &amp; vet</h2>
+        <span class="tag">Optional</span>
+      </div>
+      <p class="care-form-note">Only caregivers with an accepted booking for {% if pet %}{{ pet.name }}{% else %}this pet{% endif %} can see this.</p>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.vet_name %}
+        {% include "pets/partials/care_field.html" with field=form.vet_phone %}
+      </div>
+      <div class="field-pair">
+        {% include "pets/partials/care_field.html" with field=form.emergency_contact_name %}
+        {% include "pets/partials/care_field.html" with field=form.emergency_contact_phone %}
+      </div>
+    </section>
 
     <div class="form-actions">
       <a class="btn btn-outline" href="{% if pet %}{{ pet.get_absolute_url }}{% else %}{% url 'pets:list' %}{% endif %}">Cancel</a>
@@ -99,20 +151,54 @@
   </form>
 
   <script>
-    // Show the chosen photo right away, before the form is saved.
+    // Photo picker: show the chosen photo right away, and let the owner remove
+    // either the newly chosen photo or the saved one.
     (function () {
+      var field = document.querySelector("[data-photo-field]");
+      if (!field) return;
       var input = document.getElementById("{{ form.photo.id_for_label }}");
-      var preview = document.querySelector("[data-photo-preview]");
-      var fileName = document.querySelector("[data-file-name]");
-      if (!input || !preview) return;
+      var preview = field.querySelector("[data-photo-preview]");
+      var fileName = field.querySelector("[data-file-name]");
+      var buttonText = field.querySelector("[data-photo-button-text]");
+      var removeButton = field.querySelector("[data-remove-photo]");
+      var removeBox = document.getElementById("{{ form.remove_photo.id_for_label }}");
+      var fallback = field.querySelector("[data-remove-fallback]");
+      var placeholder = field.querySelector("[data-photo-placeholder]").innerHTML;
+      var saved = {
+        html: preview.innerHTML,
+        name: fileName.textContent,
+        hasPhoto: preview.classList.contains("has-photo"),
+      };
+      if (fallback) fallback.hidden = true;
+
+      function show(html, name, hasPhoto) {
+        preview.innerHTML = html;
+        preview.classList.toggle("has-photo", hasPhoto);
+        fileName.textContent = name;
+        buttonText.textContent = hasPhoto ? "Change photo" : "Upload photo";
+        removeButton.hidden = !hasPhoto;
+      }
+
       input.addEventListener("change", function () {
         var file = input.files && input.files[0];
         if (!file) return;
-        fileName.textContent = file.name;
-        var img = preview.querySelector("img") || document.createElement("img");
+        if (removeBox) removeBox.checked = false;
+        var img = document.createElement("img");
         img.alt = "Selected photo";
         img.src = URL.createObjectURL(file);
-        preview.replaceChildren(img);
+        show(img.outerHTML, file.name, true);
+      });
+
+      removeButton.addEventListener("click", function () {
+        if (input.value) {
+          // Undo the new choice and go back to the saved photo (if any).
+          input.value = "";
+          show(saved.html, saved.name, saved.hasPhoto);
+        } else if (removeBox) {
+          // Remove the saved photo when the form is saved.
+          removeBox.checked = true;
+          show(placeholder, "", false);
+        }
       });
     })();
   </script>

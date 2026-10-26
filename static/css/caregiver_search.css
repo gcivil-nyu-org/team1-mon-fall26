@@ -1,0 +1,341 @@
+/* Find caregivers page, matching the Figma "Search Caregivers" frames.
+   Builds on style.css (cards, buttons, tags, alerts). */
+
+/* Same width as the Figma frame: 1200px page, 1136px of content. */
+.page-search { max-width: 1200px; padding: 16px 32px 64px; }
+
+/* ---------- Purple search card ---------- */
+
+.search-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 36px;
+  margin-bottom: 24px;
+  background: var(--purple);
+  color: #fff;
+  border-radius: 28px;
+  box-shadow: 0 6px 0 var(--purple-dark);
+}
+
+.search-hero h1 { position: relative; margin: 0; color: #fff; font-size: 44px; line-height: 46.2px; letter-spacing: -0.22px; }
+.hero-lead { position: relative; margin: 0 0 22px; padding-top: 8px; color: #f3ecff; font-size: 16px; line-height: 24.8px; }
+
+.hero-dot { position: absolute; border-radius: 50%; pointer-events: none; }
+.hero-dot-yellow { width: 180px; height: 180px; top: -80px; right: -50px; background: var(--yellow-soft); }
+.hero-dot-pink { width: 64px; height: 58px; top: 26px; right: 150px; background: var(--pink); }
+.hero-dot-orange { width: 30px; height: 30px; top: 96px; right: 110px; background: var(--orange); }
+
+.hero-row { position: relative; display: flex; align-items: flex-end; gap: 14px; }
+.hero-field label { display: block; margin-bottom: 8px; font-size: 16px; font-weight: 700; line-height: 24.8px; color: #fff; }
+.hero-location { position: relative; flex: 1; }
+.hero-distance { flex: 0 0 150px; }
+
+.location-input { position: relative; }
+.location-input .pin-icon { position: absolute; top: 50%; left: 16px; width: 20px; height: 20px; transform: translateY(-50%); color: var(--muted); }
+
+.search-hero input[type="text"],
+.search-hero select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border: 2px solid #fff;
+  border-radius: 16px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24.8px;
+}
+.search-hero input[type="text"] { padding-left: 46px; }
+/* Figma's thin chevron (same as the Sort by menu), 16px from the right edge. */
+.search-hero select {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231c1a1a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.search-hero input:focus,
+.search-hero select:focus { outline: 3px solid rgba(255, 255, 255, 0.45); outline-offset: 1px; }
+
+.hero-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 26px;
+  background: #fff;
+  color: var(--ink);
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24.8px;
+  box-shadow: 0 4px 0 rgba(30, 10, 60, 0.3);
+}
+.hero-search svg { width: 18px; height: 18px; }
+
+.hero-links { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 22px; min-height: 24px; }
+.current-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 23.25px;
+  cursor: pointer;
+}
+.current-location svg { width: 16px; height: 16px; }
+.current-location:hover { text-decoration: underline; }
+.current-location:disabled { opacity: 0.7; cursor: progress; }
+.current-location-status { font-size: 12px; color: rgba(255, 255, 255, 0.85); }
+.hero-clear { margin-left: auto; color: #fff; font-size: 12px; font-weight: 700; }
+
+/* ---------- Location suggestions ---------- */
+
+.suggestions {
+  position: absolute;
+  z-index: 1000;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 6px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 18px rgba(28, 26, 26, 0.12);
+  color: var(--ink);
+}
+.suggestions li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+.suggestions li:hover { background: var(--bg); }
+.suggestion-kind { color: var(--muted); font-size: 11px; white-space: nowrap; }
+
+/* ---------- Service filter chips and sort ----------
+   From the Figma "Filter Caregivers by Service" frame. */
+
+.service-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 24px; }
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 16px;
+  background: #fff;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.55;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.15s ease;
+}
+.filter-chip:hover { border-color: var(--ink); }
+.filter-chip.is-active { background: var(--ink); border-color: var(--ink); color: #fff; box-shadow: 0 3px 0 var(--orange); }
+.filter-chip-x { width: 14px; height: 14px; flex: none; }
+.filter-chip:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+.results-tools { display: flex; align-items: center; gap: 10px; flex: none; }
+.sort-form { margin: 0; }
+
+.pill-select {
+  min-width: 200px;
+  height: 44px;
+  padding: 0 46px 0 20px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231c1a1a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 22px center;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.pill-select:hover { border-color: var(--ink); }
+.pill-select:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* ---------- Results ---------- */
+
+.results-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.results-header h2 { font-size: 26px; line-height: 1.55; letter-spacing: -0.13px; }
+
+.search-layout { display: block; }
+.search-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.search-layout.with-map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.search-layout.with-map .search-results { grid-template-columns: 1fr; }
+
+.caregiver-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+.caregiver-result.is-highlighted { box-shadow: 0 0 0 2px var(--ink), 0 6px 0 var(--ink); }
+
+.result-head { display: flex; gap: 16px; align-items: flex-start; }
+.result-title h3 { margin: 0; font-size: 24px; line-height: 27.6px; letter-spacing: -0.12px; }
+.result-place { display: flex; align-items: center; gap: 6px; margin: 0; padding-top: 4px; color: #6a5a54; font-size: 15px; line-height: 23.25px; }
+.result-place .pin-icon { width: 15px; height: 15px; flex: none; }
+
+.result-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: #7a3410;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  object-fit: cover;
+}
+.result-avatar.theme-blue { background: var(--blue-soft); color: #1f4f7a; }
+.result-avatar.theme-mint { background: var(--mint); color: #14532d; }
+.result-avatar.theme-pink { background: var(--pink); color: #4a0f2a; }
+.caregiver-result.is-unavailable .result-avatar { filter: grayscale(1); opacity: 0.7; }
+
+.result-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.result-tags .tag {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f8e6df;
+  color: #5a4038;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21.7px;
+}
+.tag-experience { display: inline-flex; align-items: center; gap: 6px; }
+.tag-experience .paw-icon { width: 15px; height: 15px; fill: currentColor; }
+
+.service-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.service-chip {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fff0c2;
+  color: #6b4500;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21.7px;
+}
+.service-chip.is-match { background: var(--yellow); color: var(--ink); }
+
+.view-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding-top: 2px;
+  color: #5c3d2e;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 23.25px;
+  text-decoration: none;
+}
+.view-profile:hover { text-decoration: underline; }
+
+.availability-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f8e5df;
+  color: #805042;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------- Map ---------- */
+
+.search-map-card { position: sticky; top: 16px; padding: 10px; }
+.search-map { height: 480px; border-radius: var(--radius); }
+.map-note { margin: 8px 4px 0; }
+
+/* ---------- No results ---------- */
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 36px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+  text-align: center;
+}
+.no-results h2 { margin: 0; font-size: 30px; line-height: 34.5px; letter-spacing: -0.15px; }
+.no-results p { margin: 0; color: #6a5a54; font-size: 16px; line-height: 24.8px; }
+.no-results-icon {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #f8e6df;
+  color: #5c3d2e;
+}
+.no-results-icon svg { width: 38px; height: 38px; }
+.suggestion-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 0; padding: 6px 0 0; list-style: none; }
+.suggestion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 23.25px;
+  text-decoration: none;
+}
+.suggestion-chip .pin-icon { width: 15px; height: 15px; }
+.suggestion-chip:hover { border-color: var(--ink); }
+
+@media (max-width: 800px) {
+  .page-search { padding: 8px 20px 64px; }
+  .search-hero { padding: 22px 18px 18px; }
+  .search-hero h1 { font-size: 28px; line-height: 1.15; }
+  .result-title h3 { font-size: 20px; }
+  .no-results h2 { font-size: 24px; line-height: 1.2; }
+  .hero-row { flex-direction: column; align-items: stretch; }
+  .hero-distance { flex-basis: auto; }
+  .hero-search { justify-content: center; }
+  .hero-dot-pink, .hero-dot-orange { display: none; }
+  .hero-dot-yellow { width: 90px; height: 90px; top: -45px; right: -45px; }
+  .service-filters { flex-wrap: nowrap; overflow-x: auto; margin-left: -20px; margin-right: -20px; padding: 0 20px 6px; scrollbar-width: none; }
+  .results-header { flex-wrap: wrap; }
+  .results-header h2 { font-size: 22px; }
+  .pill-select { min-width: 170px; }
+  .search-results,
+  .search-layout.with-map { grid-template-columns: 1fr; }
+  .search-map-card { position: static; order: -1; }
+  .search-map { height: 300px; }
+}

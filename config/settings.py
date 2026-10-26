@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
+import warnings
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,16 +21,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho'
+# The deployed site (AWS Elastic Beanstalk) sets these as environment
+# variables; without them the local development defaults below are used.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
+
+# SECURITY WARNING: keep the secret key used in production secret!
+DEV_SECRET_KEY = 'django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEV_SECRET_KEY
+if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
+    warnings.warn(
+        "DJANGO_SECRET_KEY is not set; using the development key in production."
+    )
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "pawpal-env.eba-x2trrt2m.us-east-2.elasticbeanstalk.com",
+]
+# More hosts, comma-separated (e.g. a custom domain).
+ALLOWED_HOSTS += [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
 ]
 
 
@@ -83,12 +99,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# PostgreSQL on AWS RDS when the RDS_* variables are set (Elastic Beanstalk
+# sets them for an attached database, or they can be added by hand);
+# SQLite for local development and tests.
+if os.environ.get("RDS_HOSTNAME"):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ["RDS_DB_NAME"],
+            'USER': os.environ["RDS_USERNAME"],
+            'PASSWORD': os.environ["RDS_PASSWORD"],
+            'HOST': os.environ["RDS_HOSTNAME"],
+            'PORT': os.environ.get("RDS_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            "NAME": os.environ.get("SQLITE_DB_PATH", str(BASE_DIR / "db.sqlite3")),
+        }
+    }
 
 
 # Password validation
@@ -135,11 +166,9 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
-# Login
-# Login pages aren't built yet, so use the admin login for now.
-# Change LOGIN_URL to the real login page once the accounts story is done.
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 
 # Email
@@ -148,5 +177,22 @@ LOGIN_REDIRECT_URL = '/'
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }

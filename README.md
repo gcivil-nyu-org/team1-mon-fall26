@@ -76,6 +76,7 @@ Open http://127.0.0.1:8000/ in your browser.
 
 To stop the server, press `Ctrl + C` in the terminal.
 
+
 ## Project Structure
 
 ```text
@@ -152,7 +153,8 @@ Avoid committing directly to `main`.
 - Do not commit `.venv/`, local databases, or sensitive configuration files.
 - Coordinate changes to shared models and project configuration.
 - Keep dependencies documented in `requirements.txt`.
-- Use GitHub Issues and the project board to track user stories, sprint tasks, and development progress.
+- To add a package, install it and then add one line to `requirements.txt` by hand (for example `whitenoise==6.12.0`). Avoid `pip freeze > requirements.txt` in Windows PowerShell. It saves the file as UTF-16, which GitHub can't display, and it lists every package in your environment.
+- When committing, add files by name (`git add path/to/file`) rather than `git add .`, so `db.sqlite3` isn't committed by accident.
 
 ## Project Status
 

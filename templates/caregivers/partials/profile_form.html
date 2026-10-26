@@ -1,0 +1,271 @@
+{% comment %}
+  The caregiver profile form, shared by the create and edit pages (Figma "Create Caregiver Profile").
+  Pass heading="…" for the page title.
+{% endcomment %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=5">
+
+<div class="caregiver-heading">
+  <span class="caregiver-eyebrow">Caregiver profile</span>
+  <h1>{{ heading }}</h1>
+  <p>Owners read this before they send you a request. <span class="required">*</span> Required</p>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="caregiver-form">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="caregiver-layout">
+    <div class="caregiver-form-column">
+      <section class="caregiver-section">
+        <h2><span class="step-dot step-yellow">1</span> About you</h2>
+        <div class="field">
+          <div class="caregiver-photo-row">
+            <div class="caregiver-photo-placeholder" id="photo-preview" aria-hidden="true">
+              {% if form.instance.profile_photo %}<img src="{{ form.instance.profile_photo.url }}" alt="">{% else %}{% include "partials/camera_icon.html" %}{% endif %}
+            </div>
+            <div class="caregiver-photo-controls">
+              <div class="label-row-inline"><span class="field-label">Profile photo</span><span class="optional-tag">Optional</span></div>
+              <label class="caregiver-upload" for="{{ form.profile_photo.id_for_label }}">
+                {% include "partials/camera_icon.html" %}
+                <span>{% if form.instance.profile_photo %}Change photo{% else %}Upload photo{% endif %}</span>
+              </label>
+              {{ form.profile_photo }}
+              <p class="caregiver-hint">JPG or PNG, up to 5 MB</p>
+              {{ form.profile_photo.errors }}
+            </div>
+          </div>
+        </div>
+        <div class="caregiver-two-fields">
+          <div class="field"><label for="{{ form.first_name.id_for_label }}">First name <span class="required">*</span></label>{{ form.first_name }}{{ form.first_name.errors }}</div>
+          <div class="field"><label for="{{ form.last_name.id_for_label }}">Last name <span class="required">*</span></label>{{ form.last_name }}{{ form.last_name.errors }}</div>
+        </div>
+        <div class="caregiver-two-fields">
+          {# Suggests NYC addresses while typing. The neighborhood owners see comes from NYC GeoSearch. #}
+          <div class="field" data-address-lookup data-suggest-url="{% url 'address_suggestions' %}" data-neighborhood-url="{% url 'address_neighborhood' %}">
+            <label for="{{ form.address.id_for_label }}">{{ form.address.label }} <span class="required">*</span></label>
+            {{ form.address }}
+            <datalist id="address-suggestions"></datalist>
+            <p class="caregiver-hint">Owners can only see your neighborhood and distance.</p>
+            {{ form.address.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ form.service_radius_miles.id_for_label }}">{{ form.service_radius_miles.label }} <span class="required">*</span></label>
+            {{ form.service_radius_miles }}{{ form.service_radius_miles.errors }}
+          </div>
+        </div>
+        <div class="field">
+          <div class="label-row"><label for="{{ form.bio.id_for_label }}">Short intro</label><span class="optional-tag">Optional</span></div>
+          {{ form.bio }}{{ form.bio.errors }}
+        </div>
+      </section>
+
+      <section class="caregiver-section">
+        <h2><span class="step-dot step-pink">2</span> Experience</h2>
+        <div class="field caregiver-years">
+          <label for="{{ form.years_of_experience.id_for_label }}">Years caring for pets <span class="required">*</span></label>
+          {{ form.years_of_experience }}{{ form.years_of_experience.errors }}
+        </div>
+        <div class="field">
+          <div class="label-row"><label for="{{ form.special_skills.id_for_label }}">Tell owners about your experience</label><span class="optional-tag">Optional</span></div>
+          {{ form.special_skills }}{{ form.special_skills.errors }}
+        </div>
+        <div class="field">
+          <div class="label-row"><label for="{{ form.certifications.id_for_label }}">Certifications</label><span class="optional-tag">Optional</span></div>
+          {{ form.certifications }}{{ form.certifications.errors }}
+        </div>
+      </section>
+
+      <section class="caregiver-section">
+        <div class="caregiver-section-heading">
+          <span class="step-dot step-mint">3</span>
+          <div>
+            <h2>Services you provide</h2>
+            <p class="caregiver-note">Select all that apply. Owners can only request these.</p>
+          </div>
+        </div>
+        <div class="caregiver-chips">
+          {% for checkbox in form.selected_services %}
+            <label class="caregiver-chip">
+              <input type="checkbox" name="{{ checkbox.data.name }}" value="{{ checkbox.data.value }}" data-preview="services"{% if checkbox.data.selected %} checked{% endif %}>
+              <span>{% include "caregivers/partials/chip_icons.html" %}{{ checkbox.choice_label }}</span>
+            </label>
+          {% empty %}
+            <p class="caregiver-hint">No services available yet.</p>
+          {% endfor %}
+        </div>
+        {{ form.selected_services.errors }}
+      </section>
+
+      <section class="caregiver-section">
+        <div class="caregiver-section-heading">
+          <span class="step-dot step-blue">4</span>
+          <div>
+            <h2>Pets you're comfortable with</h2>
+            <p class="caregiver-note">We'll match you with requests for these pet types.</p>
+          </div>
+        </div>
+        <div class="caregiver-chips">
+          {% for checkbox in form.supported_pet_types %}
+            <label class="caregiver-chip">
+              <input type="checkbox" name="{{ checkbox.data.name }}" value="{{ checkbox.data.value }}" data-preview="pets"{% if checkbox.data.selected %} checked{% endif %}>
+              <span>{% include "caregivers/partials/chip_icons.html" %}{{ checkbox.choice_label }}</span>
+            </label>
+          {% empty %}
+            <p class="caregiver-hint">No pet types available yet.</p>
+          {% endfor %}
+        </div>
+        {{ form.supported_pet_types.errors }}
+
+        <div class="caregiver-skills">
+          <div class="label-row-inline"><h3>Pet-care skills</h3><span class="optional-tag">Optional</span></div>
+          <p class="caregiver-note">Help owners see if you're a good fit for their pet.</p>
+          <div class="caregiver-chips">
+            {% for checkbox in form.pet_care_skills %}
+              <label class="caregiver-chip">
+                <input type="checkbox" name="{{ checkbox.data.name }}" value="{{ checkbox.data.value }}" data-preview="skills"{% if checkbox.data.selected %} checked{% endif %}>
+                <span>{% include "caregivers/partials/chip_icons.html" %}{{ checkbox.choice_label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          {{ form.pet_care_skills.errors }}
+        </div>
+      </section>
+
+      <div class="form-actions"><button class="btn btn-dark caregiver-save" type="submit">Save profile</button></div>
+    </div>
+
+    <aside class="caregiver-preview-column">
+      <label class="caregiver-accepting" for="{{ form.accepting_new_bookings.id_for_label }}">
+        <span class="caregiver-accepting-text">
+          <strong>Accepting new requests</strong>
+          <span>Owners can send you booking requests.</span>
+        </span>
+        {{ form.accepting_new_bookings }}
+        <span class="caregiver-switch" aria-hidden="true"></span>
+      </label>
+      {{ form.accepting_new_bookings.errors }}
+
+      <h2 class="caregiver-preview-label">How owners see you</h2>
+      <div class="caregiver-preview-card" aria-label="Profile preview">
+        <div class="caregiver-preview-banner"><span class="preview-sun"></span><span class="preview-cloud"></span></div>
+        <div class="caregiver-preview-avatar" id="preview-avatar">{% if form.instance.profile_photo %}<img src="{{ form.instance.profile_photo.url }}" alt="Profile preview">{% else %}?{% endif %}</div>
+        <div class="caregiver-preview-body">
+          <h3 id="preview-name">Your name</h3>
+          <p class="caregiver-preview-meta"><span id="preview-area" data-area="{{ form.instance.service_area }}">Your neighborhood</span> · <span id="preview-years">Less than 1 year</span></p>
+          <p class="caregiver-preview-bio" id="preview-bio">Your introduction will appear here.</p>
+          <div class="caregiver-preview-group">
+            <p>Services</p>
+            <div id="preview-services" class="caregiver-preview-tags tags-services" data-empty="Select services"></div>
+          </div>
+          <div class="caregiver-preview-group">
+            <p>Comfortable with</p>
+            <div id="preview-pets" class="caregiver-preview-tags tags-pets" data-empty="Select pet types"></div>
+          </div>
+          <div class="caregiver-preview-group" id="preview-skills-group">
+            <p>Skills</p>
+            <div id="preview-skills" class="caregiver-preview-tags tags-skills" data-empty=""></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</form>
+
+<script>
+(function () {
+  const form = document.getElementById('caregiver-form');
+  if (!form) return;
+  const field = name => form.querySelector('[name="' + name + '"]');
+  const fillTags = (kind) => {
+    const box = document.getElementById('preview-' + kind);
+    const labels = Array.from(form.querySelectorAll('[data-preview="' + kind + '"]:checked'))
+      .map(input => input.closest('label').innerText.trim());
+    box.replaceChildren();
+    if (!labels.length && box.dataset.empty) labels.push(box.dataset.empty);
+    labels.forEach(text => { const tag = document.createElement('span'); tag.textContent = text; box.appendChild(tag); });
+    return labels.length;
+  };
+  const update = () => {
+    const name = [field('first_name')?.value, field('last_name')?.value]
+      .map(part => (part || '').trim()).filter(Boolean).join(' ');
+    document.getElementById('preview-name').textContent = name || 'Your name';
+    const area = document.getElementById('preview-area');
+    area.textContent = area.dataset.area || 'Your neighborhood';
+    const years = field('years_of_experience');
+    document.getElementById('preview-years').textContent = years ? years.options[years.selectedIndex].text : '';
+    document.getElementById('preview-bio').textContent = field('bio')?.value || 'Your introduction will appear here.';
+    const avatar = document.getElementById('preview-avatar');
+    if (!avatar.querySelector('img')) avatar.textContent = name ? name.split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase() : '?';
+    fillTags('services');
+    fillTags('pets');
+    document.getElementById('preview-skills-group').hidden = !fillTags('skills');
+  };
+  form.addEventListener('input', update);
+  form.addEventListener('change', update);
+
+  // Address suggestions, and the neighborhood GeoSearch finds for the preview.
+  const lookup = form.querySelector('[data-address-lookup]');
+  const address = field('address');
+  if (lookup && address) {
+    const list = document.getElementById('address-suggestions');
+    const neighborhoodFor = {};  // suggested address -> its neighborhood
+    let suggestTimer;
+    let lastLookup = address.value.trim();
+    address.setAttribute('list', 'address-suggestions');
+    address.setAttribute('autocomplete', 'off');
+
+    const fillArea = (label) => {
+      if (!label) return;
+      document.getElementById('preview-area').dataset.area = label;
+      update();
+    };
+
+    address.addEventListener('input', () => {
+      clearTimeout(suggestTimer);
+      const text = address.value.trim();
+      if (neighborhoodFor[text]) { fillArea(neighborhoodFor[text]); return; }
+      if (text.length < 3) { list.replaceChildren(); return; }
+      suggestTimer = setTimeout(async () => {
+        try {
+          const response = await fetch(lookup.dataset.suggestUrl + '?q=' + encodeURIComponent(text));
+          const data = await response.json();
+          list.replaceChildren(...data.suggestions.map(item => {
+            neighborhoodFor[item.address] = item.neighborhood;
+            const option = document.createElement('option');
+            option.value = item.address;
+            return option;
+          }));
+        } catch (error) { /* Suggestions are optional; typing still works. */ }
+      }, 250);
+    });
+
+    address.addEventListener('change', async () => {
+      const text = address.value.trim();
+      if (!text || text === lastLookup) return;
+      lastLookup = text;
+      if (neighborhoodFor[text]) { fillArea(neighborhoodFor[text]); return; }
+      try {
+        const response = await fetch(lookup.dataset.neighborhoodUrl + '?address=' + encodeURIComponent(text));
+        fillArea((await response.json()).neighborhood);
+      } catch (error) { /* The preview just keeps the old neighborhood. */ }
+    });
+  }
+  const upload = field('profile_photo');
+  if (upload) upload.addEventListener('change', () => {
+    const file = upload.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    const img = document.createElement('img');
+    img.alt = 'Selected profile photo';
+    img.onload = () => URL.revokeObjectURL(url);
+    img.src = url;
+    document.getElementById('photo-preview').replaceChildren(img);
+    const avatarImg = document.createElement('img');
+    avatarImg.alt = 'Profile preview';
+    avatarImg.src = url;
+    document.getElementById('preview-avatar').replaceChildren(avatarImg);
+  });
+  update();
+})();
+</script>

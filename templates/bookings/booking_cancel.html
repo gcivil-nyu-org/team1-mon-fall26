@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Cancel booking · PawPal{% endblock %}
+
+{% block main_class %}page page-medium{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{{ booking.get_absolute_url }}"><span aria-hidden="true">&lsaquo;</span> Back to the request</a>
+
+  <article class="card booking-detail booking-cancel">
+    <div class="booking-detail-body">
+      <h1>Cancel this booking?</h1>
+      <p>
+        <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong> with {{ booking.caregiver.name }},
+        {{ booking.start_time|date:"D, M j, g:i A" }} to {{ booking.end_time|date:"D, M j, g:i A" }}.
+      </p>
+      <p class="muted">
+        {{ booking.caregiver.first_name }} will see this booking as Canceled. You can't undo this, but the booking stays in your history.
+      </p>
+      <form method="post" class="respond-actions">
+        {% csrf_token %}
+        <a class="btn btn-outline" href="{{ booking.get_absolute_url }}">Keep booking</a>
+        <button type="submit" class="btn btn-dark">Yes, cancel booking</button>
+      </form>
+    </div>
+  </article>
+{% endblock %}

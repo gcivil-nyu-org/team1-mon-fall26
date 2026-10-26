@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static caregiver_tags %}
+
+{% block title %}Find caregivers · PawPal{% endblock %}
+
+{% block main_class %}page page-search{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=3">
+
+  <div class="search-page">
+    <form method="get" class="search-hero" id="caregiver-search" autocomplete="off">
+      <span class="hero-dot hero-dot-pink" aria-hidden="true"></span>
+      <span class="hero-dot hero-dot-orange" aria-hidden="true"></span>
+      <span class="hero-dot hero-dot-yellow" aria-hidden="true"></span>
+
+      <h1>Find a caregiver nearby</h1>
+      <p class="hero-lead">Enter a neighborhood or ZIP code to see caregivers in your area.</p>
+
+      <div class="hero-row">
+        <div class="hero-field hero-location">
+          <label for="search-location">Location</label>
+          <div class="location-input">
+            {% include "partials/pin_icon.html" %}
+            <input type="text" id="search-location" name="location" value="{{ location_text }}"
+                   placeholder="e.g. Park Slope, 11215 or 70 Washington Sq S"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="location-suggestions">
+          </div>
+          <ul class="suggestions" id="location-suggestions" role="listbox" hidden></ul>
+        </div>
+        <div class="hero-field hero-distance">
+          <label for="search-distance">Distance</label>
+          <select id="search-distance" name="distance">
+            {% for miles in distance_choices %}
+              <option value="{{ miles }}"{% if miles == distance %} selected{% endif %}>{{ miles }} mi</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn hero-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Search
+        </button>
+      </div>
+
+      <div class="hero-links">
+        <button type="button" class="current-location" id="use-current-location" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          Use my current location
+        </button>
+        <span class="current-location-status" id="current-location-status" role="status"></span>
+        {% comment %}
+          Hidden for now: the Figma design has no Clear search link. Remove this comment to bring it back.
+          {% if searched or service %}<a class="hero-clear" href="{% url 'caregiver_list' %}">Clear search</a>{% endif %}
+        {% endcomment %}
+      </div>
+
+      <input type="hidden" name="lat" id="search-lat">
+      <input type="hidden" name="lng" id="search-lng">
+      <input type="hidden" name="here" id="search-here">
+      <input type="hidden" name="map" id="search-map" value="{% if show_map %}1{% endif %}">
+      {% if service %}<input type="hidden" name="service" value="{{ service.pk }}">{% endif %}
+      {% if sort != "closest" %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+      {% if availability != "available" %}<input type="hidden" name="availability" value="{{ availability }}">{% endif %}
+    </form>
+
+    {# Service filter (#34), as chips like the Figma "Filter Caregivers by Service" frame. #}
+    {% if caregivers or service %}
+      <nav class="service-filters" aria-label="Filter by service">
+        <a class="filter-chip{% if not service %} is-active{% endif %}" href="?{{ query_without_service }}"{% if not service %} aria-current="true"{% endif %}>All services</a>
+        {% for chip in service_filters %}
+          {% if chip.type == service %}
+            <a class="filter-chip is-active" href="?{{ query_without_service }}" aria-current="true">
+              {{ chip.type.name }}
+              <svg class="filter-chip-x" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3.5 3.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span class="visually-hidden">Clear filter</span>
+            </a>
+          {% else %}
+            <a class="filter-chip" href="?{{ chip.query }}">{{ chip.type.name }}</a>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {% if notice %}
+      <div class="alert alert-info" role="status"><span class="alert-icon" aria-hidden="true">!</span><span>{{ notice }}</span></div>
+    {% endif %}
+
+    {% if caregivers %}
+    {# The map is hidden for now (the Figma design has none). To bring it back, uncomment the Show map button and remove this "with". #}
+    {% with show_map=False %}
+      <div class="results-header">
+        <h2>{{ caregivers|length }} caregiver{{ caregivers|length|pluralize }} {% if origin %}near {{ origin.label|place_name }}{% else %}on PawPal{% endif %}{% if service %} · {{ service.name }}{% endif %}</h2>
+        <div class="results-tools">
+          {% comment %}
+          <button type="button" class="btn btn-outline btn-small map-toggle" id="map-toggle" aria-controls="map-panel" aria-expanded="{% if show_map %}true{% else %}false{% endif %}" hidden>
+            {% if show_map %}Hide map{% else %}Show map{% endif %}
+          </button>
+          {% endcomment %}
+          <form method="get" class="sort-form" id="caregiver-filters">
+            {% for key, value in request.GET.items %}
+              {% if key != "sort" and key != "map" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+            {% endfor %}
+            <input type="hidden" name="map" value="{% if show_map %}1{% endif %}">
+            <label class="visually-hidden" for="filter-sort">Sort by</label>
+            <select id="filter-sort" name="sort" class="pill-select" data-autosubmit>
+              {% for value, label in sort_choices %}
+                <option value="{{ value }}"{% if value == sort %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+      </div>
+
+      <div class="search-layout{% if show_map %} with-map{% endif %}" id="search-layout">
+        <div class="search-results">
+          {% for caregiver in caregivers %}
+            <article class="card caregiver-result{% if not caregiver.accepting_new_bookings %} is-unavailable{% endif %}" id="caregiver-{{ caregiver.pk }}">
+              <div class="result-head">
+                {% if caregiver.profile_photo %}
+                  <img class="result-avatar" src="{{ caregiver.profile_photo.url }}" alt="Photo of {{ caregiver.name }}">
+                {% else %}
+                  <span class="result-avatar theme-{{ caregiver|avatar_theme }}" aria-hidden="true">{{ caregiver.name|initials }}</span>
+                {% endif %}
+                <div class="result-title">
+                  <h3>{{ caregiver.name }}</h3>
+                  <p class="result-place">
+                    {% include "partials/pin_icon.html" %}
+                    {{ caregiver.neighborhood|default:caregiver.service_area }}{% if origin and caregiver.distance is not None %} · {{ caregiver.distance|floatformat:1 }} mi away{% endif %}
+                  </p>
+                  {% if not caregiver.accepting_new_bookings %}<span class="availability-badge">Not taking new bookings</span>{% endif %}
+                </div>
+              </div>
+              <div class="tags result-tags">
+                <span class="tag tag-experience">{% include "partials/paw_icon.html" %} {{ caregiver.years_of_experience|experience_range }}</span>
+                {% for pet_type in caregiver.supported_pet_types.all %}<span class="tag">{{ pet_type.name }}</span>{% endfor %}
+              </div>
+              {% if caregiver.listed_services %}
+                <ul class="service-chips" aria-label="Services">
+                  {% for offer in caregiver.listed_services %}
+                    <li class="service-chip{% if offer.service_type_id == service.pk %} is-match{% endif %}" {% if offer.price is not None %}title="${{ offer.price }} / {{ offer.get_price_unit_display }}"{% endif %}>{{ offer.service_type.name }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+              <a class="view-profile" href="{% url 'caregiver' caregiver.pk %}">View profile <span aria-hidden="true">&rarr;</span></a>
+            </article>
+          {% endfor %}
+        </div>
+
+        <div class="card search-map-card" id="map-panel"{% if not show_map %} hidden{% endif %}>
+          <div id="caregiver-map" class="search-map" aria-label="Map of caregivers"></div>
+          <p class="muted small map-note">Locations are approximate.</p>
+        </div>
+      </div>
+    {% endwith %}
+    {% else %}
+      <div class="card no-results">
+        <span class="no-results-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 8l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <h2>
+          {% if origin %}No caregivers {% if service %}offer {{ service.name }} {% endif %}near “{{ location_text|default:origin.label }}” yet{% elif searched %}No caregivers found{% elif service %}No caregivers offer {{ service.name }} yet{% else %}No caregivers on PawPal yet{% endif %}
+        </h2>
+        <p class="muted">
+          {% if suggestions %}Try a nearby neighborhood or ZIP code.{% elif origin %}Try a larger distance, another neighborhood or another service.{% else %}Try a neighborhood or ZIP code.{% endif %}
+        </p>
+        {% if suggestions %}
+          <ul class="suggestion-chips">
+            {% for hood in suggestions %}
+              <li><a class="suggestion-chip" href="?area={{ hood.code }}&amp;distance={{ distance }}{% if service %}&amp;service={{ service.pk }}{% endif %}">{% include "partials/pin_icon.html" %} {{ hood.name }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {{ map_data|json_script:"caregiver-map-data" }}
+  {{ neighborhood_options|json_script:"neighborhood-options" }}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="{% static 'js/caregiver_search.js' %}"></script>
+{% endblock %}

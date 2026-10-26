@@ -1,16 +1,18 @@
 from django import template
 
-from bookings.views import owner_bookings, owner_name
+from bookings.views import owner_name, split_owner_bookings
 
 register = template.Library()
 
 
 @register.inclusion_tag("bookings/partials/request_panel_items.html", takes_context=True)
 def my_booking_requests(context, limit=3):
-    """The owner's latest booking requests, for the "My booking requests" panel."""
+    """The owner's upcoming and past requests, for the "My booking requests" panel."""
     user = context["request"].user
-    bookings = owner_bookings(user)[:limit] if user.is_authenticated else []
-    return {"bookings": bookings}
+    if not user.is_authenticated:
+        return {"upcoming": [], "past": []}
+    upcoming, past = split_owner_bookings(user)
+    return {"upcoming": upcoming[:limit], "past": past[:limit]}
 
 
 @register.filter

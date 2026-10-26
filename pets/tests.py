@@ -11,7 +11,7 @@ from django.urls import reverse
 from PIL import Image
 
 from .forms import subtract_months
-from .models import Pet, PetType
+from .models import PET_THEMES, Pet, PetType
 
 User = get_user_model()
 TEST_MEDIA_ROOT = tempfile.mkdtemp()
@@ -75,8 +75,11 @@ class PetModelTests(PetTestBase):
     def test_age_display_empty_without_date_of_birth(self):
         self.assertEqual(self.make_pet().age_display, "")
 
-    def test_theme_comes_from_pet_type(self):
-        self.assertEqual(self.make_pet(pet_type=self.rabbit).theme, "rabbit")
+    def test_each_pet_keeps_one_color_and_neighbors_differ(self):
+        first, second = self.make_pet(), self.make_pet()
+        self.assertIn(first.theme, PET_THEMES)
+        self.assertEqual(first.theme, Pet.objects.get(pk=first.pk).theme)
+        self.assertNotEqual(first.theme, second.theme)
 
     def test_subtract_months_handles_short_months(self):
         self.assertEqual(subtract_months(date(2026, 3, 31), 1), date(2026, 2, 28))

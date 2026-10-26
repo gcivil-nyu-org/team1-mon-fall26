@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load booking_tags %}
+
+{% block title %}{{ pet.name }} · Care info · PawPal{% endblock %}
+
+{% block main_class %}page page-medium page-pet{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'bookings:caregiver_requests' %}?status=accepted"><span aria-hidden="true">&lsaquo;</span> Back to care requests</a>
+
+  <article class="card pet-profile theme-{{ pet.theme }}">
+    <header class="pet-profile-header">
+      <div class="avatar-wrap">
+        {% if pet.photo %}<img class="pet-initial pet-initial-large pet-photo" src="{{ pet.photo.url }}" alt="Photo of {{ pet.name }}">{% else %}<span class="pet-initial pet-initial-large" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+      </div>
+      <div class="pet-profile-title">
+        <h1>{{ pet.name }}</h1>
+        <p>{{ pet.pet_type }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.age_display %} · {{ pet.age_display }} old{% endif %} · Owner: {{ pet.owner|short_name }}</p>
+      </div>
+      <span class="deco deco-blob" aria-hidden="true"></span>
+      <span class="deco deco-sun" aria-hidden="true"></span>
+      <span class="deco deco-dot" aria-hidden="true"></span>
+    </header>
+
+    <div class="pet-profile-body">
+      <dl class="info-tiles">
+        <div class="tile tile-name"><dt>Name</dt><dd>{{ pet.name }}</dd></div>
+        <div class="tile tile-type"><dt>Type</dt><dd>{{ pet.pet_type }}</dd></div>
+        <div class="tile tile-age"><dt>Age</dt><dd>{{ pet.age_display|default:"Not added" }}</dd></div>
+      </dl>
+
+      <section class="care-visits" aria-labelledby="visits-heading">
+        <h2 id="visits-heading">Your upcoming care</h2>
+        <ul class="visit-list">
+          {% for booking in care_bookings %}
+            <li>
+              <a class="visit" href="{{ booking.get_absolute_url }}">
+                <span class="date-chip" aria-hidden="true">
+                  <span class="date-chip-month">{{ booking.start_time|date:"M"|upper }}</span>
+                  <span class="date-chip-day">{{ booking.start_time|date:"j" }}</span>
+                </span>
+                <span class="visit-text">
+                  <strong>{{ booking.service_type.name }}</strong>
+                  <span class="muted">{{ booking.start_time|date:"D, M j, g:i A" }} – {{ booking.end_time|date:"g:i A" }}</span>
+                </span>
+                <span class="text-link" aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      {% if pet.description %}
+        <h2>About {{ pet.name }}</h2>
+        <p>{{ pet.description|linebreaksbr }}</p>
+      {% endif %}
+
+      {% include "pets/partials/care_info.html" with is_owner=False show_contacts=show_contacts %}
+    </div>
+  </article>
+{% endblock %}

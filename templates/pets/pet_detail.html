@@ -2,21 +2,24 @@
 
 {% block title %}{{ pet.name }} · PawPal{% endblock %}
 
-{% block main_class %}page page-medium{% endblock %}
+{% block main_class %}page page-medium page-pet page-pet-profile{% endblock %}
 
 {% block content %}
   {% url 'caregiver_list' as find_caregivers_url %}
-  <a class="back-link" href="{% url 'pets:list' %}"><span aria-hidden="true">&lsaquo;</span> Back to my pets</a>
+  <a class="back-link" href="{% url 'pets:list' %}">{% include "partials/chevron_left_icon.html" %} Back to my pets</a>
 
   <article class="card pet-profile theme-{{ pet.theme }}">
     <header class="pet-profile-header">
-      {% if pet.photo %}<img class="pet-initial pet-initial-large pet-photo" src="{{ pet.photo.url }}" alt="Photo of {{ pet.name }}">{% else %}<span class="pet-initial pet-initial-large" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+      <div class="avatar-wrap">
+        {% if pet.photo %}<img class="pet-initial pet-initial-large pet-photo" src="{{ pet.photo.url }}" alt="Photo of {{ pet.name }}">{% else %}<span class="pet-initial pet-initial-large" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+        <a class="photo-badge" href="{% url 'pets:edit' pet.pk %}" aria-label="{% if pet.photo %}Change{% else %}Add{% endif %} {{ pet.name }}'s photo">{% include "partials/camera_icon.html" %}</a>
+      </div>
       <div class="pet-profile-title">
         <h1>{{ pet.name }}</h1>
         <p>{{ pet.pet_type }}{% if pet.age_display %} · {{ pet.age_display }} old{% endif %}</p>
       </div>
       <a class="btn btn-light btn-small" href="{% url 'pets:edit' pet.pk %}">
-        <span aria-hidden="true">&#9998;</span> Edit profile
+        {% include "partials/pencil_icon.html" %} Edit profile
       </a>
       <span class="deco deco-blob" aria-hidden="true"></span>
       <span class="deco deco-sun" aria-hidden="true"></span>
@@ -30,8 +33,7 @@
         <div class="tile tile-age"><dt>Age</dt><dd>{{ pet.age_display|default:"Not added" }}</dd></div>
       </dl>
 
-      <h2>Care needs</h2>
-      <p>{{ pet.special_care_instructions|default:"No care needs added yet."|linebreaksbr }}</p>
+      {% include "pets/partials/care_info.html" with is_owner=True %}
     </div>
   </article>
 
@@ -41,6 +43,6 @@
       <h2>Need someone to look after {{ pet.name }}?</h2>
       <p>Find a caregiver and send a booking request.</p>
     </div>
-    <a class="btn btn-light" href="{% url 'bookings:booking_create' %}?pet={{ pet.pk }}">Request care</a>
+    <a class="btn btn-light" href="{% url 'caregiver_list' %}">Find a caregiver</a>
   </section>
 {% endblock %}

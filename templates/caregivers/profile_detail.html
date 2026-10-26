@@ -2,147 +2,112 @@
 {% load static %}
 
 {% block title %}{{ caregiver.name }} | PawPal{% endblock %}
-{% block main_class %}page page-wide{% endblock %}
+{% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
-<style>
-  .caregiver-public { max-width: 1050px; margin: 0 auto; padding: 22px 0 50px; }
-  .caregiver-public * { box-sizing: border-box; }
-  .caregiver-back { display: inline-block; margin-bottom: 22px; color: #332a26; text-decoration: none; font-size: 13px; font-weight: 700; }
-  .caregiver-public-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(250px, .9fr); gap: 24px; align-items: start; }
-  .caregiver-public-main { display: grid; gap: 16px; min-width: 0; }
-  .caregiver-public-card { overflow: hidden; background: white; border: 1px solid #f0d9ce; border-radius: 22px; box-shadow: 0 4px 0 #efddd4; }
-  .caregiver-cover { height: 115px; position: relative; background: #cfe7f5; overflow: hidden; }
-  .caregiver-cover::before { content: ""; position: absolute; right: -25px; top: -70px; width: 160px; height: 160px; background: #b6dbf2; border-radius: 50%; }
-  .caregiver-cover::after { content: ""; position: absolute; right: 25%; top: 25px; width: 22px; height: 22px; background: #f8bf4c; border-radius: 50%; }
-  .caregiver-avatar { position: relative; margin: -40px 0 8px 22px; width: 82px; height: 82px; border: 4px solid white; border-radius: 50%; background: #f5a37f; color: #211b1a; display: flex; align-items: center; justify-content: center; font-size: 27px; font-weight: 800; overflow: hidden; }
-  .caregiver-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .caregiver-header-info { padding: 0 22px 24px; }
-  .caregiver-header-info h1 { margin: 0 0 12px; font-size: clamp(26px, 3.4vw, 36px); line-height: 1.15; }
-  .caregiver-badges, .caregiver-tags { display: flex; flex-wrap: wrap; gap: 7px; }
-  .caregiver-badge { background: #f9e7df; color: #4b342e; border-radius: 99px; padding: 6px 10px; font-size: 12px; }
-  .caregiver-intro { margin: 14px 0 0; font-size: 14px; line-height: 1.65; }
-  .caregiver-section-body { padding: 21px 22px; }
-  .caregiver-section-body h2 { font-size: 20px; margin: 0 0 17px; }
-  .caregiver-service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .caregiver-service-item { padding: 14px; border-radius: 15px; background: #fff8f5; border: 1px solid #f2dfd6; display: flex; align-items: center; gap: 10px; }
-  .caregiver-service-icon { flex: 0 0 34px; height: 34px; border-radius: 50%; background: #ffd5b7; display: flex; align-items: center; justify-content: center; }
-  .caregiver-service-name { font-size: 13px; font-weight: 700; }
-  .caregiver-service-meta { font-size: 11px; color: #766a66; margin-top: 3px; }
-  .caregiver-pet-tag { background: #ffedbb; color: #5e420b; padding: 7px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; }
-  .caregiver-text { color: #534944; font-size: 14px; line-height: 1.65; white-space: pre-line; }
-  .caregiver-booking-card { background: #6b4da4; color: white; border-radius: 20px; padding: 24px; box-shadow: 0 5px 0 #503783; position: relative; overflow: hidden; }
-  .caregiver-booking-card::after { content: ""; position: absolute; bottom: -35px; right: -30px; width: 105px; height: 105px; border-radius: 50%; background: #f8c44d; }
-  .caregiver-booking-card h2 { color: white; font-size: 21px; margin: 0 0 12px; }
-  .caregiver-booking-card p { color: #f2eafc; font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
-  .caregiver-booking-placeholder { position: relative; z-index: 1; display: block; border-radius: 99px; padding: 12px 15px; background: white; color: #4d3974; text-align: center; font-weight: 700; font-size: 13px; }
-  .caregiver-manage-link { display: inline-block; margin-top: 14px; color: #5c3c84; font-size: 13px; font-weight: 700; }
-  @media (max-width: 760px) { .caregiver-public-grid { grid-template-columns: 1fr; } .caregiver-service-grid { grid-template-columns: 1fr; } .caregiver-public { padding-left: 12px; padding-right: 12px; } }
-</style>
+<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=5">
 
-<div class="caregiver-public">
-  <a class="caregiver-back" href="{% url 'home' %}">← Back to PawPal</a>
-  <div class="caregiver-public-grid">
-    <div class="caregiver-public-main">
-      <article class="caregiver-public-card">
-        <div class="caregiver-cover"></div>
-        <div class="caregiver-avatar">
-          {% if caregiver.profile_photo %}
-            <img src="{{ caregiver.profile_photo.url }}" alt="Profile photo of {{ caregiver.name }}">
-          {% else %}
-            {{ caregiver.name|slice:":1"|upper }}
+{% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">← Back to find caregivers</a>{% endif %}
+
+{# On a caregiver's own profile there's no request card, so the profile sits in the middle. #}
+<div class="caregiver-public-grid{% if is_own %} is-own-profile{% endif %}">
+  <div class="caregiver-public-main">
+    <article class="caregiver-public-card caregiver-header-card">
+      <div class="caregiver-cover" aria-hidden="true">
+        <span class="cover-cloud"></span>
+        <span class="cover-sun"></span>
+        <span class="cover-dot"></span>
+        {% include "partials/paw_icon.html" with class="cover-paw" %}
+      </div>
+      {% if is_own %}
+        {# Same white pencil button as the pet profile. #}
+        <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+      {% endif %}
+      <div class="caregiver-avatar">
+        {% if caregiver.profile_photo %}
+          <img src="{{ caregiver.profile_photo.url }}" alt="Profile photo of {{ caregiver.name }}">
+        {% else %}
+          <span aria-hidden="true">{{ caregiver.initials }}</span>
+        {% endif %}
+      </div>
+      <div class="caregiver-header-info">
+        <h1>{{ caregiver.name }}</h1>
+        <div class="caregiver-badges">
+          {% if caregiver.service_area %}
+            <span class="caregiver-badge">{% include "partials/pin_icon.html" %}{{ caregiver.service_area }}</span>
+          {% endif %}
+          <span class="caregiver-badge">{% include "partials/paw_icon.html" %}{{ caregiver.experience_label }} caring for pets</span>
+          {% if not caregiver.accepting_new_bookings %}
+            <span class="caregiver-availability unavailable"><span class="availability-dot" aria-hidden="true"></span>Taking a little paws</span>
           {% endif %}
         </div>
-        <div class="caregiver-header-info">
-          <h1>{{ caregiver.name }}</h1>
-          <div class="caregiver-badges">
-            <span class="caregiver-badge">📍 {{ caregiver.service_area }}</span>
-            <span class="caregiver-badge">🐾 {{ caregiver.years_of_experience }} year{{ caregiver.years_of_experience|pluralize }} caring for pets</span>
-          </div>
-          {% if caregiver.bio %}<p class="caregiver-intro">{{ caregiver.bio }}</p>{% endif %}
-          <div class="caregiver-profile-actions">
-            <a
-                href="{% url 'edit_caregiver_profile' caregiver.pk %}"
-                class="btn btn-dark"
-            >
-                 Edit Profile
-            </a>
-        </div>
-        </div>
-      </article>
+        {% if caregiver.bio %}<p class="caregiver-intro">{{ caregiver.bio }}</p>{% endif %}
+      </div>
+    </article>
 
-      <section class="card caregiver-section">
-    <h2>Services</h2>
-
-    
-<!-- Services selected during profile creation -->
-<section class="card caregiver-section">
-    <h2>Services You Provide</h2>
-
-    <div class="caregiver-provided-services">
-        {% for service in provided_services %}
-            <span class="caregiver-provided-chip">
-                {{ service.service_type.name }}
-            </span>
-        {% empty %}
-            <p class="muted">No services selected yet.</p>
-        {% endfor %}
-    </div>
-</section>
-
-<section class="card caregiver-section">
-    <h2>Service Listings</h2>
-
-    <div class="caregiver-service-grid">
-        {% for service in service_listings %}
-            <div class="caregiver-service-item">
-                <span class="caregiver-service-icon">🐾</span>
-
-                <div>
-                    <strong>{{ service.service_type.name }}</strong>
-
-                    <p class="service-price">
-                        ${{ service.price }} /
-                        {{ service.get_price_unit_display }}
-                    </p>
-                </div>
-            </div>
-        {% empty %}
-            <p class="muted">
-                No active service listings yet.
-            </p>
-        {% endfor %}
-    </div>
-</section>
-
+    <section class="caregiver-public-card caregiver-card-body">
+      <h2>Services</h2>
+      {% if provided_services %}
+        {# Prices are hidden on the profile for now; they're still saved with each service. #}
+        <ul class="caregiver-service-tiles">
+          {% for service in provided_services %}
+            <li class="caregiver-service-tile">
+              {% include "caregivers/partials/service_icon.html" with kind=service.service_type.icon %}
+              <span>{{ service.service_type.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="caregiver-text muted">No services added yet.</p>
+      {% endif %}
     </section>
-      <section class="caregiver-public-card caregiver-section-body">
+
+    <div class="caregiver-pair{% if not caregiver.pet_care_skill_labels %} caregiver-pair-single{% endif %}">
+      <section class="caregiver-public-card caregiver-card-body">
         <h2>Happy to care for</h2>
         <div class="caregiver-tags">
           {% for pet_type in caregiver.supported_pet_types.all %}
-            <span class="caregiver-pet-tag">{{ pet_type.name }}</span>
+            <span class="caregiver-tag tag-pet">{{ pet_type.name }}</span>
           {% empty %}
-            <p class="caregiver-text">Pet types haven't been added yet.</p>
+            <p class="caregiver-text muted">Pet types haven't been added yet.</p>
           {% endfor %}
         </div>
       </section>
 
-      <section class="caregiver-public-card caregiver-section-body">
-        <h2>Experience</h2>
-        {% if caregiver.special_skills %}<p class="caregiver-text">{{ caregiver.special_skills }}</p>{% endif %}
-        {% if caregiver.certifications %}<p class="caregiver-text"><strong>Certifications:</strong> {{ caregiver.certifications }}</p>{% endif %}
-        {% if not caregiver.special_skills and not caregiver.certifications %}<p class="caregiver-text">{{ caregiver.years_of_experience }} year{{ caregiver.years_of_experience|pluralize }} of pet care experience.</p>{% endif %}
-      </section>
+      {% if caregiver.pet_care_skill_labels %}
+        <section class="caregiver-public-card caregiver-card-body">
+          <h2>Skills</h2>
+          <div class="caregiver-tags">
+            {% for skill in caregiver.pet_care_skill_labels %}
+              <span class="caregiver-tag tag-skill">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
     </div>
 
-    <aside>
-      <div class="caregiver-booking-card">
-        <h2>Request care from {{ caregiver.name }}</h2>
-        <p>Pick a pet, a service, and a time. Your caregiver can accept or decline your request.</p>
-        <span class="caregiver-booking-placeholder">Booking requests coming soon</span>
-      </div>
-      {% comment %}<a class="caregiver-manage-link" href="{% url 'services' caregiver.pk %}">View all service listings →</a>{% endcomment %}
-    </aside>
+    <section class="caregiver-public-card caregiver-card-body">
+      <h2>Experience</h2>
+      {% if caregiver.special_skills %}<p class="caregiver-text">{{ caregiver.special_skills }}</p>{% endif %}
+      {% if caregiver.certifications %}<p class="caregiver-text"><strong>Certifications:</strong> {{ caregiver.certifications }}</p>{% endif %}
+      {% if not caregiver.special_skills and not caregiver.certifications %}<p class="caregiver-text">{{ caregiver.experience_label }} of pet care experience.</p>{% endif %}
+    </section>
   </div>
+
+  {# Caregivers don't request care from themselves. #}
+  {% if not is_own %}
+  <aside class="caregiver-booking-card">
+    <span class="booking-deco booking-deco-sun" aria-hidden="true"></span>
+    <span class="booking-deco booking-deco-pink" aria-hidden="true"></span>
+    <h2>Request care from {{ caregiver.first_name }}</h2>
+    {% if caregiver.accepting_new_bookings %}
+      <p>Pick a pet, a service and a time. {{ caregiver.first_name }} will accept or decline, and you'll see the status in My requests.</p>
+      <a href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}" class="caregiver-booking-button">Send a booking request</a>
+    {% else %}
+      <p>{{ caregiver.first_name }} is taking a little paws right now and isn't accepting new booking requests.</p>
+      <span class="caregiver-booking-button is-disabled">Currently unavailable</span>
+    {% endif %}
+  </aside>
+  {% endif %}
 </div>
 {% endblock %}

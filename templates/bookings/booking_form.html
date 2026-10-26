@@ -1,23 +1,16 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Request care · PawPal{% endblock %}
 
-{% block main_class %}page page-narrow{% endblock %}
+{% block main_class %}page page-booking-form{% endblock %}
 
 {% block content %}
-  <a class="back-link" href="{% url 'bookings:booking_list' %}"><span aria-hidden="true">&lsaquo;</span> Back to my requests</a>
+  <link rel="stylesheet" href="{% static 'css/booking_form.css' %}?v=5">
 
-  <div class="page-heading">
-    <div>
-      <h1>Request care</h1>
-      <p class="muted">Tell the caregiver what you need. <span class="required">*</span> Required</p>
-    </div>
-    <div class="bubbles" aria-hidden="true">
-      <span class="bubble bubble-pink"></span>
-      <span class="bubble bubble-mint"></span>
-      <span class="bubble bubble-yellow">{% include "partials/paw_icon.html" %}</span>
-    </div>
-  </div>
+  <a class="back-link" href="{% url 'caregiver_list' %}">{% include "partials/chevron_left_icon.html" %} Back to find caregivers</a>
+
+  <h1 class="booking-form-title">Request care</h1>
 
   {% if form.errors %}
     <div class="alert alert-error" role="alert">
@@ -34,49 +27,66 @@
       <a class="btn btn-dark" href="{% url 'pets:create' %}">Add a pet</a>
     </div>
   {% else %}
-  <form method="post" class="card form-card" novalidate>
+  <form method="post" class="booking-form-card" id="booking-form" novalidate>
     {% csrf_token %}
 
-    <fieldset class="field{% if form.pet.errors %} has-error{% endif %}">
-      <legend>{{ form.pet.label }} <span class="required">*</span></legend>
-      <div class="chips">
+    <div class="booking-step{% if form.caregiver.errors %} has-error{% endif %}">
+      <label class="booking-step-label" for="{{ form.caregiver.id_for_label }}"><span class="step-dot step-yellow">1</span> {{ form.caregiver.label }}</label>
+      <div class="booking-caregiver">{{ form.caregiver }}</div>
+      {% for error in form.caregiver.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <fieldset class="booking-step{% if form.pet.errors %} has-error{% endif %}">
+      <legend class="booking-step-label"><span class="step-dot step-pink">2</span> Which pet?</legend>
+      <div class="booking-pets">
         {% for radio in form.pet %}
-          <label class="chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+          {% with pet=radio.data.value.instance %}
+            <label class="booking-pet theme-{{ pet.theme }}">
+              {{ radio.tag }}
+              <span class="booking-pet-card">
+                {% if pet.photo %}<img class="booking-pet-initial" src="{{ pet.photo.url }}" alt="">{% else %}<span class="booking-pet-initial" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}
+                <span class="booking-pet-text">
+                  <strong>{{ pet.name }}</strong>
+                  <span>{{ pet.pet_type }}{% if pet.age_short %} · {{ pet.age_short }}{% endif %}</span>
+                </span>
+              </span>
+            </label>
+          {% endwith %}
         {% endfor %}
       </div>
       {% for error in form.pet.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </fieldset>
 
-    <div class="field{% if form.caregiver.errors %} has-error{% endif %}">
-      <label for="{{ form.caregiver.id_for_label }}">{{ form.caregiver.label }} <span class="required">*</span></label>
-      {{ form.caregiver }}
-      {% for error in form.caregiver.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
-
-    <fieldset class="field{% if form.service_type.errors %} has-error{% endif %}">
-      <legend>{{ form.service_type.label }} <span class="required">*</span></legend>
-      <div class="chips">
+    <fieldset class="booking-step{% if form.service_type.errors %} has-error{% endif %}">
+      <legend class="booking-step-label"><span class="step-dot step-mint">3</span> {{ form.service_type.label }}</legend>
+      <div class="booking-chips">
         {% for radio in form.service_type %}
-          <label class="chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+          <label class="booking-chip" data-service="{{ radio.data.value }}">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
         {% endfor %}
       </div>
       {% for error in form.service_type.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </fieldset>
 
-    <div class="time-row">
-      <div class="field{% if form.start_time.errors %} has-error{% endif %}">
-        <label for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }} <span class="required">*</span></label>
-        {{ form.start_time }}
-        {% for error in form.start_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <fieldset class="booking-step">
+      <legend class="booking-step-label"><span class="step-dot step-blue">4</span> When</legend>
+      {# Each time is a date box and a time box; the labels sit above them on a grid. #}
+      <div class="booking-times">
+        <div class="field booking-time-row{% if form.start_time.errors %} has-error{% endif %}">
+          <label for="{{ form.start_time.auto_id }}_0">Start date</label>
+          <label for="{{ form.start_time.auto_id }}_1">Start time</label>
+          {{ form.start_time }}
+          {% for error in form.start_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field booking-time-row{% if form.end_time.errors %} has-error{% endif %}">
+          <label for="{{ form.end_time.auto_id }}_0">End date</label>
+          <label for="{{ form.end_time.auto_id }}_1">End time</label>
+          {{ form.end_time }}
+          {% for error in form.end_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
       </div>
-      <div class="field{% if form.end_time.errors %} has-error{% endif %}">
-        <label for="{{ form.end_time.id_for_label }}">{{ form.end_time.label }} <span class="required">*</span></label>
-        {{ form.end_time }}
-        {% for error in form.end_time.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-      </div>
-    </div>
+    </fieldset>
 
-    <div class="field{% if form.notes.errors %} has-error{% endif %}">
+    <div class="field booking-note{% if form.notes.errors %} has-error{% endif %}">
       <div class="label-row">
         <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         <span class="tag">Optional</span>
@@ -86,9 +96,46 @@
     </div>
 
     <div class="form-actions">
-      <a class="btn btn-outline" href="{% url 'bookings:booking_list' %}">Cancel</a>
+      <a class="btn btn-outline" href="{% if form.initial.caregiver %}{% url 'caregiver' form.initial.caregiver %}{% else %}{% url 'bookings:booking_list' %}{% endif %}">Cancel</a>
       <button type="submit" class="btn btn-dark">Send request</button>
     </div>
   </form>
+  {{ services_by_caregiver|json_script:"services-by-caregiver" }}
+
+  <script>
+    // Only show the services the chosen caregiver offers (#7). Caregivers who
+    // haven't listed any yet aren't in the list, so every service shows for them.
+    (function () {
+      const form = document.getElementById('booking-form');
+      const caregiver = form && form.querySelector('[name="caregiver"]');
+      if (!caregiver) return;
+      const offered = JSON.parse(document.getElementById('services-by-caregiver').textContent);
+      const chips = Array.from(form.querySelectorAll('[data-service]'));
+      const update = () => {
+        const ids = offered[caregiver.value];
+        chips.forEach(chip => {
+          const show = !ids || ids.includes(Number(chip.dataset.service));
+          chip.hidden = !show;
+          if (!show) chip.querySelector('input').checked = false;
+        });
+      };
+      caregiver.addEventListener('change', update);
+      update();
+    })();
+
+    // Clicking the pet or service that's already picked unselects it.
+    (function () {
+      const form = document.getElementById('booking-form');
+      if (!form) return;
+      const radios = form.querySelectorAll('[name="pet"], [name="service_type"]');
+      const remember = () => radios.forEach(r => { r.dataset.wasChecked = r.checked; });
+      radios.forEach(r => r.addEventListener('click', () => {
+        if (r.dataset.wasChecked === 'true') r.checked = false;
+        remember();
+      }));
+      form.addEventListener('change', remember);
+      remember();
+    })();
+  </script>
   {% endif %}
 {% endblock %}

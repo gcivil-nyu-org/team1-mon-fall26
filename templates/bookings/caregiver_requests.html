@@ -42,7 +42,10 @@
                   <span><strong>{{ booking.pet.name }}</strong> <span class="muted">· {{ booking.pet.pet_type }}</span></span>
                   <span class="request-row-meta">{{ booking.service_type.name }} · {{ booking.start_time|date:"D, M j · g:i A" }}</span>
                 </span>
-                {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+                <span class="request-row-tags">
+                  {% if booking.ready_to_complete %}<span class="ready-tag">Ready to complete</span>{% endif %}
+                  {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+                </span>
               </a>
             </li>
           {% endfor %}
@@ -54,7 +57,7 @@
             <span class="request-avatar request-avatar-large theme-{{ b.pet.theme }}" aria-hidden="true">{{ b.pet.name|first|upper }}</span>
             <div>
               <h2>{{ b.pet.name }}</h2>
-              <p class="muted">{{ b.pet.pet_type }}{% if b.pet.age_display %} · {{ b.pet.age_display }}{% endif %} · Owner: {{ b.owner|short_name }}</p>
+              <p class="muted">{{ b.pet.pet_type }}{% if b.pet.age_short %} · {{ b.pet.age_short }}{% endif %} · Owner: {{ b.owner|short_name }}</p>
             </div>
           </div>
           {% include "bookings/partials/status_pill.html" with status=b.status label=b.get_status_display %}
@@ -64,10 +67,11 @@
             <div class="tile tile-type"><dt>When</dt><dd>{{ b.start_time|date:"D, M j" }} ·<br>{{ b.start_time|date:"g:i A" }}</dd></div>
           </dl>
 
-          <div class="request-care">
-            <h3>Care needs</h3>
-            <p>{{ b.pet.special_care_instructions|default:"No care needs added."|linebreaksbr }}</p>
-          </div>
+          {% include "pets/partials/care_summary.html" with pet=b.pet show_contacts=b.shows_emergency_contacts %}
+
+          {% if b.shows_pet_care_info %}
+            <a class="btn btn-outline btn-block pet-care-link" href="{% url 'pets:care_view' b.pet.pk %}">View {{ b.pet.name }}'s full profile</a>
+          {% endif %}
 
           {% if b.notes %}
             <div class="request-note">
@@ -83,8 +87,21 @@
               <button type="submit" name="action" value="accept" class="btn btn-dark">Accept</button>
               <button type="submit" name="action" value="decline" class="btn btn-outline">Decline</button>
             </form>
-          {% elif b.status == "pending" %}
-            <p class="muted request-closed">This request's start time has passed.</p>
+          {% elif can_complete %}
+            <form method="post" action="{% url 'bookings:booking_complete' b.pk %}" class="request-actions request-actions-single">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn-dark"><svg class="check-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Mark as completed</button>
+              <p class="request-complete-hint">Do this after you've provided the care.<br>{{ b.owner|first_name }} will see it as completed.</p>
+            </form>
+          {% elif b.status == "cancelled" %}
+            <p class="muted request-closed">{{ b.owner|first_name }} canceled this booking on {{ b.updated_at|date:"M j, g:i A" }}.</p>
+          {% elif b.status == "completed" %}
+            {% if b.completed_automatically %}
+              <p class="request-done">Completed automatically 24 hours after the booking ended.<br>{{ b.owner|first_name }} can see it as completed, and it is saved in your booking history.</p>
+            {% else %}
+              <p class="request-done">You completed this booking.<br>{{ b.owner|first_name }} can see it as completed, and it is saved in your booking history.</p>
+            {% endif %}
           {% endif %}
         </aside>
         {% endwith %}
@@ -105,15 +122,18 @@
       {% if upcoming %}
         <ul class="upcoming-list">
           {% for booking in upcoming %}
-            <li class="upcoming-item">
-              <span class="date-chip" aria-hidden="true">
-                <span class="date-chip-month">{{ booking.start_time|date:"M"|upper }}</span>
-                <span class="date-chip-day">{{ booking.start_time|date:"j" }}</span>
-              </span>
-              <span class="upcoming-text">
-                <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
-                <span class="muted">{{ booking.start_time|date:"D g:i A" }} · {{ booking.owner|short_name }}</span>
-              </span>
+            <li>
+              {# The whole card opens the pet's care page (Figma). #}
+              <a class="upcoming-item" href="{% url 'pets:care_view' booking.pet.pk %}">
+                <span class="date-chip" aria-hidden="true">
+                  <span class="date-chip-month">{{ booking.start_time|date:"M"|upper }}</span>
+                  <span class="date-chip-day">{{ booking.start_time|date:"j" }}</span>
+                </span>
+                <span class="upcoming-text">
+                  <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                  <span class="muted">{{ booking.start_time|date:"D g:i A" }} · {{ booking.owner|short_name }}</span>
+                </span>
+              </a>
             </li>
           {% endfor %}
         </ul>

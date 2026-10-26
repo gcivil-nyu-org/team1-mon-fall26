@@ -1,4 +1,6 @@
-# Runs the Django test suite on every pull request and push to develop/main.
+# Checks every pull request and push to develop/main:
+# style (flake8), formatting (black, report only for now), migrations,
+# and the Django test suite with a coverage report.
 name: Django tests
 
 on:
@@ -21,13 +23,27 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Lint (flake8)
+        run: flake8 .
+
+      # Report only until the team formats the whole codebase at once;
+      # then remove continue-on-error so unformatted code fails the check.
+      - name: Formatting (black --check)
+        continue-on-error: true
+        run: black --check --diff --extend-exclude 'migrations|staticfiles' .
 
       - name: Django system check
         run: python manage.py check
 
-      # TODO: add `python manage.py makemigrations --check --dry-run` once the
-      # caregivers app's pending migration (CaregiverService.price_unit) is committed.
+      - name: No missing migrations
+        run: python manage.py makemigrations --check --dry-run
 
-      - name: Run tests
-        run: python manage.py test
+      - name: Run tests with coverage
+        run: coverage run manage.py test
+
+      - name: Coverage report
+        run: |
+          coverage report --fail-under=90
+          coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"

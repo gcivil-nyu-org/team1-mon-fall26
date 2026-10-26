@@ -1,0 +1,7 @@
+{# A text field with its label, an optional hint and its errors. #}
+<div class="field{% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if hint %}<p class="field-hint">{{ hint }}</p>{% endif %}
+  {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+</div>

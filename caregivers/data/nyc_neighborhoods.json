@@ -1,0 +1,1384 @@
+{
+ "source": "NYC Open Data, 2020 Neighborhood Tabulation Areas (dataset 9nt8-h7nd), residential areas only (ntatype 0). Coordinates are each area's polygon centroid, rounded to 4 decimals.",
+ "neighborhoods": [
+  {
+   "code": "BX1104",
+   "name": "Allerton",
+   "borough": "Bronx",
+   "latitude": 40.864,
+   "longitude": -73.8642
+  },
+  {
+   "code": "BX0702",
+   "name": "Bedford Park",
+   "borough": "Bronx",
+   "latitude": 40.8736,
+   "longitude": -73.8908
+  },
+  {
+   "code": "BX0603",
+   "name": "Belmont",
+   "borough": "Bronx",
+   "latitude": 40.8576,
+   "longitude": -73.8871
+  },
+  {
+   "code": "BX0903",
+   "name": "Castle Hill-Unionport",
+   "borough": "Bronx",
+   "latitude": 40.8245,
+   "longitude": -73.8487
+  },
+  {
+   "code": "BX0302",
+   "name": "Claremont Village-Claremont (East)",
+   "borough": "Bronx",
+   "latitude": 40.8376,
+   "longitude": -73.9035
+  },
+  {
+   "code": "BX1004",
+   "name": "Co-op City",
+   "borough": "Bronx",
+   "latitude": 40.8723,
+   "longitude": -73.8263
+  },
+  {
+   "code": "BX0401",
+   "name": "Concourse-Concourse Village",
+   "borough": "Bronx",
+   "latitude": 40.8267,
+   "longitude": -73.9217
+  },
+  {
+   "code": "BX0303",
+   "name": "Crotona Park East",
+   "borough": "Bronx",
+   "latitude": 40.8321,
+   "longitude": -73.8887
+  },
+  {
+   "code": "BX1202",
+   "name": "Eastchester-Edenwald-Baychester",
+   "borough": "Bronx",
+   "latitude": 40.8815,
+   "longitude": -73.8366
+  },
+  {
+   "code": "BX0503",
+   "name": "Fordham Heights",
+   "borough": "Bronx",
+   "latitude": 40.8587,
+   "longitude": -73.8991
+  },
+  {
+   "code": "BX0402",
+   "name": "Highbridge",
+   "borough": "Bronx",
+   "latitude": 40.8369,
+   "longitude": -73.9278
+  },
+  {
+   "code": "BX0201",
+   "name": "Hunts Point",
+   "borough": "Bronx",
+   "latitude": 40.8109,
+   "longitude": -73.885
+  },
+  {
+   "code": "BX0801",
+   "name": "Kingsbridge Heights-Van Cortlandt Village",
+   "borough": "Bronx",
+   "latitude": 40.8777,
+   "longitude": -73.8991
+  },
+  {
+   "code": "BX0802",
+   "name": "Kingsbridge-Marble Hill",
+   "borough": "Bronx",
+   "latitude": 40.8808,
+   "longitude": -73.9057
+  },
+  {
+   "code": "BX0202",
+   "name": "Longwood",
+   "borough": "Bronx",
+   "latitude": 40.821,
+   "longitude": -73.8966
+  },
+  {
+   "code": "BX0102",
+   "name": "Melrose",
+   "borough": "Bronx",
+   "latitude": 40.8183,
+   "longitude": -73.9129
+  },
+  {
+   "code": "BX1102",
+   "name": "Morris Park",
+   "borough": "Bronx",
+   "latitude": 40.8518,
+   "longitude": -73.8517
+  },
+  {
+   "code": "BX0301",
+   "name": "Morrisania",
+   "borough": "Bronx",
+   "latitude": 40.8273,
+   "longitude": -73.9047
+  },
+  {
+   "code": "BX0101",
+   "name": "Mott Haven-Port Morris",
+   "borough": "Bronx",
+   "latitude": 40.8075,
+   "longitude": -73.9172
+  },
+  {
+   "code": "BX0403",
+   "name": "Mount Eden-Claremont (West)",
+   "borough": "Bronx",
+   "latitude": 40.8405,
+   "longitude": -73.9144
+  },
+  {
+   "code": "BX0502",
+   "name": "Mount Hope",
+   "borough": "Bronx",
+   "latitude": 40.8499,
+   "longitude": -73.9044
+  },
+  {
+   "code": "BX0703",
+   "name": "Norwood",
+   "borough": "Bronx",
+   "latitude": 40.8771,
+   "longitude": -73.879
+  },
+  {
+   "code": "BX0904",
+   "name": "Parkchester",
+   "borough": "Bronx",
+   "latitude": 40.8377,
+   "longitude": -73.858
+  },
+  {
+   "code": "BX1003",
+   "name": "Pelham Bay-Country Club-City Island",
+   "borough": "Bronx",
+   "latitude": 40.8456,
+   "longitude": -73.8115
+  },
+  {
+   "code": "BX1103",
+   "name": "Pelham Gardens",
+   "borough": "Bronx",
+   "latitude": 40.8642,
+   "longitude": -73.8467
+  },
+  {
+   "code": "BX1101",
+   "name": "Pelham Parkway-Van Nest",
+   "borough": "Bronx",
+   "latitude": 40.8479,
+   "longitude": -73.865
+  },
+  {
+   "code": "BX0803",
+   "name": "Riverdale-Spuyten Duyvil",
+   "borough": "Bronx",
+   "latitude": 40.8957,
+   "longitude": -73.9088
+  },
+  {
+   "code": "BX0901",
+   "name": "Soundview-Bruckner-Bronx River",
+   "borough": "Bronx",
+   "latitude": 40.8296,
+   "longitude": -73.8732
+  },
+  {
+   "code": "BX0902",
+   "name": "Soundview-Clason Point",
+   "borough": "Bronx",
+   "latitude": 40.8161,
+   "longitude": -73.8591
+  },
+  {
+   "code": "BX1002",
+   "name": "Throgs Neck-Schuylerville",
+   "borough": "Bronx",
+   "latitude": 40.8255,
+   "longitude": -73.8206
+  },
+  {
+   "code": "BX0602",
+   "name": "Tremont",
+   "borough": "Bronx",
+   "latitude": 40.8469,
+   "longitude": -73.8918
+  },
+  {
+   "code": "BX0701",
+   "name": "University Heights (North)-Fordham",
+   "borough": "Bronx",
+   "latitude": 40.8646,
+   "longitude": -73.9048
+  },
+  {
+   "code": "BX0501",
+   "name": "University Heights (South)-Morris Heights",
+   "borough": "Bronx",
+   "latitude": 40.8519,
+   "longitude": -73.9161
+  },
+  {
+   "code": "BX1203",
+   "name": "Wakefield-Woodlawn",
+   "borough": "Bronx",
+   "latitude": 40.898,
+   "longitude": -73.854
+  },
+  {
+   "code": "BX0601",
+   "name": "West Farms",
+   "borough": "Bronx",
+   "latitude": 40.8413,
+   "longitude": -73.8786
+  },
+  {
+   "code": "BX1001",
+   "name": "Westchester Square",
+   "borough": "Bronx",
+   "latitude": 40.8377,
+   "longitude": -73.8459
+  },
+  {
+   "code": "BX1201",
+   "name": "Williamsbridge-Olinville",
+   "borough": "Bronx",
+   "latitude": 40.881,
+   "longitude": -73.8607
+  },
+  {
+   "code": "BK1102",
+   "name": "Bath Beach",
+   "borough": "Brooklyn",
+   "latitude": 40.6043,
+   "longitude": -74.0075
+  },
+  {
+   "code": "BK1001",
+   "name": "Bay Ridge",
+   "borough": "Brooklyn",
+   "latitude": 40.6267,
+   "longitude": -74.0299
+  },
+  {
+   "code": "BK0302",
+   "name": "Bedford-Stuyvesant (East)",
+   "borough": "Brooklyn",
+   "latitude": 40.6866,
+   "longitude": -73.9318
+  },
+  {
+   "code": "BK0301",
+   "name": "Bedford-Stuyvesant (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.689,
+   "longitude": -73.951
+  },
+  {
+   "code": "BK1101",
+   "name": "Bensonhurst",
+   "borough": "Brooklyn",
+   "latitude": 40.6133,
+   "longitude": -73.9933
+  },
+  {
+   "code": "BK1202",
+   "name": "Borough Park",
+   "borough": "Brooklyn",
+   "latitude": 40.6329,
+   "longitude": -73.9895
+  },
+  {
+   "code": "BK1303",
+   "name": "Brighton Beach",
+   "borough": "Brooklyn",
+   "latitude": 40.5791,
+   "longitude": -73.9607
+  },
+  {
+   "code": "BK0201",
+   "name": "Brooklyn Heights",
+   "borough": "Brooklyn",
+   "latitude": 40.6955,
+   "longitude": -73.9948
+  },
+  {
+   "code": "BK1602",
+   "name": "Brownsville",
+   "borough": "Brooklyn",
+   "latitude": 40.664,
+   "longitude": -73.9095
+  },
+  {
+   "code": "BK0402",
+   "name": "Bushwick (East)",
+   "borough": "Brooklyn",
+   "latitude": 40.6912,
+   "longitude": -73.913
+  },
+  {
+   "code": "BK0401",
+   "name": "Bushwick (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.701,
+   "longitude": -73.9253
+  },
+  {
+   "code": "BK1803",
+   "name": "Canarsie",
+   "borough": "Brooklyn",
+   "latitude": 40.6394,
+   "longitude": -73.9015
+  },
+  {
+   "code": "BK0601",
+   "name": "Carroll Gardens-Cobble Hill-Gowanus-Red Hook",
+   "borough": "Brooklyn",
+   "latitude": 40.6781,
+   "longitude": -74.0001
+  },
+  {
+   "code": "BK0204",
+   "name": "Clinton Hill",
+   "borough": "Brooklyn",
+   "latitude": 40.689,
+   "longitude": -73.9645
+  },
+  {
+   "code": "BK1302",
+   "name": "Coney Island-Sea Gate",
+   "borough": "Brooklyn",
+   "latitude": 40.577,
+   "longitude": -73.988
+  },
+  {
+   "code": "BK0802",
+   "name": "Crown Heights (North)",
+   "borough": "Brooklyn",
+   "latitude": 40.6739,
+   "longitude": -73.9419
+  },
+  {
+   "code": "BK0901",
+   "name": "Crown Heights (South)",
+   "borough": "Brooklyn",
+   "latitude": 40.6667,
+   "longitude": -73.946
+  },
+  {
+   "code": "BK0501",
+   "name": "Cypress Hills",
+   "borough": "Brooklyn",
+   "latitude": 40.6825,
+   "longitude": -73.8821
+  },
+  {
+   "code": "BK0202",
+   "name": "Downtown Brooklyn-DUMBO-Boerum Hill",
+   "borough": "Brooklyn",
+   "latitude": 40.6949,
+   "longitude": -73.9858
+  },
+  {
+   "code": "BK1002",
+   "name": "Dyker Heights",
+   "borough": "Brooklyn",
+   "latitude": 40.624,
+   "longitude": -74.0108
+  },
+  {
+   "code": "BK1701",
+   "name": "East Flatbush-Erasmus",
+   "borough": "Brooklyn",
+   "latitude": 40.6486,
+   "longitude": -73.9501
+  },
+  {
+   "code": "BK1702",
+   "name": "East Flatbush-Farragut",
+   "borough": "Brooklyn",
+   "latitude": 40.6391,
+   "longitude": -73.9376
+  },
+  {
+   "code": "BK1704",
+   "name": "East Flatbush-Remsen Village",
+   "borough": "Brooklyn",
+   "latitude": 40.6562,
+   "longitude": -73.9192
+  },
+  {
+   "code": "BK1703",
+   "name": "East Flatbush-Rugby",
+   "borough": "Brooklyn",
+   "latitude": 40.6515,
+   "longitude": -73.9298
+  },
+  {
+   "code": "BK0502",
+   "name": "East New York (North)",
+   "borough": "Brooklyn",
+   "latitude": 40.6725,
+   "longitude": -73.8895
+  },
+  {
+   "code": "BK0505",
+   "name": "East New York-City Line",
+   "borough": "Brooklyn",
+   "latitude": 40.6705,
+   "longitude": -73.8661
+  },
+  {
+   "code": "BK0503",
+   "name": "East New York-New Lots",
+   "borough": "Brooklyn",
+   "latitude": 40.6597,
+   "longitude": -73.888
+  },
+  {
+   "code": "BK0104",
+   "name": "East Williamsburg",
+   "borough": "Brooklyn",
+   "latitude": 40.7133,
+   "longitude": -73.9365
+  },
+  {
+   "code": "BK1401",
+   "name": "Flatbush",
+   "borough": "Brooklyn",
+   "latitude": 40.6407,
+   "longitude": -73.9564
+  },
+  {
+   "code": "BK1402",
+   "name": "Flatbush (West)-Ditmas Park-Parkville",
+   "borough": "Brooklyn",
+   "latitude": 40.6365,
+   "longitude": -73.9662
+  },
+  {
+   "code": "BK1801",
+   "name": "Flatlands",
+   "borough": "Brooklyn",
+   "latitude": 40.6263,
+   "longitude": -73.9301
+  },
+  {
+   "code": "BK0203",
+   "name": "Fort Greene",
+   "borough": "Brooklyn",
+   "latitude": 40.6912,
+   "longitude": -73.9744
+  },
+  {
+   "code": "BK1501",
+   "name": "Gravesend (East)-Homecrest",
+   "borough": "Brooklyn",
+   "latitude": 40.5991,
+   "longitude": -73.9659
+  },
+  {
+   "code": "BK1301",
+   "name": "Gravesend (South)",
+   "borough": "Brooklyn",
+   "latitude": 40.588,
+   "longitude": -73.978
+  },
+  {
+   "code": "BK1103",
+   "name": "Gravesend (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.5993,
+   "longitude": -73.9857
+  },
+  {
+   "code": "BK0101",
+   "name": "Greenpoint",
+   "borough": "Brooklyn",
+   "latitude": 40.7295,
+   "longitude": -73.9495
+  },
+  {
+   "code": "BK1203",
+   "name": "Kensington",
+   "borough": "Brooklyn",
+   "latitude": 40.6411,
+   "longitude": -73.9761
+  },
+  {
+   "code": "BK1502",
+   "name": "Madison",
+   "borough": "Brooklyn",
+   "latitude": 40.6049,
+   "longitude": -73.9481
+  },
+  {
+   "code": "BK1204",
+   "name": "Mapleton-Midwood (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.6193,
+   "longitude": -73.9733
+  },
+  {
+   "code": "BK1802",
+   "name": "Marine Park-Mill Basin-Bergen Beach",
+   "borough": "Brooklyn",
+   "latitude": 40.615,
+   "longitude": -73.9185
+  },
+  {
+   "code": "BK1403",
+   "name": "Midwood",
+   "borough": "Brooklyn",
+   "latitude": 40.6204,
+   "longitude": -73.9556
+  },
+  {
+   "code": "BK1601",
+   "name": "Ocean Hill",
+   "borough": "Brooklyn",
+   "latitude": 40.6766,
+   "longitude": -73.9136
+  },
+  {
+   "code": "BK0602",
+   "name": "Park Slope",
+   "borough": "Brooklyn",
+   "latitude": 40.6718,
+   "longitude": -73.9798
+  },
+  {
+   "code": "BK0801",
+   "name": "Prospect Heights",
+   "borough": "Brooklyn",
+   "latitude": 40.6776,
+   "longitude": -73.9676
+  },
+  {
+   "code": "BK0902",
+   "name": "Prospect Lefferts Gardens-Wingate",
+   "borough": "Brooklyn",
+   "latitude": 40.6598,
+   "longitude": -73.948
+  },
+  {
+   "code": "BK1503",
+   "name": "Sheepshead Bay-Manhattan Beach-Gerritsen Beach",
+   "borough": "Brooklyn",
+   "latitude": 40.5883,
+   "longitude": -73.9415
+  },
+  {
+   "code": "BK0103",
+   "name": "South Williamsburg",
+   "borough": "Brooklyn",
+   "latitude": 40.7032,
+   "longitude": -73.9567
+  },
+  {
+   "code": "BK0504",
+   "name": "Spring Creek-Starrett City",
+   "borough": "Brooklyn",
+   "latitude": 40.651,
+   "longitude": -73.8764
+  },
+  {
+   "code": "BK0703",
+   "name": "Sunset Park (Central)",
+   "borough": "Brooklyn",
+   "latitude": 40.6424,
+   "longitude": -74.0079
+  },
+  {
+   "code": "BK1201",
+   "name": "Sunset Park (East)-Borough Park (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.6408,
+   "longitude": -73.9994
+  },
+  {
+   "code": "BK0702",
+   "name": "Sunset Park (West)",
+   "borough": "Brooklyn",
+   "latitude": 40.6535,
+   "longitude": -74.0101
+  },
+  {
+   "code": "BK0102",
+   "name": "Williamsburg",
+   "borough": "Brooklyn",
+   "latitude": 40.7149,
+   "longitude": -73.9586
+  },
+  {
+   "code": "BK0701",
+   "name": "Windsor Terrace-South Slope",
+   "borough": "Brooklyn",
+   "latitude": 40.656,
+   "longitude": -73.98
+  },
+  {
+   "code": "MN0401",
+   "name": "Chelsea-Hudson Yards",
+   "borough": "Manhattan",
+   "latitude": 40.7494,
+   "longitude": -74.0011
+  },
+  {
+   "code": "MN0301",
+   "name": "Chinatown-Two Bridges",
+   "borough": "Manhattan",
+   "latitude": 40.7129,
+   "longitude": -73.9937
+  },
+  {
+   "code": "MN1102",
+   "name": "East Harlem (North)",
+   "borough": "Manhattan",
+   "latitude": 40.8016,
+   "longitude": -73.9374
+  },
+  {
+   "code": "MN1101",
+   "name": "East Harlem (South)",
+   "borough": "Manhattan",
+   "latitude": 40.79,
+   "longitude": -73.9458
+  },
+  {
+   "code": "MN0604",
+   "name": "East Midtown-Turtle Bay",
+   "borough": "Manhattan",
+   "latitude": 40.7561,
+   "longitude": -73.9685
+  },
+  {
+   "code": "MN0303",
+   "name": "East Village",
+   "borough": "Manhattan",
+   "latitude": 40.726,
+   "longitude": -73.9821
+  },
+  {
+   "code": "MN0101",
+   "name": "Financial District-Battery Park City",
+   "borough": "Manhattan",
+   "latitude": 40.7081,
+   "longitude": -74.0102
+  },
+  {
+   "code": "MN0602",
+   "name": "Gramercy",
+   "borough": "Manhattan",
+   "latitude": 40.7368,
+   "longitude": -73.9841
+  },
+  {
+   "code": "MN0202",
+   "name": "Greenwich Village",
+   "borough": "Manhattan",
+   "latitude": 40.7307,
+   "longitude": -73.9957
+  },
+  {
+   "code": "MN0903",
+   "name": "Hamilton Heights-Sugar Hill",
+   "borough": "Manhattan",
+   "latitude": 40.827,
+   "longitude": -73.9485
+  },
+  {
+   "code": "MN1002",
+   "name": "Harlem (North)",
+   "borough": "Manhattan",
+   "latitude": 40.8189,
+   "longitude": -73.9409
+  },
+  {
+   "code": "MN1001",
+   "name": "Harlem (South)",
+   "borough": "Manhattan",
+   "latitude": 40.8043,
+   "longitude": -73.9513
+  },
+  {
+   "code": "MN0402",
+   "name": "Hell's Kitchen",
+   "borough": "Manhattan",
+   "latitude": 40.7642,
+   "longitude": -73.9924
+  },
+  {
+   "code": "MN1203",
+   "name": "Inwood",
+   "borough": "Manhattan",
+   "latitude": 40.866,
+   "longitude": -73.9193
+  },
+  {
+   "code": "MN0302",
+   "name": "Lower East Side",
+   "borough": "Manhattan",
+   "latitude": 40.717,
+   "longitude": -73.9838
+  },
+  {
+   "code": "MN0902",
+   "name": "Manhattanville-West Harlem",
+   "borough": "Manhattan",
+   "latitude": 40.818,
+   "longitude": -73.9538
+  },
+  {
+   "code": "MN0501",
+   "name": "Midtown South-Flatiron-Union Square",
+   "borough": "Manhattan",
+   "latitude": 40.744,
+   "longitude": -73.9898
+  },
+  {
+   "code": "MN0502",
+   "name": "Midtown-Times Square",
+   "borough": "Manhattan",
+   "latitude": 40.7578,
+   "longitude": -73.9816
+  },
+  {
+   "code": "MN0901",
+   "name": "Morningside Heights",
+   "borough": "Manhattan",
+   "latitude": 40.8095,
+   "longitude": -73.9618
+  },
+  {
+   "code": "MN0603",
+   "name": "Murray Hill-Kips Bay",
+   "borough": "Manhattan",
+   "latitude": 40.7442,
+   "longitude": -73.9759
+  },
+  {
+   "code": "MN0201",
+   "name": "SoHo-Little Italy-Hudson Square",
+   "borough": "Manhattan",
+   "latitude": 40.7235,
+   "longitude": -74.0017
+  },
+  {
+   "code": "MN0601",
+   "name": "Stuyvesant Town-Peter Cooper Village",
+   "borough": "Manhattan",
+   "latitude": 40.7318,
+   "longitude": -73.9766
+  },
+  {
+   "code": "MN0102",
+   "name": "Tribeca-Civic Center",
+   "borough": "Manhattan",
+   "latitude": 40.7173,
+   "longitude": -74.0072
+  },
+  {
+   "code": "MN0802",
+   "name": "Upper East Side-Carnegie Hill",
+   "borough": "Manhattan",
+   "latitude": 40.7747,
+   "longitude": -73.9612
+  },
+  {
+   "code": "MN0801",
+   "name": "Upper East Side-Lenox Hill-Roosevelt Island",
+   "borough": "Manhattan",
+   "latitude": 40.765,
+   "longitude": -73.9551
+  },
+  {
+   "code": "MN0803",
+   "name": "Upper East Side-Yorkville",
+   "borough": "Manhattan",
+   "latitude": 40.7773,
+   "longitude": -73.9487
+  },
+  {
+   "code": "MN0702",
+   "name": "Upper West Side (Central)",
+   "borough": "Manhattan",
+   "latitude": 40.7877,
+   "longitude": -73.9759
+  },
+  {
+   "code": "MN0701",
+   "name": "Upper West Side-Lincoln Square",
+   "borough": "Manhattan",
+   "latitude": 40.7748,
+   "longitude": -73.9847
+  },
+  {
+   "code": "MN0703",
+   "name": "Upper West Side-Manhattan Valley",
+   "borough": "Manhattan",
+   "latitude": 40.7992,
+   "longitude": -73.9673
+  },
+  {
+   "code": "MN1202",
+   "name": "Washington Heights (North)",
+   "borough": "Manhattan",
+   "latitude": 40.8565,
+   "longitude": -73.9335
+  },
+  {
+   "code": "MN1201",
+   "name": "Washington Heights (South)",
+   "borough": "Manhattan",
+   "latitude": 40.8409,
+   "longitude": -73.9415
+  },
+  {
+   "code": "MN0203",
+   "name": "West Village",
+   "borough": "Manhattan",
+   "latitude": 40.7348,
+   "longitude": -74.0059
+  },
+  {
+   "code": "QN0103",
+   "name": "Astoria (Central)",
+   "borough": "Queens",
+   "latitude": 40.7643,
+   "longitude": -73.9231
+  },
+  {
+   "code": "QN0104",
+   "name": "Astoria (East)-Woodside (North)",
+   "borough": "Queens",
+   "latitude": 40.7596,
+   "longitude": -73.9103
+  },
+  {
+   "code": "QN0101",
+   "name": "Astoria (North)-Ditmars-Steinway",
+   "borough": "Queens",
+   "latitude": 40.7774,
+   "longitude": -73.9053
+  },
+  {
+   "code": "QN1101",
+   "name": "Auburndale",
+   "borough": "Queens",
+   "latitude": 40.7553,
+   "longitude": -73.786
+  },
+  {
+   "code": "QN1203",
+   "name": "Baisley Park",
+   "borough": "Queens",
+   "latitude": 40.6795,
+   "longitude": -73.7899
+  },
+  {
+   "code": "QN0703",
+   "name": "Bay Terrace-Clearview",
+   "borough": "Queens",
+   "latitude": 40.7819,
+   "longitude": -73.7876
+  },
+  {
+   "code": "QN1102",
+   "name": "Bayside",
+   "borough": "Queens",
+   "latitude": 40.7618,
+   "longitude": -73.7676
+  },
+  {
+   "code": "QN1302",
+   "name": "Bellerose",
+   "borough": "Queens",
+   "latitude": 40.7355,
+   "longitude": -73.7267
+  },
+  {
+   "code": "QN1403",
+   "name": "Breezy Point-Belle Harbor-Rockaway Park-Broad Channel",
+   "borough": "Queens",
+   "latitude": 40.5782,
+   "longitude": -73.8605
+  },
+  {
+   "code": "QN1304",
+   "name": "Cambria Heights",
+   "borough": "Queens",
+   "latitude": 40.6943,
+   "longitude": -73.7356
+  },
+  {
+   "code": "QN0701",
+   "name": "College Point",
+   "borough": "Queens",
+   "latitude": 40.7826,
+   "longitude": -73.8399
+  },
+  {
+   "code": "QN0402",
+   "name": "Corona",
+   "borough": "Queens",
+   "latitude": 40.7432,
+   "longitude": -73.8593
+  },
+  {
+   "code": "QN1103",
+   "name": "Douglaston-Little Neck",
+   "borough": "Queens",
+   "latitude": 40.7637,
+   "longitude": -73.7369
+  },
+  {
+   "code": "QN0302",
+   "name": "East Elmhurst",
+   "borough": "Queens",
+   "latitude": 40.7641,
+   "longitude": -73.8722
+  },
+  {
+   "code": "QN0705",
+   "name": "East Flushing",
+   "borough": "Queens",
+   "latitude": 40.7538,
+   "longitude": -73.8081
+  },
+  {
+   "code": "QN0401",
+   "name": "Elmhurst",
+   "borough": "Queens",
+   "latitude": 40.7394,
+   "longitude": -73.8791
+  },
+  {
+   "code": "QN1401",
+   "name": "Far Rockaway-Bayswater",
+   "borough": "Queens",
+   "latitude": 40.6017,
+   "longitude": -73.7566
+  },
+  {
+   "code": "QN0707",
+   "name": "Flushing-Willets Point",
+   "borough": "Queens",
+   "latitude": 40.7602,
+   "longitude": -73.8316
+  },
+  {
+   "code": "QN0602",
+   "name": "Forest Hills",
+   "borough": "Queens",
+   "latitude": 40.7215,
+   "longitude": -73.8477
+  },
+  {
+   "code": "QN0803",
+   "name": "Fresh Meadows-Utopia",
+   "borough": "Queens",
+   "latitude": 40.7349,
+   "longitude": -73.7862
+  },
+  {
+   "code": "QN1301",
+   "name": "Glen Oaks-Floral Park-New Hyde Park",
+   "borough": "Queens",
+   "latitude": 40.746,
+   "longitude": -73.711
+  },
+  {
+   "code": "QN0503",
+   "name": "Glendale",
+   "borough": "Queens",
+   "latitude": 40.7035,
+   "longitude": -73.8757
+  },
+  {
+   "code": "QN1206",
+   "name": "Hollis",
+   "borough": "Queens",
+   "latitude": 40.7119,
+   "longitude": -73.7621
+  },
+  {
+   "code": "QN1003",
+   "name": "Howard Beach-Lindenwood",
+   "borough": "Queens",
+   "latitude": 40.66,
+   "longitude": -73.844
+  },
+  {
+   "code": "QN0301",
+   "name": "Jackson Heights",
+   "borough": "Queens",
+   "latitude": 40.7555,
+   "longitude": -73.8863
+  },
+  {
+   "code": "QN1201",
+   "name": "Jamaica",
+   "borough": "Queens",
+   "latitude": 40.704,
+   "longitude": -73.7956
+  },
+  {
+   "code": "QN0804",
+   "name": "Jamaica Estates-Holliswood",
+   "borough": "Queens",
+   "latitude": 40.7207,
+   "longitude": -73.7776
+  },
+  {
+   "code": "QN0805",
+   "name": "Jamaica Hills-Briarwood",
+   "borough": "Queens",
+   "latitude": 40.7119,
+   "longitude": -73.8089
+  },
+  {
+   "code": "QN0901",
+   "name": "Kew Gardens",
+   "borough": "Queens",
+   "latitude": 40.708,
+   "longitude": -73.8288
+  },
+  {
+   "code": "QN0801",
+   "name": "Kew Gardens Hills",
+   "borough": "Queens",
+   "latitude": 40.7266,
+   "longitude": -73.8198
+  },
+  {
+   "code": "QN1305",
+   "name": "Laurelton",
+   "borough": "Queens",
+   "latitude": 40.6759,
+   "longitude": -73.7445
+  },
+  {
+   "code": "QN0201",
+   "name": "Long Island City-Hunters Point",
+   "borough": "Queens",
+   "latitude": 40.7454,
+   "longitude": -73.9489
+  },
+  {
+   "code": "QN0501",
+   "name": "Maspeth",
+   "borough": "Queens",
+   "latitude": 40.7231,
+   "longitude": -73.9051
+  },
+  {
+   "code": "QN0504",
+   "name": "Middle Village",
+   "borough": "Queens",
+   "latitude": 40.7192,
+   "longitude": -73.8781
+  },
+  {
+   "code": "QN0704",
+   "name": "Murray Hill-Broadway Flushing",
+   "borough": "Queens",
+   "latitude": 40.7689,
+   "longitude": -73.8108
+  },
+  {
+   "code": "QN0303",
+   "name": "North Corona",
+   "borough": "Queens",
+   "latitude": 40.7541,
+   "longitude": -73.8629
+  },
+  {
+   "code": "QN1104",
+   "name": "Oakland Gardens-Hollis Hills",
+   "borough": "Queens",
+   "latitude": 40.7393,
+   "longitude": -73.7546
+  },
+  {
+   "code": "QN0102",
+   "name": "Old Astoria-Hallets Point",
+   "borough": "Queens",
+   "latitude": 40.7721,
+   "longitude": -73.9314
+  },
+  {
+   "code": "QN1002",
+   "name": "Ozone Park",
+   "borough": "Queens",
+   "latitude": 40.6756,
+   "longitude": -73.847
+  },
+  {
+   "code": "QN0904",
+   "name": "Ozone Park (North)",
+   "borough": "Queens",
+   "latitude": 40.6846,
+   "longitude": -73.8494
+  },
+  {
+   "code": "QN0802",
+   "name": "Pomonok-Electchester-Hillcrest",
+   "borough": "Queens",
+   "latitude": 40.7271,
+   "longitude": -73.8034
+  },
+  {
+   "code": "QN1303",
+   "name": "Queens Village",
+   "borough": "Queens",
+   "latitude": 40.7161,
+   "longitude": -73.7418
+  },
+  {
+   "code": "QN0706",
+   "name": "Queensboro Hill",
+   "borough": "Queens",
+   "latitude": 40.7431,
+   "longitude": -73.8197
+  },
+  {
+   "code": "QN0105",
+   "name": "Queensbridge-Ravenswood-Dutch Kills",
+   "borough": "Queens",
+   "latitude": 40.7583,
+   "longitude": -73.9379
+  },
+  {
+   "code": "QN0601",
+   "name": "Rego Park",
+   "borough": "Queens",
+   "latitude": 40.7262,
+   "longitude": -73.8634
+  },
+  {
+   "code": "QN0902",
+   "name": "Richmond Hill",
+   "borough": "Queens",
+   "latitude": 40.6975,
+   "longitude": -73.8328
+  },
+  {
+   "code": "QN0502",
+   "name": "Ridgewood",
+   "borough": "Queens",
+   "latitude": 40.7057,
+   "longitude": -73.9037
+  },
+  {
+   "code": "QN1402",
+   "name": "Rockaway Beach-Arverne-Edgemere",
+   "borough": "Queens",
+   "latitude": 40.5916,
+   "longitude": -73.7963
+  },
+  {
+   "code": "QN1307",
+   "name": "Rosedale",
+   "borough": "Queens",
+   "latitude": 40.6591,
+   "longitude": -73.7357
+  },
+  {
+   "code": "QN1202",
+   "name": "South Jamaica",
+   "borough": "Queens",
+   "latitude": 40.6943,
+   "longitude": -73.7917
+  },
+  {
+   "code": "QN1001",
+   "name": "South Ozone Park",
+   "borough": "Queens",
+   "latitude": 40.6762,
+   "longitude": -73.8195
+  },
+  {
+   "code": "QN0903",
+   "name": "South Richmond Hill",
+   "borough": "Queens",
+   "latitude": 40.6913,
+   "longitude": -73.8249
+  },
+  {
+   "code": "QN1204",
+   "name": "Springfield Gardens (North)-Rochdale Village",
+   "borough": "Queens",
+   "latitude": 40.6733,
+   "longitude": -73.7721
+  },
+  {
+   "code": "QN1306",
+   "name": "Springfield Gardens (South)-Brookville",
+   "borough": "Queens",
+   "latitude": 40.6602,
+   "longitude": -73.7615
+  },
+  {
+   "code": "QN1205",
+   "name": "St. Albans",
+   "borough": "Queens",
+   "latitude": 40.6932,
+   "longitude": -73.7622
+  },
+  {
+   "code": "QN0202",
+   "name": "Sunnyside",
+   "borough": "Queens",
+   "latitude": 40.7384,
+   "longitude": -73.9264
+  },
+  {
+   "code": "QN0702",
+   "name": "Whitestone-Beechhurst",
+   "borough": "Queens",
+   "latitude": 40.7884,
+   "longitude": -73.8109
+  },
+  {
+   "code": "QN0905",
+   "name": "Woodhaven",
+   "borough": "Queens",
+   "latitude": 40.6915,
+   "longitude": -73.8574
+  },
+  {
+   "code": "QN0203",
+   "name": "Woodside",
+   "borough": "Queens",
+   "latitude": 40.7431,
+   "longitude": -73.9014
+  },
+  {
+   "code": "SI0304",
+   "name": "Annadale-Huguenot-Prince's Bay-Woodrow",
+   "borough": "Staten Island",
+   "latitude": 40.5284,
+   "longitude": -74.198
+  },
+  {
+   "code": "SI0303",
+   "name": "Arden Heights-Rossville",
+   "borough": "Staten Island",
+   "latitude": 40.5526,
+   "longitude": -74.1969
+  },
+  {
+   "code": "SI0201",
+   "name": "Grasmere-Arrochar-South Beach-Dongan Hills",
+   "borough": "Staten Island",
+   "latitude": 40.5935,
+   "longitude": -74.0813
+  },
+  {
+   "code": "SI0302",
+   "name": "Great Kills-Eltingville",
+   "borough": "Staten Island",
+   "latitude": 40.5503,
+   "longitude": -74.155
+  },
+  {
+   "code": "SI0107",
+   "name": "Mariner's Harbor-Arlington-Graniteville",
+   "borough": "Staten Island",
+   "latitude": 40.6313,
+   "longitude": -74.1674
+  },
+  {
+   "code": "SI0202",
+   "name": "New Dorp-Midland Beach",
+   "borough": "Staten Island",
+   "latitude": 40.5743,
+   "longitude": -74.1016
+  },
+  {
+   "code": "SI0204",
+   "name": "New Springville-Willowbrook-Bulls Head-Travis",
+   "borough": "Staten Island",
+   "latitude": 40.6037,
+   "longitude": -74.1755
+  },
+  {
+   "code": "SI0301",
+   "name": "Oakwood-Richmondtown",
+   "borough": "Staten Island",
+   "latitude": 40.562,
+   "longitude": -74.1226
+  },
+  {
+   "code": "SI0106",
+   "name": "Port Richmond",
+   "borough": "Staten Island",
+   "latitude": 40.6338,
+   "longitude": -74.1332
+  },
+  {
+   "code": "SI0103",
+   "name": "Rosebank-Shore Acres-Park Hill",
+   "borough": "Staten Island",
+   "latitude": 40.6117,
+   "longitude": -74.0728
+  },
+  {
+   "code": "SI0101",
+   "name": "St. George-New Brighton",
+   "borough": "Staten Island",
+   "latitude": 40.6422,
+   "longitude": -74.0855
+  },
+  {
+   "code": "SI0203",
+   "name": "Todt Hill-Emerson Hill-Lighthouse Hill-Manor Heights",
+   "borough": "Staten Island",
+   "latitude": 40.5897,
+   "longitude": -74.1283
+  },
+  {
+   "code": "SI0102",
+   "name": "Tompkinsville-Stapleton-Clifton-Fox Hills",
+   "borough": "Staten Island",
+   "latitude": 40.6261,
+   "longitude": -74.0788
+  },
+  {
+   "code": "SI0305",
+   "name": "Tottenville-Charleston",
+   "borough": "Staten Island",
+   "latitude": 40.5246,
+   "longitude": -74.2355
+  },
+  {
+   "code": "SI0104",
+   "name": "West New Brighton-Silver Lake-Grymes Hill",
+   "borough": "Staten Island",
+   "latitude": 40.6281,
+   "longitude": -74.1013
+  },
+  {
+   "code": "SI0105",
+   "name": "Westerleigh-Castleton Corners",
+   "borough": "Staten Island",
+   "latitude": 40.617,
+   "longitude": -74.1288
+  }
+ ]
+}

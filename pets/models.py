@@ -3,7 +3,11 @@ from datetime import date
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
-from django.utils.text import slugify
+
+
+# Pet colors (avatars and cards). Each pet gets one from its id, so pets look
+# varied but keep the same color on every page.
+PET_THEMES = ("peach", "mint", "pink", "yellow", "blue", "lavender")
 
 
 class Pet(models.Model):
@@ -19,6 +23,24 @@ class Pet(models.Model):
     photo = models.ImageField(upload_to="pets/photos", blank=True, null=True)
     description = models.TextField(blank=True)
     special_care_instructions = models.TextField(blank=True)
+
+    # Care information for caregivers (#20, #21, #23).
+    # Feeding: what, how much and when, plus any extra notes.
+    food = models.CharField(max_length=100, blank=True)
+    portion = models.CharField(max_length=100, blank=True)
+    feeding_times = models.CharField(max_length=100, blank=True)
+    feeding_instructions = models.TextField("Feeding notes", blank=True)
+    # Medication: name, dose and schedule. Other care notes live in
+    # special_care_instructions.
+    medications = models.TextField("Medication", blank=True)
+    medication_dose = models.CharField("Dose", max_length=100, blank=True)
+    medication_schedule = models.CharField("Schedule", max_length=100, blank=True)
+    # Emergency and vet contacts.
+    vet_name = models.CharField("Vet", max_length=100, blank=True)
+    vet_phone = models.CharField("Vet phone", max_length=30, blank=True)
+    emergency_contact_name = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=30, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,9 +84,54 @@ class Pet(models.Model):
         return f"{months} month{'s' if months != 1 else ''}"
 
     @property
+    def age_short(self):
+        """Compact age for small cards, e.g. "2 yrs", "1 yr" or "5 mos"."""
+        months = self.age_months
+        if months is None:
+            return ""
+        if months >= 12:
+            years = months // 12
+            return f"{years} yr{'s' if years != 1 else ''}"
+        if months == 0:
+            return "Under 1 mo"
+        return f"{months} mo{'s' if months != 1 else ''}"
+
+    @property
+    def has_feeding_info(self):
+        return any([self.food, self.portion, self.feeding_times, self.feeding_instructions])
+
+    @property
+    def has_medication_info(self):
+        return any([self.medications, self.medication_dose, self.medication_schedule])
+
+    @property
+    def has_vet_info(self):
+        return bool(self.vet_name or self.vet_phone)
+
+    @property
+    def has_emergency_contact(self):
+        return bool(self.emergency_contact_name or self.emergency_contact_phone)
+
+    @property
+    def feeding_summary(self):
+        """One line for caregivers, e.g. "Kibble, 1 cup at 8 AM and 6 PM."."""
+        line = ", ".join(part for part in [self.food, self.portion] if part)
+        if self.feeding_times:
+            line = f"{line} at {self.feeding_times}" if line else self.feeding_times
+        return f"{line}." if line and not line.endswith(".") else line
+
+    @property
+    def medication_summary(self):
+        """One line for caregivers, e.g. "Probiotic, 1 g, once daily."."""
+        line = ", ".join(
+            part for part in [self.medications, self.medication_dose, self.medication_schedule] if part
+        )
+        return f"{line}." if line and not line.endswith(".") else line
+
+    @property
     def theme(self):
-        """CSS color theme for this pet's type, e.g. "dog" or "rabbit"."""
-        return slugify(self.pet_type.name) if self.pet_type_id else "other"
+        """CSS color theme for this pet, e.g. "mint" (see PET_THEMES)."""
+        return PET_THEMES[(self.pk or 0) % len(PET_THEMES)]
 
 
 class PetType(models.Model):

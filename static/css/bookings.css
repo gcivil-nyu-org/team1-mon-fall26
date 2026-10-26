@@ -65,14 +65,14 @@
   font-weight: 600;
 }
 
+/* Round, like the pet avatars on the other pages. */
 .booking-avatar-large {
   width: 64px;
   height: 64px;
-  border-radius: 14px;
+  border-radius: 50%;
   background: #fff;
   font-size: 28px;
-  transform: rotate(-3deg);
-  box-shadow: 4px 4px 0 var(--theme-deep);
+  box-shadow: 0 4px 0 var(--theme-deep);
 }
 
 .panel-link { display: inline-block; margin-bottom: 14px; }
@@ -97,7 +97,7 @@
 }
 
 .has-error input[type="datetime-local"],
-.has-error select { border-color: var(--error); background: var(--error-input-bg); }
+.has-error select { border-color: var(--error); background-color: var(--error-input-bg); }
 
 /* ---------- Booking detail ---------- */
 
@@ -239,6 +239,23 @@
 .request-row .status-pending .status-dot, .request-panel .status-pending .status-dot { background: #6b4500; }
 .request-row .status-accepted, .request-panel .status-accepted { background: var(--success-bg); color: var(--success-ink); }
 .request-row .status-declined, .request-panel .status-declined { background: var(--tag-bg); color: #6a5a54; }
+.request-row .status-completed, .request-panel .status-completed { background: #dcebfa; color: #1f4e79; }
+.request-row .status-completed .status-dot, .request-panel .status-completed .status-dot { background: #1f4e79; }
+
+.request-row-tags { display: flex; align-items: center; gap: 16px; flex: none; }
+
+/* Accepted care that has started and can be marked as completed */
+.ready-tag {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff0c2;
+  color: #6b4500;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18.6px;
+  white-space: nowrap;
+}
 
 .request-panel {
   display: grid;
@@ -290,6 +307,17 @@
 .request-actions .btn-dark { box-shadow: 0 4px 0 var(--orange); }
 .request-actions .btn-outline { border: 0; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; }
 .request-closed { font-size: 14px; }
+.request-actions .btn .check-icon { flex: none; margin-right: 8px; }
+.request-panel .request-complete-hint { padding-top: 0; font-size: 14px; line-height: 21.7px; text-align: center; color: #6a5a54; }
+.request-panel .request-done {
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #f8e6df;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 23.25px;
+  color: #3d322e;
+}
 
 .upcoming-care {
   display: grid;
@@ -317,10 +345,16 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  height: 100%;
   padding: 14px;
   background: var(--bg);
+  border: 2px solid transparent;
   border-radius: 22px;
+  color: var(--ink);
+  text-decoration: none;
 }
+
+.upcoming-item:hover { border-color: #ead3c9; }
 
 .date-chip {
   display: grid;
@@ -341,17 +375,10 @@
 .upcoming-text strong { font-size: 16px; font-weight: 700; line-height: 24.8px; }
 .upcoming-text .muted { font-size: 14px; line-height: 21.7px; color: #6a5a54; }
 
-/* Avatar colors per pet type, from the design */
-.request-avatar { --theme-bg: var(--lavender); --theme-ink: var(--purple-dark); }
-.theme-dog.request-avatar { --theme-bg: #ffd3b0; --theme-ink: #7a3410; }
-.theme-cat.request-avatar { --theme-bg: #bde0f5; --theme-ink: #2d3a8c; }
-.theme-rabbit.request-avatar { --theme-bg: #ffc8d9; --theme-ink: #7a1f45; }
-.theme-bird.request-avatar { --theme-bg: var(--yellow-soft); --theme-ink: #6b4a08; }
-.theme-fish.request-avatar { --theme-bg: var(--mint); --theme-ink: #14532d; }
 
 @media (max-width: 900px) {
   .page-requests { padding: 8px 20px 64px; }
-  .requests-layout { grid-template-columns: 1fr; }
+  .requests-layout { grid-template-columns: minmax(0, 1fr); }
   .requests-heading h1 { font-size: 36px; }
 }
 
@@ -360,22 +387,18 @@
   .request-tabs { width: 100%; overflow-x: auto; }
   .request-tab { gap: 4px; min-height: 38px; padding: 0 8px; font-size: 12px; }
   .tab-count { min-width: 20px; padding: 0 5px; font-size: 11px; line-height: 20px; }
-  .request-row { gap: 12px; padding: 14px; }
+  /* Phones: the tag and status pill move under the text, lined up with it. */
+  .request-row { flex-wrap: wrap; gap: 8px 12px; padding: 14px; }
+  .request-row-text { flex-basis: calc(100% - 64px); }
+  .request-row-tags { flex-wrap: wrap; gap: 8px; margin-left: 64px; }
   .request-row-text strong { font-size: 18px; }
   .request-row-meta { font-size: 14px; }
   .request-panel { padding: 20px; }
   .request-panel-header h2 { font-size: 28px; }
 }
 
-/* ---------- Pet color themes (same palette as pet cards) ---------- */
+/* ---------- Pet avatars (colors come from the shared .theme-* palette in style.css) ---------- */
 
-.booking-avatar,
-.booking-detail-header { --theme-bg: var(--lavender); --theme-ink: var(--purple-dark); --theme-deep: #c6b5ef; }
-.theme-dog.booking-avatar, .theme-dog.booking-detail-header { --theme-bg: var(--peach); --theme-ink: #7a3410; --theme-deep: #f6b88a; }
-.theme-cat.booking-avatar, .theme-cat.booking-detail-header { --theme-bg: var(--mint); --theme-ink: #14532d; --theme-deep: #93d8b4; }
-.theme-rabbit.booking-avatar, .theme-rabbit.booking-detail-header { --theme-bg: var(--pink); --theme-ink: #4a0f2a; --theme-deep: var(--pink-deep); }
-.theme-bird.booking-avatar, .theme-bird.booking-detail-header { --theme-bg: var(--yellow-soft); --theme-ink: #6b4a08; --theme-deep: #f2c95f; }
-.theme-fish.booking-avatar, .theme-fish.booking-detail-header { --theme-bg: var(--blue-soft); --theme-ink: #1e4a73; --theme-deep: #a9cbea; }
 .booking-avatar-large.booking-avatar { background: #fff; }
 
 @media (max-width: 560px) {
@@ -383,3 +406,119 @@
   .booking-detail-header { flex-wrap: wrap; }
   .booking-detail-header .status-pill { margin-left: 0; }
 }
+
+/* ---------- My requests: Active and History ---------- */
+
+.booking-section { margin-bottom: 24px; }
+.booking-section h2 { font-size: 18px; margin-bottom: 8px; }
+.booking-section > .muted.small { margin: -4px 0 10px; }
+.booking-row.status-completed { background: #f6f2fd; border-color: #e1d8f7; }
+
+/* Cancel (#43) and complete (#109) */
+.booking-cancel-row { display: flex; justify-content: flex-end; margin-top: 24px; }
+.booking-cancel h1 { margin: 0 0 16px; color: var(--error); }
+.booking-cancel p { margin: 0 0 12px; line-height: 1.6; }
+.booking-cancel .respond-actions { margin-top: 28px; }
+.request-actions-single { grid-template-columns: 1fr; row-gap: 10px; }
+.request-row .status-cancelled, .request-panel .status-cancelled { background: #fdecea; color: var(--error); }
+
+/* ---------- Owner's "My requests" page ----------
+   No Figma frame, so it follows the caregiver's "Care requests" page:
+   same heading sizes, row cards, avatars and status pill colors. */
+
+.page-my-requests { max-width: 820px; padding: 16px 24px 64px; }
+.page-my-requests .booking-section-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.page-my-requests .booking-section-header h2 { margin: 0; }
+/* Same size as controls beside a section heading in Figma (e.g. the "Closest first" menu). */
+.page-my-requests .booking-section-header .btn { min-height: 44px; padding: 0 20px; font-size: 15px; box-shadow: 0 3px 0 var(--orange); }
+
+.page-my-requests .booking-section { margin-bottom: 30px; }
+.page-my-requests .booking-section h2 { margin-bottom: 14px; font-size: 26px; line-height: 1.55; letter-spacing: -0.13px; }
+.page-my-requests .booking-section > p.muted { margin: 0; font-size: 15px; }
+
+/* Rows sit on the page as separate cards, like the Care requests list. */
+.page-my-requests .booking-list-card { padding: 0; background: none; border: 0; box-shadow: none; }
+.page-my-requests .booking-rows { gap: 12px; margin: 0; }
+
+.page-my-requests .booking-row,
+.page-my-requests .booking-row.status-pending,
+.page-my-requests .booking-row.status-accepted,
+.page-my-requests .booking-row.status-completed {
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 4px 0 #f0ddd5;
+}
+.page-my-requests .booking-row:hover { box-shadow: 0 0 0 1.5px var(--line-strong), 0 4px 0 var(--line-strong); }
+
+.page-my-requests .booking-avatar { width: 52px; height: 52px; border-radius: 50%; font-size: 22px; box-shadow: none; }
+.page-my-requests .booking-row-text strong { font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 24px; }
+.page-my-requests .booking-row-text .muted { font-size: 15px; line-height: 1.55; color: #3d322e; }
+
+.page-my-requests .status-pill { gap: 6px; padding: 4px 12px; font-size: 13px; font-weight: 700; line-height: 20.15px; box-shadow: none; }
+.page-my-requests .status-dot { width: 8px; height: 8px; }
+.page-my-requests .status-pill.status-pending { background: #ffe9b8; color: #6b4500; }
+.page-my-requests .status-pill.status-pending .status-dot { background: #6b4500; }
+.page-my-requests .status-pill.status-accepted { background: var(--success-bg); color: var(--success-ink); }
+.page-my-requests .status-pill.status-completed { background: #dcebfa; color: #1f4e79; }
+.page-my-requests .status-pill.status-completed .status-dot { background: #1f4e79; }
+.page-my-requests .status-pill.status-declined { background: var(--tag-bg); color: #6a5a54; }
+.page-my-requests .status-pill.status-cancelled { background: #fdecea; color: var(--error); }
+
+@media (max-width: 560px) {
+  .page-my-requests { padding: 8px 16px 48px; }
+  .page-my-requests .booking-section-header .btn { min-height: 40px; padding: 0 16px; font-size: 14px; }
+  /* Phones: the status pill moves under the text, lined up with it. */
+  .page-my-requests .booking-row,
+  .page-my-requests .booking-row.status-pending,
+  .page-my-requests .booking-row.status-accepted,
+  .page-my-requests .booking-row.status-completed { flex-wrap: wrap; gap: 8px 12px; padding: 14px; }
+  .page-my-requests .booking-row-text { flex-basis: calc(100% - 64px); }
+  .page-my-requests .booking-row .status-pill { margin-left: 64px; }
+  .page-my-requests .booking-row-text strong { font-size: 18px; }
+  .page-my-requests .booking-row-text .muted { font-size: 14px; }
+}
+
+/* ---------- "My booking requests" panel on My pets (Figma Home) ---------- */
+
+.dashboard .booking-rows { gap: 10px; margin-bottom: 14px; }
+
+.dashboard .booking-row,
+.dashboard .booking-row.status-accepted,
+.dashboard .booking-row.status-completed {
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--bg);
+}
+
+.dashboard .booking-row.status-pending { background: #fff8e6; }
+.dashboard .booking-row:hover { box-shadow: 0 0 0 1.5px var(--line-strong); }
+
+.dashboard .booking-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 19px;
+}
+
+.dashboard .booking-row-text strong { font-size: 16px; line-height: 1.55; }
+.dashboard .booking-row-text .muted { color: #6a5a54; font-size: 14px; line-height: 1.55; }
+
+.dashboard .status-pill {
+  padding: 4px 12px;
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.dashboard .status-dot,
+.dashboard .status-pill.status-pending .status-dot { width: 8px; height: 8px; background: currentColor; }
+
+.dashboard .status-pill.status-pending { background: #ffe9b8; color: #6b4500; }
+.dashboard .status-pill.status-accepted { background: var(--success-bg); color: #14532d; }
+.dashboard .status-pill.status-declined { background: #efe9e6; color: #5a4038; }
+.dashboard .status-pill.status-completed { background: #dcebfa; color: #1f4e79; }
+.dashboard .status-pill.status-cancelled { background: #fbe3ea; color: #7a1f45; }

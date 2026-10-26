@@ -3,7 +3,7 @@
 
 {% block title %}My pets · PawPal{% endblock %}
 
-{% block main_class %}page page-wide{% endblock %}
+{% block main_class %}page page-wide page-dashboard{% endblock %}
 
 {# Messages are shown below the banner instead of at the top of the page. #}
 {% block messages %}{% endblock %}
@@ -17,7 +17,7 @@
           <p class="eyebrow">My pets</p>
           <h1>Meet your crew</h1>
           <p>Caregivers see these profiles when you request care, so keep them up to date.</p>
-          <a class="btn btn-light" href="{% url 'pets:create' %}"><span aria-hidden="true">+</span> Add a pet</a>
+          <a class="btn btn-light" href="{% url 'pets:create' %}">{% include "partials/plus_icon.html" %} Add a pet</a>
         </div>
         <div class="hero-art" aria-hidden="true">
           <span class="shape shape-sun"></span>
@@ -49,7 +49,7 @@
               {% else %}
                 <p class="pet-card-text muted"><em>No care needs added yet</em></p>
               {% endif %}
-              <a class="text-link stretched" href="{{ pet.get_absolute_url }}">View profile <span aria-hidden="true">&rarr;</span></a>
+              <a class="text-link stretched" href="{{ pet.get_absolute_url }}">View profile {% include "partials/arrow_icon.html" %}</a>
             </article>
           {% endfor %}
         </div>
@@ -69,7 +69,7 @@
       {% block booking_requests %}
         {% my_booking_requests %}
       {% endblock %}
-      <a class="btn btn-outline btn-block" href="{% url 'bookings:booking_create' %}">New request</a>
+      <a class="btn btn-outline btn-block" href="{% url 'bookings:booking_create' %}">{% include "partials/plus_icon.html" %} New request</a>
     </aside>
   </div>
 {% endblock %}

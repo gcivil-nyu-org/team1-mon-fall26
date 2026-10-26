@@ -1,10 +1,20 @@
-{% if bookings %}
-  <div class="booking-rows">
-    {% for booking in bookings %}
-      {% include "bookings/partials/booking_row.html" %}
-    {% endfor %}
-  </div>
-  <a class="text-link panel-link" href="{% url 'bookings:booking_list' %}">See all requests <span aria-hidden="true">&rarr;</span></a>
+{% if upcoming or past %}
+  {% if upcoming %}
+    <h3 class="panel-heading">Upcoming</h3>
+    <div class="booking-rows">
+      {% for booking in upcoming %}
+        {% include "bookings/partials/booking_row.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if past %}
+    <h3 class="panel-heading">Past</h3>
+    <div class="booking-rows">
+      {% for booking in past %}
+        {% include "bookings/partials/booking_row.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
 {% else %}
   <p class="muted">No requests yet. When you request care from a caregiver, it'll show up here.</p>
 {% endif %}

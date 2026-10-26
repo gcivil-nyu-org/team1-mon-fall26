@@ -2,25 +2,43 @@
 
 {% block title %}My requests · PawPal{% endblock %}
 
-{% block main_class %}page page-medium{% endblock %}
+{% block main_class %}page page-my-requests{% endblock %}
 
 {% block content %}
-  <div class="page-heading">
-    <div>
-      <h1>My booking requests</h1>
-      <p class="muted">Requests stay Pending until the caregiver accepts or declines.</p>
-    </div>
-    <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}"><span aria-hidden="true">+</span> New request</a>
-  </div>
+  {# No visible title: the nav already says My requests. Kept for screen readers. #}
+  <h1 class="visually-hidden">My requests</h1>
 
-  {% if bookings %}
-    <div class="card booking-list-card">
-      <div class="booking-rows">
-        {% for booking in bookings %}
-          {% include "bookings/partials/booking_row.html" %}
-        {% endfor %}
+  {% if active or history %}
+    <section class="booking-section">
+      <div class="booking-section-header">
+        <h2>Active</h2>
+        <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}"><span aria-hidden="true">+</span> New request</a>
       </div>
-    </div>
+      {% if active %}
+        <div class="card booking-list-card">
+          <div class="booking-rows">
+            {% for booking in active %}
+              {% include "bookings/partials/booking_row.html" %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="muted">No pending or upcoming care right now.</p>
+      {% endif %}
+    </section>
+
+    {% if history %}
+      <section class="booking-section">
+        <h2>History</h2>
+        <div class="card booking-list-card">
+          <div class="booking-rows">
+            {% for booking in history %}
+              {% include "bookings/partials/booking_row.html" %}
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
   {% else %}
     <div class="card empty-state">
       <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>

@@ -1,0 +1,67 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to PawPal{% endblock %}
+{% block site_header %}{% endblock %}
+{% block main_class %}auth-main{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=10">
+
+<div class="auth-screen auth-success-screen">
+    <span class="auth-circle auth-circle-lavender" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-yellow" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-pink" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-mint" aria-hidden="true"></span>
+
+    <section class="auth-panel auth-form-panel auth-success-panel">
+
+        <div class="auth-brand">
+            <span class="auth-brand-icon" aria-hidden="true">
+                {% include "partials/paw_icon.html" %}
+            </span>
+            <span>PawPal</span>
+        </div>
+
+        <div class="auth-success-check">
+            <svg viewBox="0 0 24 24"
+                 width="34"
+                 height="34"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.5"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <path d="M5 12l4 4L19 6"></path>
+            </svg>
+        </div>
+
+        <h1>Welcome, {{ first_name }}!</h1>
+
+        {% if is_caregiver %}
+            <p class="auth-success-description">
+                Your caregiver account is ready.
+                Set up your profile and services so pet owners can find you.
+            </p>
+
+            <a href="{% url 'create_caregiver_profile' %}"
+               class="auth-success-button">
+                Set up my profile
+            </a>
+        {% else %}
+            <p class="auth-success-description">
+                Your pet owner account is ready.
+                Add your first pet so caregivers know who they'll look after.
+            </p>
+
+            <a href="{% url 'pets:list' %}"
+               class="auth-success-button">
+                Add my first pet
+            </a>
+        {% endif %}
+
+    </section>
+</div>
+{% endblock %}

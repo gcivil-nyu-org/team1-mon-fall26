@@ -1,0 +1,433 @@
+/* ==========================================================================
+   Caregiver profile as owners see it, from the Figma "Caregiver Profile" frame.
+   Builds on style.css.
+   ========================================================================== */
+
+.page-caregiver-profile {
+  max-width: 1200px;
+  padding: 16px 32px 64px;
+}
+
+.caregiver-back {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: #332a26;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.caregiver-public-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+.caregiver-public-grid.is-own-profile {
+  grid-template-columns: minmax(0, 728px);
+  justify-content: center;
+}
+
+.caregiver-public-main {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+.caregiver-public-card {
+  overflow: hidden;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.caregiver-card-body {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 30px;
+}
+
+.caregiver-card-body h2 {
+  font-size: 26px;
+  line-height: 1.55;
+  letter-spacing: -0.13px;
+}
+
+/* ---------- Header card ---------- */
+
+.caregiver-header-card {
+  position: relative;
+}
+
+.caregiver-cover {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+  background: #cfe6f5;
+}
+
+.caregiver-cover span,
+.caregiver-cover .cover-paw {
+  position: absolute;
+  display: block;
+}
+
+.cover-cloud {
+  width: 200px;
+  height: 200px;
+  right: -40px;
+  top: -90px;
+  border-radius: 50%;
+  background: #b3d6ee;
+}
+
+.cover-sun {
+  width: 46px;
+  height: 46px;
+  right: 200px;
+  top: 30px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+
+.cover-dot {
+  width: 18px;
+  height: 18px;
+  right: 170px;
+  top: 80px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.caregiver-cover .cover-paw {
+  right: 60px;
+  top: 50px;
+  font-size: 56px;
+  fill: #fff;
+  opacity: 0.85;
+  transform: rotate(20deg);
+}
+
+.caregiver-avatar {
+  position: absolute;
+  left: 32px;
+  top: 64px;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 0 5px #fff;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+}
+
+.caregiver-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caregiver-header-info {
+  display: grid;
+  gap: 12px;
+  padding: 68px 32px 32px;
+}
+
+.caregiver-header-info h1 {
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.24px;
+  overflow-wrap: anywhere;
+}
+
+.caregiver-badges,
+.caregiver-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.caregiver-badge,
+.caregiver-availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.caregiver-badge {
+  background: #f8e6df;
+  color: #5a4038;
+}
+
+.caregiver-badge .paw-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.caregiver-availability {
+  border: 0;
+}
+
+.caregiver-availability.available {
+  background: var(--success-bg);
+  color: #14532d;
+}
+
+.caregiver-availability.unavailable {
+  background: #efe9e6;
+  color: #5a4038;
+}
+
+.availability-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.caregiver-intro {
+  padding-top: 6px;
+  color: #3d322e;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* Owner's own profile: white pencil button, like the pet profile's "Edit profile". */
+.caregiver-edit-button {
+  position: absolute;
+  right: 32px;
+  top: 140px;
+  z-index: 1;
+  min-height: 50px;
+  padding: 0 26px;
+  color: var(--ink);
+  font-size: 16px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 4px 0 #b3d6ee;
+}
+
+.caregiver-edit-button .pencil-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Services ---------- */
+
+.caregiver-service-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caregiver-service-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  padding: 16px;
+  border-radius: 22px;
+  background: #fff8f5;
+  box-shadow: 0 0 0 1.5px #f2e2da;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.service-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.service-icon .paw-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.service-icon-walk { background: #ffd3b0; color: #7a3410; }
+.service-icon-home { background: #bde0f5; color: #2d3a8c; }
+.service-icon-feeding { background: #ffc8d9; color: #7a1f45; }
+.service-icon-paw { background: #e9e1f7; color: #4c3480; }
+
+/* ---------- Pets, skills, experience ---------- */
+
+.caregiver-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.caregiver-pair-single {
+  grid-template-columns: 1fr;
+}
+
+.caregiver-tag {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tag-pet { background: #fff0c2; color: #6b4500; }
+.tag-skill { background: #e9e1f7; color: #4c3480; }
+
+.caregiver-text {
+  color: #3d322e;
+  font-size: 16px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.caregiver-text.muted {
+  color: var(--muted);
+}
+
+/* ---------- Request card ---------- */
+
+.caregiver-booking-card {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  padding: 30px 30px 96px;
+  border-radius: 28px;
+  background: var(--purple);
+  color: #fff;
+  box-shadow: 0 6px 0 var(--purple-dark);
+}
+
+.caregiver-booking-card > :not(.booking-deco) {
+  position: relative;
+  z-index: 1;
+}
+
+.caregiver-booking-card h2 {
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.14px;
+}
+
+.caregiver-booking-card p {
+  color: #f3ecff;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.booking-deco {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.booking-deco-sun {
+  width: 150px;
+  height: 150px;
+  right: -50px;
+  bottom: -60px;
+  background: #f5c04e;
+}
+
+.booking-deco-pink {
+  width: 54px;
+  height: 50px;
+  right: 80px;
+  bottom: 60px;
+  background: var(--pink);
+}
+
+.caregiver-booking-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  margin-top: 6px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 4px 0 rgba(60, 30, 20, 0.25);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.caregiver-booking-button:hover {
+  background: #f3eefc;
+}
+
+/* Keyboard focus: a soft white ring that fits the purple card. */
+.caregiver-booking-button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 3px;
+}
+
+.caregiver-booking-button.is-disabled {
+  background: rgba(255, 255, 255, 0.85);
+  color: #4c3480;
+  box-shadow: none;
+}
+
+/* ---------- Smaller screens ---------- */
+
+@media (max-width: 960px) {
+  .caregiver-public-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .caregiver-booking-card {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-caregiver-profile {
+    padding: 8px 16px 48px;
+  }
+
+  .caregiver-header-info h1 {
+    font-size: 36px;
+  }
+
+  .caregiver-service-tiles,
+  .caregiver-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .caregiver-card-body {
+    padding: 22px;
+  }
+
+  .caregiver-header-info {
+    padding: 64px 22px 24px;
+  }
+
+  .caregiver-avatar {
+    left: 22px;
+  }
+
+  .caregiver-edit-button {
+    right: 16px;
+    top: 16px;
+    min-height: 42px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+}

@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 from django import forms
@@ -11,6 +12,10 @@ CHIP_ORDER = ["Dog", "Cat", "Bird", "Rabbit", "Fish"]
 
 MAX_AGE = {"years": 50, "months": 600}
 MAX_PHOTO_MB = 5
+
+# Digits plus the usual separators: "(212) 555-0142", "+1 212.555.0142".
+PHONE_CHARS = re.compile(r"^[0-9+().\-\s]+$")
+PHONE_ERROR = "Enter a phone number with 7 to 15 digits, e.g. (212) 555-0142."
 
 
 def pet_type_choices():
@@ -72,24 +77,62 @@ class PetForm(forms.ModelForm):
 
     class Meta:
         model = Pet
-        fields = ["photo", "name", "pet_type", "special_care_instructions"]
+        fields = [
+            "photo",
+            "name",
+            "pet_type",
+            "food",
+            "portion",
+            "feeding_times",
+            "feeding_instructions",
+            "medications",
+            "medication_dose",
+            "medication_schedule",
+            "special_care_instructions",
+            "vet_name",
+            "vet_phone",
+            "emergency_contact_name",
+            "emergency_contact_phone",
+        ]
         labels = {
             "photo": "Photo",
             "name": "Pet name",
-            "special_care_instructions": "Care needs",
+            "food": "Food",
+            "portion": "Portion",
+            "feeding_times": "Feeding times",
+            "feeding_instructions": "Feeding notes",
+            "medications": "Medication",
+            "medication_dose": "Dose",
+            "medication_schedule": "Schedule",
+            "special_care_instructions": "Special care instructions",
+            "vet_name": "Vet name & clinic",
+            "vet_phone": "Vet phone",
+            "emergency_contact_name": "Emergency contact",
+            "emergency_contact_phone": "Emergency phone",
         }
         widgets = {
             "photo": forms.FileInput(attrs={"accept": "image/*"}),
             "name": forms.TextInput(attrs={"placeholder": "e.g. Pepper"}),
+            "food": forms.TextInput(attrs={"placeholder": "e.g. Timothy hay, kibble brand"}),
+            "portion": forms.TextInput(attrs={"placeholder": "e.g. 1 cup"}),
+            "feeding_times": forms.TextInput(attrs={"placeholder": "e.g. 8:00 AM, 6:00 PM"}),
+            "feeding_instructions": forms.Textarea(
+                attrs={"rows": 2, "placeholder": "Treats, water, foods to avoid"}
+            ),
+            # One line in the design, but kept as a text field so longer names fit.
+            "medications": forms.TextInput(attrs={"placeholder": "e.g. Probiotic"}),
+            "medication_dose": forms.TextInput(attrs={"placeholder": "e.g. 1 g"}),
+            "medication_schedule": forms.TextInput(attrs={"placeholder": "e.g. Once daily with breakfast"}),
             "special_care_instructions": forms.Textarea(
                 attrs={
-                    "rows": 4,
-                    "placeholder": (
-                        "Feeding schedule, medication, temperament, "
-                        "anything a caregiver should know"
-                    ),
+                    "rows": 3,
+                    "placeholder": "Temperament, handling, health conditions, routines",
                 }
             ),
+            "vet_name": forms.TextInput(attrs={"placeholder": "e.g. Dr. Patel, Brooklyn Vets"}),
+            "vet_phone": forms.TextInput(attrs={"placeholder": "(000) 000-0000", "type": "tel"}),
+            "emergency_contact_name": forms.TextInput(attrs={"placeholder": "Name and relationship"}),
+            "emergency_contact_phone": forms.TextInput(attrs={"placeholder": "(000) 000-0000", "type": "tel"}),
         }
         error_messages = {
             "name": {"required": "Enter your pet's name."},
@@ -119,6 +162,20 @@ class PetForm(forms.ModelForm):
             )
         return photo
 
+    def _clean_phone(self, field):
+        phone = self.cleaned_data.get(field, "").strip()
+        if phone:
+            digits = re.sub(r"\D", "", phone)
+            if not PHONE_CHARS.match(phone) or not 7 <= len(digits) <= 15:
+                raise forms.ValidationError(PHONE_ERROR)
+        return phone
+
+    def clean_vet_phone(self):
+        return self._clean_phone("vet_phone")
+
+    def clean_emergency_contact_phone(self):
+        return self._clean_phone("emergency_contact_phone")
+
     def clean(self):
         cleaned = super().clean()
         age = cleaned.get("age")
@@ -126,6 +183,24 @@ class PetForm(forms.ModelForm):
         if age is not None and unit and age > MAX_AGE[unit]:
             self.add_error(
                 "age", f"Enter an age of {MAX_AGE[unit]} {unit} or less.")
+
+        # A name without a number (or the reverse) is no use in an emergency.
+        pairs = [
+            ("vet_name", "vet_phone", "Add the vet's phone number too."),
+            ("emergency_contact_name", "emergency_contact_phone",
+             "Add a phone number for your emergency contact."),
+        ]
+        for name_field, phone_field, message in pairs:
+            if cleaned.get(name_field) and not cleaned.get(phone_field) \
+                    and phone_field not in self.errors:
+                self.add_error(phone_field, message)
+        if cleaned.get("emergency_contact_phone") \
+                and not cleaned.get("emergency_contact_name"):
+            self.add_error("emergency_contact_name",
+                           "Add your emergency contact's name.")
+        if (cleaned.get("medication_dose") or cleaned.get("medication_schedule")) \
+                and not cleaned.get("medications"):
+            self.add_error("medications", "Add the medication's name.")
         return cleaned
 
     def save(self, commit=True):
