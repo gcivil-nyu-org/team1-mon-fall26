@@ -30,7 +30,9 @@
                 {% include "partials/camera_icon.html" %}
                 <span>{% if form.instance.profile_photo %}Change photo{% else %}Upload photo{% endif %}</span>
               </label>
+              <div class="caregiver-photo-input">
               {{ form.profile_photo }}
+            </div>
               <p class="caregiver-hint">JPG or PNG, up to 5 MB</p>
               {{ form.profile_photo.errors }}
             </div>
