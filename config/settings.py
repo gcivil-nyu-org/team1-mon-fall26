@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 # SECURITY WARNING: keep the secret key used in production secret!
-DEV_SECRET_KEY = 'django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho'
+DEV_SECRET_KEY = "django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEV_SECRET_KEY
 if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
     warnings.warn(
@@ -51,49 +51,49 @@ ALLOWED_HOSTS += [
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     "accounts",
     "pets",
     "caregivers",
     "opportunities",
     "bookings",
+    "reviews",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -104,19 +104,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # SQLite for local development and tests.
 if os.environ.get("RDS_HOSTNAME"):
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ["RDS_DB_NAME"],
-            'USER': os.environ["RDS_USERNAME"],
-            'PASSWORD': os.environ["RDS_PASSWORD"],
-            'HOST': os.environ["RDS_HOSTNAME"],
-            'PORT': os.environ.get("RDS_PORT", "5432"),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["RDS_DB_NAME"],
+            "USER": os.environ["RDS_USERNAME"],
+            "PASSWORD": os.environ["RDS_PASSWORD"],
+            "HOST": os.environ["RDS_HOSTNAME"],
+            "PORT": os.environ.get("RDS_PORT", "5432"),
         }
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
             "NAME": os.environ.get("SQLITE_DB_PATH", str(BASE_DIR / "db.sqlite3")),
         }
     }
@@ -127,16 +127,16 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -144,10 +144,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 # Bookings are entered and shown in New York time; Django still stores UTC.
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
@@ -159,11 +159,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Uploaded files (pet and caregiver photos)
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 LOGIN_URL = "login"
@@ -175,8 +175,8 @@ LOGOUT_REDIRECT_URL = "home"
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    "default": {
+        "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
 

@@ -1,9 +1,23 @@
+{% load review_tags %}
 {% comment %}
   Short care summary for the caregiver's request panel (Figma "Care requests").
   Emergency contacts are only shown while an accepted booking is happening (#88).
   Usage: include with pet=booking.pet show_contacts=booking.shows_emergency_contacts
 {% endcomment %}
 <div class="care-summary">
+  {% pet_rating_line pet %}
+  <section class="care-summary-item">
+    {% include "pets/partials/care_icon.html" with kind="temperament" %}
+    <div>
+      <h3>Temperament</h3>
+      {% if pet.has_temperament_info %}
+        {% if pet.temperament_labels %}<p>{{ pet.temperament_labels|join:", " }}.</p>{% endif %}
+        {% if pet.behavior_notes %}<p>{{ pet.behavior_notes|linebreaksbr }}</p>{% endif %}
+      {% else %}
+        <p class="muted">No temperament details added.</p>
+      {% endif %}
+    </div>
+  </section>
   <section class="care-summary-item">
     {% include "pets/partials/care_icon.html" with kind="feeding" %}
     <div>

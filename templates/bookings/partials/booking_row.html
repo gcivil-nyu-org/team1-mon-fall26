@@ -1,6 +1,6 @@
 {# One booking request: pet, service, caregiver, time and status. #}
 <a class="booking-row status-{{ booking.status }}" href="{{ booking.get_absolute_url }}">
-  <span class="booking-avatar theme-{{ booking.pet.theme }}" aria-hidden="true">{{ booking.pet.name|first|upper }}</span>
+  {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
   <span class="booking-row-text">
     <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
     <span class="muted">{{ booking.caregiver.name }} · {{ booking.start_time|date:"D, M j, g:i A" }}</span>

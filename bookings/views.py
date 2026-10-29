@@ -119,9 +119,7 @@ def booking_detail(request, pk):
 
 def can_cancel(booking):
     """Story #43: owners can cancel a pending or accepted booking before it starts."""
-    return (
-        booking.status in ACTIVE_STATUSES and booking.start_time > timezone.now()
-    )
+    return booking.status in ACTIVE_STATUSES and booking.start_time > timezone.now()
 
 
 def can_complete(booking):

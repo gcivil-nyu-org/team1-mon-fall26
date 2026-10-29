@@ -1786,6 +1786,8 @@ img.pet-initial-large {
   height: 16px;
 }
 
+.care-icon-temperament { background: var(--lavender); color: var(--purple-dark); }
+.care-icon-rating { background: var(--yellow-soft); color: #9b7435; font-size: 14px; }
 .care-icon-feeding { background: #ffd3b0; color: #7a3410; }
 .care-icon-medication { background: #ffc8d9; color: #7a1f45; }
 .care-icon-emergency { background: #bde0f5; color: #2d3a8c; }
@@ -2906,4 +2908,236 @@ img.pet-initial-large {
   .page-pet-profile .deco-dot {
     display: none;
   }
+}
+
+
+/* ---------- Delete a pet (#24) ---------- */
+
+.delete-link {
+  margin-right: auto;
+  align-self: center;
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.delete-link:hover {
+  text-decoration: underline;
+}
+
+.delete-card {
+  padding: 28px 24px 24px;
+}
+
+.delete-card h1 {
+  margin-bottom: 10px;
+  font-size: 26px;
+}
+
+.delete-card p {
+  margin-bottom: 8px;
+}
+
+.delete-bookings {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.delete-bookings a {
+  display: block;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.delete-bookings a:hover {
+  background: var(--bg);
+}
+
+.delete-card .form-actions {
+  margin-top: 18px;
+}
+
+
+/* ---------- Temperament (#22, #87) ---------- */
+
+.trait-chips {
+  column-gap: 8px;
+  row-gap: 10px;
+  margin-top: 4px;
+}
+
+.trait-chips .chip span {
+  min-height: 34px;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.temperament-card {
+  margin-top: 14px;
+}
+
+.temperament-card .care-notes {
+  max-width: none;
+}
+
+.trait-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trait-tags .tag {
+  padding: 4px 11px;
+  background: var(--lavender);
+  color: var(--purple-dark);
+  font-size: 12px;
+}
+
+/* ---------- Ratings and reviews (#62, #63, #66) ---------- */
+
+.stars {
+  display: inline-flex;
+  gap: 1px;
+  font-size: 16px;
+  line-height: 1;
+  vertical-align: -2px;
+}
+
+.star {
+  color: #e6d3ca;
+}
+
+.star.is-on {
+  color: var(--yellow);
+}
+
+/* Star picker: the radios are listed 5..1 and shown right to left, so the
+   picked star and every star "before" it (its later siblings) light up. */
+.star-picker {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 4px;
+}
+
+.star-option {
+  position: relative;
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+.star-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.star-option span[aria-hidden] {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  color: #e6d3ca;
+  transition: color 0.1s;
+}
+
+.star-option:hover span[aria-hidden],
+.star-option:hover ~ .star-option span[aria-hidden],
+.star-option:has(input:checked) span[aria-hidden],
+.star-option:has(input:checked) ~ .star-option span[aria-hidden] {
+  color: var(--yellow);
+}
+
+.star-option input:focus-visible + span {
+  outline: 3px solid rgba(244, 162, 122, 0.5);
+  border-radius: 6px;
+}
+
+.review-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fcf6f2;
+}
+
+.review-box h3 {
+  font-size: 15px;
+}
+
+.review-box p {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.review-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.review-box-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.review-box-cta .btn {
+  flex: none;
+}
+
+.review-list {
+  margin-top: 22px;
+}
+
+.caregiver-card-body .review-list {
+  margin-top: 0;
+}
+
+.review-list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+
+.review-list-head h2 {
+  font-size: 18px;
+}
+
+.review-average {
+  font-size: 13px;
+}
+
+.review {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.review p {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.care-summary .phone-link,
+.pet-rating-line .stars {
+  font-size: 13px;
 }

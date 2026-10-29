@@ -3,8 +3,7 @@ branch = True
 source = .
 omit =
     */migrations/*
-    */tests.py
-    */test_*.py
+    */tests/*
     manage.py
     config/asgi.py
     config/wsgi.py

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static review_tags %}
 
 {% block title %}{{ caregiver.name }} | PawPal{% endblock %}
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
@@ -91,6 +91,10 @@
       {% if caregiver.special_skills %}<p class="caregiver-text">{{ caregiver.special_skills }}</p>{% endif %}
       {% if caregiver.certifications %}<p class="caregiver-text"><strong>Certifications:</strong> {{ caregiver.certifications }}</p>{% endif %}
       {% if not caregiver.special_skills and not caregiver.certifications %}<p class="caregiver-text">{{ caregiver.experience_label }} of pet care experience.</p>{% endif %}
+    </section>
+
+    <section class="caregiver-public-card caregiver-card-body">
+      {% caregiver_reviews caregiver %}
     </section>
   </div>
 

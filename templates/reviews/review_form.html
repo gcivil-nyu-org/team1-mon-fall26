@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load review_tags %}
+
+{% block title %}Leave a review · PawPal{% endblock %}
+
+{% block main_class %}page page-narrow{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{{ booking.get_absolute_url }}"><span aria-hidden="true">&lsaquo;</span> Back to the booking</a>
+
+  <div class="page-heading">
+    <div>
+      <h1>{% if is_caregiver %}Review {{ booking.owner.first_name|default:booking.owner.username }} &amp; {{ booking.pet.name }}{% else %}Review {{ booking.caregiver.name }}{% endif %}</h1>
+      <p class="muted">{{ booking.service_type.name }} · {{ booking.start_time|date:"D, M j" }}</p>
+    </div>
+  </div>
+
+  <form method="post" class="card form-card review-form" novalidate>
+    {% csrf_token %}
+    <fieldset class="field{% if form.rating.errors %} has-error{% endif %}">
+      <legend>{{ form.rating.label }} <span class="required">*</span></legend>
+      <div class="star-picker">
+        {% for radio in form.rating %}
+          <label class="star-option" title="{{ radio.choice_label }}">{{ radio.tag }}<span aria-hidden="true">★</span><span class="visually-hidden">{{ radio.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      {% for error in form.rating.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="field{% if form.comment.errors %} has-error{% endif %}">
+      <div class="label-row">
+        <label for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
+        <span class="tag">Optional</span>
+      </div>
+      {{ form.comment }}
+      {% for error in form.comment.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <p class="muted small">{% if is_caregiver %}Your review shows on {{ booking.pet.name }}'s profile for other caregivers.{% else %}Your review shows on {{ booking.caregiver.name }}'s profile.{% endif %} You can review each booking once.</p>
+
+    <div class="form-actions">
+      <a class="btn btn-outline" href="{{ booking.get_absolute_url }}">Cancel</a>
+      <button type="submit" class="btn btn-dark">Submit review</button>
+    </div>
+  </form>
+{% endblock %}

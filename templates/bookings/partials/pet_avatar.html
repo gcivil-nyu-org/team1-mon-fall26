@@ -1,0 +1,2 @@
+{# A pet's photo, or its first letter when there's no photo. Pass `pet` and the avatar `classes`. #}
+{% if pet.photo %}<img class="{{ classes }} theme-{{ pet.theme }} has-photo" src="{{ pet.photo.url }}" alt="">{% else %}<span class="{{ classes }} theme-{{ pet.theme }}" aria-hidden="true">{{ pet.name|first|upper }}</span>{% endif %}

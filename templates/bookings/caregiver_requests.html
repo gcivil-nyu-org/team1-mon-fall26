@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load booking_tags %}
+{% load booking_tags review_tags %}
 
 {% block title %}Care requests · PawPal{% endblock %}
 
@@ -37,7 +37,7 @@
           {% for booking in bookings %}
             <li>
               <a class="request-row{% if booking == selected %} selected{% endif %}" href="?status={{ active_tab }}&amp;b={{ booking.pk }}"{% if booking == selected %} aria-current="true"{% endif %}>
-                <span class="request-avatar theme-{{ booking.pet.theme }}" aria-hidden="true">{{ booking.pet.name|first|upper }}</span>
+                {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="request-avatar" %}
                 <span class="request-row-text">
                   <span><strong>{{ booking.pet.name }}</strong> <span class="muted">· {{ booking.pet.pet_type }}</span></span>
                   <span class="request-row-meta">{{ booking.service_type.name }} · {{ booking.start_time|date:"D, M j · g:i A" }}</span>
@@ -54,7 +54,7 @@
         {% with b=selected %}
         <aside class="card request-panel" aria-label="Request from {{ b.owner|short_name }}">
           <div class="request-panel-header">
-            <span class="request-avatar request-avatar-large theme-{{ b.pet.theme }}" aria-hidden="true">{{ b.pet.name|first|upper }}</span>
+            {% include "bookings/partials/pet_avatar.html" with pet=b.pet classes="request-avatar request-avatar-large" %}
             <div>
               <h2>{{ b.pet.name }}</h2>
               <p class="muted">{{ b.pet.pet_type }}{% if b.pet.age_short %} · {{ b.pet.age_short }}{% endif %} · Owner: {{ b.owner|short_name }}</p>
@@ -102,6 +102,7 @@
             {% else %}
               <p class="request-done">You completed this booking.<br>{{ b.owner|first_name }} can see it as completed, and it is saved in your booking history.</p>
             {% endif %}
+            {% booking_review_box b %}
           {% endif %}
         </aside>
         {% endwith %}

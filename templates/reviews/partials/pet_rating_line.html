@@ -1,0 +1,11 @@
+{% load review_tags %}
+{% if summary.count %}
+  <section class="care-summary-item pet-rating-line">
+    <span class="care-icon care-icon-rating" aria-hidden="true">★</span>
+    <div>
+      <h3>From other caregivers</h3>
+      <p>{% stars summary.average %} {{ summary.average }} · {{ summary.count }} review{{ summary.count|pluralize }}</p>
+      {% if latest.comment %}<p class="muted">“{{ latest.comment|truncatechars:120 }}”</p>{% endif %}
+    </div>
+  </section>
+{% endif %}

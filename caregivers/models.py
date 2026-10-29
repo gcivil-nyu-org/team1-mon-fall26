@@ -47,15 +47,21 @@ class CaregiverProfile(models.Model):
     # on the map. Owners never see it; they see `neighborhood` instead.
     address = models.CharField(max_length=255, blank=True)
     # Rounded to about 100 m (see caregivers/geocoding.py).
-    latitude = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True)
+    latitude = models.DecimalField(
+        max_digits=8, decimal_places=3, null=True, blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=8, decimal_places=3, null=True, blank=True
+    )
     neighborhood = models.CharField(max_length=100, blank=True)
     service_radius_miles = models.PositiveSmallIntegerField(
         default=3,
         validators=[MinValueValidator(1), MaxValueValidator(25)],
         help_text="How far you're willing to travel, in miles.",
     )
-    profile_photo = models.ImageField(upload_to="caregiver/photos", blank=True, null=True)
+    profile_photo = models.ImageField(
+        upload_to="caregiver/photos", blank=True, null=True
+    )
     special_skills = models.TextField(blank=True)
     certifications = models.TextField(blank=True)
     accepting_new_bookings = models.BooleanField(default=True)
@@ -98,7 +104,9 @@ class ServiceType(models.Model):
         name = self.name.lower()
         if any(word in name for word in ("walk", "daycare", "training")):
             return "walk"
-        if any(word in name for word in ("drop-in", "sitting", "overnight", "boarding")):
+        if any(
+            word in name for word in ("drop-in", "sitting", "overnight", "boarding")
+        ):
             return "home"
         if any(word in name for word in ("feeding", "medication")):
             return "feeding"
@@ -117,24 +125,14 @@ class CaregiverService(models.Model):
         ("walk", "Per Walk"),
     ]
 
-    price_unit = models.CharField(
-        max_length=10,
-        choices=PRICE_UNITS,
-        default="hour"
-    )
-    price = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
+    price_unit = models.CharField(max_length=10, choices=PRICE_UNITS, default="hour")
+    price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["caregiver", "service_type"],
-                name="unique_caregiver_service"
+                fields=["caregiver", "service_type"], name="unique_caregiver_service"
             )
         ]

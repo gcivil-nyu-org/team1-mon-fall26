@@ -40,15 +40,17 @@ def address_suggestions(request):
         suggestions = autocomplete(request.GET.get("q", ""))
     except GeocodingUnavailable:
         suggestions = []
-    return JsonResponse({
-        "suggestions": [
-            {
-                "address": s.address,
-                "neighborhood": _neighborhood_label(s.neighborhood, s.borough),
-            }
-            for s in suggestions
-        ]
-    })
+    return JsonResponse(
+        {
+            "suggestions": [
+                {
+                    "address": s.address,
+                    "neighborhood": _neighborhood_label(s.neighborhood, s.borough),
+                }
+                for s in suggestions
+            ]
+        }
+    )
 
 
 @login_required
@@ -59,7 +61,9 @@ def address_neighborhood(request):
         location = geocode(request.GET.get("address", ""))
     except GeocodingUnavailable:
         location = None
-    label = _neighborhood_label(location.neighborhood, location.borough) if location else ""
+    label = (
+        _neighborhood_label(location.neighborhood, location.borough) if location else ""
+    )
     return JsonResponse({"neighborhood": label})
 
 
@@ -108,16 +112,14 @@ def create_caregiver_profile(request):
 
     else:
         # Start from the name they signed up with.
-        form = CaregiverProfileForm(initial={
-            "first_name": request.user.first_name,
-            "last_name": request.user.last_name,
-        })
+        form = CaregiverProfileForm(
+            initial={
+                "first_name": request.user.first_name,
+                "last_name": request.user.last_name,
+            }
+        )
 
-    return render(
-        request,
-        "caregivers/create_profile.html",
-        {"form": form}
-    )
+    return render(request, "caregivers/create_profile.html", {"form": form})
 
 
 @login_required
@@ -125,11 +127,7 @@ def edit_caregiver_profile(request, pk):
     caregiver = get_object_or_404(CaregiverProfile, pk=pk, user=request.user)
 
     if request.method == "POST":
-        form = CaregiverProfileForm(
-            request.POST,
-            request.FILES,
-            instance=caregiver
-        )
+        form = CaregiverProfileForm(request.POST, request.FILES, instance=caregiver)
 
         if form.is_valid():
             caregiver = form.save()
@@ -151,10 +149,7 @@ def edit_caregiver_profile(request, pk):
         ).values_list("service_type_id", flat=True)
 
         form = CaregiverProfileForm(
-            instance=caregiver,
-            initial={
-                "selected_services": existing_services
-            }
+            instance=caregiver, initial={"selected_services": existing_services}
         )
 
     return render(
@@ -163,7 +158,7 @@ def edit_caregiver_profile(request, pk):
         {
             "form": form,
             "caregiver": caregiver,
-        }
+        },
     )
 
 
@@ -172,11 +167,7 @@ def delete_caregiver_service(request, pk, service_id):
     # Like the other service pages, only the caregiver themselves can delete.
     caregiver = get_object_or_404(CaregiverProfile, pk=pk, user=request.user)
 
-    service = get_object_or_404(
-        CaregiverService,
-        pk=service_id,
-        caregiver=caregiver
-    )
+    service = get_object_or_404(CaregiverService, pk=service_id, caregiver=caregiver)
 
     if request.method == "POST":
         service.delete()
@@ -188,7 +179,7 @@ def delete_caregiver_service(request, pk, service_id):
         {
             "caregiver": caregiver,
             "service": service,
-        }
+        },
     )
 
 
@@ -200,10 +191,7 @@ def caregiver_profile_detail(request, pk):
         caregiver=caregiver, is_active=True
     ).select_related("service_type")
 
-    service_listings = provided_services.filter(
-        is_active=True,
-        price__isnull=False
-    )
+    service_listings = provided_services.filter(is_active=True, price__isnull=False)
 
     return render(
         request,
@@ -214,7 +202,7 @@ def caregiver_profile_detail(request, pk):
             "is_own": bool(caregiver.user_id) and caregiver.user_id == request.user.id,
             "provided_services": provided_services,
             "service_listings": service_listings,
-        }
+        },
     )
 
 
@@ -222,7 +210,11 @@ def caregiver_profile_detail(request, pk):
 def caregiver_list_services(request, pk):
     caregiver = get_object_or_404(CaregiverProfile, pk=pk, user=request.user)
     services = CaregiverService.objects.filter(caregiver=caregiver)
-    return render(request, "caregivers/list_services.html", {"services": services, "caregiver": caregiver})
+    return render(
+        request,
+        "caregivers/list_services.html",
+        {"services": services, "caregiver": caregiver},
+    )
 
 
 @login_required
@@ -236,14 +228,13 @@ def add_caregiver_service(request, pk):
             service_type = form.cleaned_data["service_type"]
 
             already_exists = CaregiverService.objects.filter(
-                caregiver=caregiver,
-                service_type=service_type
+                caregiver=caregiver, service_type=service_type
             ).exists()
 
             if already_exists:
                 form.add_error(
                     "service_type",
-                    "You already have this service! Please edit your existing listing instead."
+                    "You already have this service! Please edit your existing listing instead.",
                 )
             else:
                 service = form.save(commit=False)
@@ -261,7 +252,7 @@ def add_caregiver_service(request, pk):
         {
             "form": form,
             "caregiver": caregiver,
-        }
+        },
     )
 
 
@@ -269,11 +260,7 @@ def add_caregiver_service(request, pk):
 def edit_caregiver_service(request, pk, service_id):
     caregiver = get_object_or_404(CaregiverProfile, pk=pk, user=request.user)
 
-    service = get_object_or_404(
-        CaregiverService,
-        pk=service_id,
-        caregiver=caregiver
-    )
+    service = get_object_or_404(CaregiverService, pk=service_id, caregiver=caregiver)
 
     if request.method == "POST":
         form = CaregiverServicesForm(request.POST, instance=service)
@@ -291,7 +278,7 @@ def edit_caregiver_service(request, pk, service_id):
             "form": form,
             "caregiver": caregiver,
             "service": service,
-        }
+        },
     )
 
 
@@ -324,9 +311,7 @@ def caregiver_list(request):
     service_code = params.get("service", "").strip()
     service = None
     if service_code:
-        service = next(
-            (st for st in service_types if str(st.pk) == service_code), None
-        )
+        service = next((st for st in service_types if str(st.pk) == service_code), None)
         if service is None:
             notice = "Choose a service from the list."
             service_code = ""
@@ -406,7 +391,10 @@ def caregiver_list(request):
         )
         if not results:
             suggestions = nearby_suggestions(
-                caregivers, float(origin["latitude"]), float(origin["longitude"]), distance
+                caregivers,
+                float(origin["latitude"]),
+                float(origin["longitude"]),
+                distance,
             )
     elif results is None:
         results = list(caregivers)

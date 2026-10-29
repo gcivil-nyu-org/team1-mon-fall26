@@ -49,7 +49,7 @@ class CaregiverProfileForm(forms.ModelForm):
             "supported_pet_types",
             "pet_care_skills",
             "accepting_new_bookings",
-            ]
+        ]
         widgets = {
             "supported_pet_types": forms.CheckboxSelectMultiple(
                 attrs={"class": "pet-checkbox"}
@@ -118,10 +118,12 @@ class CaregiverProfileForm(forms.ModelForm):
     def save(self, commit=True):
         caregiver = super().save(commit=False)
         caregiver.name = " ".join(
-            part for part in (
+            part
+            for part in (
                 self.cleaned_data["first_name"].strip(),
                 self.cleaned_data["last_name"].strip(),
-            ) if part
+            )
+            if part
         )
         if self._location is not None:
             caregiver.latitude = self._location.latitude
@@ -129,7 +131,9 @@ class CaregiverProfileForm(forms.ModelForm):
             caregiver.neighborhood = self._location.neighborhood
             # Shown to owners, e.g. "Park Slope, Brooklyn".
             caregiver.service_area = ", ".join(
-                part for part in (self._location.neighborhood, self._location.borough) if part
+                part
+                for part in (self._location.neighborhood, self._location.borough)
+                if part
             )
         elif self.geocoding_unavailable:
             # Don't keep coordinates that belong to an old address.
@@ -144,23 +148,17 @@ class CaregiverProfileForm(forms.ModelForm):
 class CaregiverServicesForm(forms.ModelForm):
     class Meta:
         model = CaregiverService
-        fields = [
-            "service_type",
-            "price_unit",
-            "price",
-            "description",
-            "is_active"
-        ]
+        fields = ["service_type", "price_unit", "price", "description", "is_active"]
         widgets = {
-            "description": forms.Textarea(attrs={
-                "rows": 3,
-                "placeholder": "Tell pet owners what's included in this service..."
-            }),
-            "price": forms.NumberInput(attrs={
-                "step": "0.01",
-                "min": "0",
-                "placeholder": "e.g. 25.00"
-            }),
+            "description": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Tell pet owners what's included in this service...",
+                }
+            ),
+            "price": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0", "placeholder": "e.g. 25.00"}
+            ),
         }
 
     def clean_price(self):

@@ -39,4 +39,6 @@ class Command(BaseCommand):
                 found += 1
             time.sleep(0.2)  # be gentle with the free public service
 
-        self.stdout.write(self.style.SUCCESS(f"Updated {found}, not found {not_found}."))
+        self.stdout.write(
+            self.style.SUCCESS(f"Updated {found}, not found {not_found}.")
+        )

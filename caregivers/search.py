@@ -71,8 +71,7 @@ def find_neighborhood(text):
     if not name:
         return None
     candidates = [
-        n for n in neighborhoods()
-        if not borough or _simplify(n["borough"]) == borough
+        n for n in neighborhoods() if not borough or _simplify(n["borough"]) == borough
     ]
     for n in candidates:
         if _simplify(n["name"]) == name:
@@ -108,7 +107,9 @@ def nearest_neighborhood(latitude, longitude):
     """The neighborhood whose center is closest to the point."""
     return min(
         neighborhoods(),
-        key=lambda n: distance_miles(latitude, longitude, n["latitude"], n["longitude"]),
+        key=lambda n: distance_miles(
+            latitude, longitude, n["latitude"], n["longitude"]
+        ),
     )
 
 
@@ -126,19 +127,16 @@ def searchable_caregivers(viewer, available_only=True):
     caregivers = CaregiverProfile.objects.filter(user__isnull=False)
     if available_only:
         caregivers = caregivers.filter(accepting_new_bookings=True)
-    caregivers = (
-        caregivers.prefetch_related(
-            "supported_pet_types",
-            Prefetch(
-                "caregiverservice_set",
-                queryset=listed_services()
-                .select_related("service_type")
-                .order_by("service_type__name"),
-                to_attr="listed_services",
-            ),
-        )
-        .order_by("name")
-    )
+    caregivers = caregivers.prefetch_related(
+        "supported_pet_types",
+        Prefetch(
+            "caregiverservice_set",
+            queryset=listed_services()
+            .select_related("service_type")
+            .order_by("service_type__name"),
+            to_attr="listed_services",
+        ),
+    ).order_by("name")
     if viewer.is_authenticated:
         caregivers = caregivers.exclude(user=viewer)
     return caregivers
@@ -173,7 +171,9 @@ def caregivers_near(caregivers, latitude, longitude, max_miles=None):
 def caregivers_matching_text(caregivers, text):
     """Fallback when the address lookup is down: match the area by name."""
     return list(
-        caregivers.filter(Q(neighborhood__icontains=text) | Q(service_area__icontains=text))
+        caregivers.filter(
+            Q(neighborhood__icontains=text) | Q(service_area__icontains=text)
+        )
     )
 
 

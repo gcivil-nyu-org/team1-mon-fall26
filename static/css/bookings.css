@@ -522,3 +522,7 @@
 .dashboard .status-pill.status-declined { background: #efe9e6; color: #5a4038; }
 .dashboard .status-pill.status-completed { background: #dcebfa; color: #1f4e79; }
 .dashboard .status-pill.status-cancelled { background: #fbe3ea; color: #7a1f45; }
+
+/* Pet photos in booking rows, the request page and the caregiver's request panel. */
+img.booking-avatar,
+img.request-avatar { object-fit: cover; padding: 0; background: var(--theme-bg); }
