@@ -26,4 +26,19 @@ urlpatterns = [
         views.delete_caregiver_service,
         name="delete_caregiver_service",
     ),
+    path(
+    "availability/",
+    views.manage_availability,
+    name="manage_availability",
+    ),
+    path(
+        "availability/<int:slot_id>/delete/",
+        views.delete_availability,
+        name="delete_availability",
+    ),
+    path(
+    "availability/<int:slot_id>/edit/",
+    views.edit_availability,
+    name="edit_availability",
+    ),
 ]

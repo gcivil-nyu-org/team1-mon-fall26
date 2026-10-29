@@ -25,7 +25,11 @@ from .search import (
     searchable_caregivers,
     sort_caregivers,
 )
-
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from .forms import CaregiverAvailabilityForm
+from .models import CaregiverAvailability, CaregiverProfile
+from django.core.exceptions import ValidationError
 
 def _neighborhood_label(neighborhood, borough):
     """ "Park Slope", "Brooklyn" -> "Park Slope, Brooklyn"."""
@@ -511,3 +515,94 @@ def _coordinates(params):
     if not (40.4 <= latitude <= 41.0 and -74.3 <= longitude <= -73.6):
         return None, None
     return latitude, longitude
+
+@login_required
+def manage_availability(request):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    if request.method == "POST":
+        form = CaregiverAvailabilityForm(request.POST)
+
+        if form.is_valid():
+            slot = form.save(commit=False)
+            slot.caregiver = caregiver
+
+            try:
+                slot.full_clean()
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                slot.save()
+                return redirect("manage_availability")
+    else:
+        form = CaregiverAvailabilityForm()
+
+    slots = CaregiverAvailability.objects.filter(
+    caregiver=caregiver
+    ).order_by("date", "start_time")
+
+    return render(
+        request,
+        "caregivers/manage_availability.html",
+        {
+            "caregiver": caregiver,
+            "slots": slots,
+            "form": form,
+        },
+    )
+
+
+@login_required
+def delete_availability(request, slot_id):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    slot = get_object_or_404(
+        CaregiverAvailability,
+        pk=slot_id,
+        caregiver=caregiver,
+    )
+
+    if request.method == "POST":
+        slot.delete()
+
+    return redirect("manage_availability")
+
+@login_required
+def edit_availability(request, slot_id):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    slot = get_object_or_404(
+        CaregiverAvailability,
+        pk=slot_id,
+        caregiver=caregiver,
+    )
+
+    if request.method == "POST":
+        form = CaregiverAvailabilityForm(
+            request.POST,
+            instance=slot,
+        )
+
+        if form.is_valid():
+            updated_slot = form.save(commit=False)
+            updated_slot.caregiver = caregiver
+            updated_slot.full_clean()
+            updated_slot.save()
+            return redirect("manage_availability")
+    else:
+        form = CaregiverAvailabilityForm(instance=slot)
+
+    return render(
+        request,
+        "caregivers/edit_availability.html",
+        {"form": form, "slot": slot},
+    )

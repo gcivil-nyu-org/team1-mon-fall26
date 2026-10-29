@@ -29,6 +29,9 @@
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
         <a href="{% url 'bookings:caregiver_requests' %}" class="{% if section == 'bookings' %}active{% endif %}">Requests</a>
         {% if user.caregiver_profile %}
+            <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' or request.resolver_match.url_name == 'edit_availability' %}active{% endif %}">Availability</a>
+        {% endif %}
+        {% if user.caregiver_profile %}
           <a href="{% url 'caregiver' user.caregiver_profile.pk %}" class="{% with page=request.resolver_match.url_name %}{% if page == 'caregiver' or page == 'edit_caregiver_profile' or page == 'services' or page == 'add_caregiver_service' or page == 'edit_caregiver_service' or page == 'delete_caregiver_service' %}active{% endif %}{% endwith %}">My profile</a>
         {% else %}
           <a href="{% url 'create_caregiver_profile' %}" class="{% if request.resolver_match.url_name == 'create_caregiver_profile' %}active{% endif %}">My profile</a>

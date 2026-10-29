@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Manage Availability</h1>
+
+    <h2>Add Available Time</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Availability</button>
+    </form>
+
+    <h2>My Availability</h2>
+
+    {% for slot in slots %}
+        <div>
+            <p>
+                {{ slot.date }}:
+                {{ slot.start_time }} – {{ slot.end_time }}
+            </p>
+            <a href="{% url 'edit_availability' slot.id %}">
+                Edit
+            </a>
+            <form
+                method="post"
+                action="{% url 'delete_availability' slot.id %}"
+            >
+                {% csrf_token %}
+                <button type="submit">Remove</button>
+            </form>
+        </div>
+    {% empty %}
+        <p>No availability added yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

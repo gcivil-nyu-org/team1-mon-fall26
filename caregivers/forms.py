@@ -8,6 +8,7 @@ from .models import (
     CaregiverService,
     ServiceType,
     experience_range,
+    CaregiverAvailability
 )
 
 
@@ -166,3 +167,22 @@ class CaregiverServicesForm(forms.ModelForm):
         if price is not None and price < 0:
             raise forms.ValidationError("Price can't be negative.")
         return price
+
+class CaregiverAvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = CaregiverAvailability
+        fields = ["date", "start_time", "end_time"]
+        widgets = {
+            "date": forms.DateInput(
+                attrs={"type": "date"},
+                format="%Y-%m-%d",
+            ),
+            "start_time": forms.TimeInput(
+                attrs={"type": "time"},
+                format="%H:%M",
+            ),
+            "end_time": forms.TimeInput(
+                attrs={"type": "time"},
+                format="%H:%M",
+            ),
+        }
