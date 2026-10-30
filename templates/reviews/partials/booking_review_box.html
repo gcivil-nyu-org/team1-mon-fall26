@@ -1,18 +1,15 @@
 {% load review_tags %}
 {% if review %}
   <section class="review-box" aria-label="Your review">
-    <div class="review-box-head">
-      <h3>Your review</h3>
-      {% stars review.rating %}
-    </div>
-    {% if review.comment %}<p>{{ review.comment|linebreaksbr }}</p>{% endif %}
+    <h3>Your review</h3>
+    {% include "reviews/partials/review_card.html" %}
   </section>
 {% elif can_review %}
   <section class="review-box review-box-cta">
     <div>
-      <h3>{% if is_caregiver %}How was caring for {{ booking.pet.name }}?{% else %}How did {{ booking.caregiver.name }} do?{% endif %}</h3>
-      <p class="muted">{% if is_caregiver %}Rate {{ booking.owner.first_name|default:booking.owner.username }} and {{ booking.pet.name }} so other caregivers know what to expect.{% else %}Rate this service and leave a review for other pet owners.{% endif %}</p>
+      <h3>{% if is_caregiver %}How were {{ booking.pet.name }} and {{ booking.owner.first_name|default:booking.owner.username }}?{% else %}How was {{ booking.caregiver.name }}?{% endif %}</h3>
+      <p class="muted">{% if is_caregiver %}Your review helps other caregivers know what to expect.{% else %}Rate this visit and leave a review for other pet owners.{% endif %}</p>
     </div>
-    <a class="btn btn-dark btn-small" href="{% url 'reviews:create' booking.pk %}">Leave a review</a>
+    <a class="btn btn-dark btn-small" href="{% url 'reviews:create' booking.pk %}">{% if is_caregiver %}Leave a review{% else %}Rate this visit{% endif %}</a>
   </section>
 {% endif %}

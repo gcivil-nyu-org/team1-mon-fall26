@@ -22,6 +22,7 @@ SCRIPT = (
     "print(json.dumps({'debug': s.DEBUG, 'secret': s.SECRET_KEY,\n"
     "    'dev_secret': s.SECRET_KEY == s.DEV_SECRET_KEY,\n"
     "    'hosts': s.ALLOWED_HOSTS, 'db': s.DATABASES['default'],\n"
+    "    'mail': s.MAILERS['default'],\n"
     "    'warnings': [str(w.message) for w in caught]}, default=str))\n"
 )
 
@@ -35,6 +36,11 @@ DEPLOY_VARS = (
     "RDS_USERNAME",
     "RDS_PASSWORD",
     "SQLITE_DB_PATH",
+    "EMAIL_HOST",
+    "EMAIL_PORT",
+    "EMAIL_HOST_USER",
+    "EMAIL_HOST_PASSWORD",
+    "EMAIL_USE_TLS",
 )
 
 
@@ -109,3 +115,25 @@ class ElasticBeanstalkDatabaseTests(SimpleTestCase):
         database = (BASE_DIR / ".ebextensions" / "02_database.config").read_text()
         self.assertIn("SQLITE_DB_PATH: /var/app/data/db.sqlite3", static)
         self.assertIn("touch /var/app/data/db.sqlite3", database)
+
+
+class EmailSettingsTests(SimpleTestCase):
+    """Password reset emails (#46): printed locally, sent by SMTP on a server."""
+
+    def test_emails_are_printed_locally(self):
+        mail = load_settings()["mail"]
+        self.assertEqual(
+            mail["BACKEND"], "django.core.mail.backends.console.EmailBackend"
+        )
+
+    def test_smtp_when_email_host_is_set(self):
+        mail = load_settings(
+            EMAIL_HOST="smtp.example.com",
+            EMAIL_HOST_USER="pawpal@example.com",
+            EMAIL_HOST_PASSWORD="app-password",
+        )["mail"]
+        self.assertEqual(mail["BACKEND"], "django.core.mail.backends.smtp.EmailBackend")
+        self.assertEqual(mail["OPTIONS"]["host"], "smtp.example.com")
+        self.assertEqual(mail["OPTIONS"]["port"], 587)
+        self.assertEqual(mail["OPTIONS"]["username"], "pawpal@example.com")
+        self.assertTrue(mail["OPTIONS"]["use_tls"])

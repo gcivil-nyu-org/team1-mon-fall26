@@ -3,22 +3,14 @@
   <div class="review-list-head">
     <h2 id="reviews-heading">{{ title }}</h2>
     {% if summary.count %}
-      <p class="review-average">{% stars summary.average %} <strong>{{ summary.average }}</strong> <span class="muted">· {{ summary.count }} review{{ summary.count|pluralize }}</span></p>
+      <p class="review-average"><strong>{{ summary.average }}</strong> {% paws summary.average %} <span class="muted">{{ summary.count }} review{{ summary.count|pluralize }}</span></p>
     {% endif %}
   </div>
-  {% for review in reviews %}
-    <article class="review">
-      <div class="review-head">
-        {% stars review.rating %}
-        <span class="muted small">
-          {{ review.author.first_name|default:review.author.username }}
-          {% if show == "pet" %}· {{ review.booking.pet.name }}{% else %}· {{ review.booking.service_type.name }}{% endif %}
-          · {{ review.created_at|date:"M j, Y" }}
-        </span>
-      </div>
-      {% if review.comment %}<p>{{ review.comment|linebreaksbr }}</p>{% endif %}
-    </article>
-  {% empty %}
-    <p class="muted">{{ empty }}</p>
-  {% endfor %}
+  <div class="review-cards">
+    {% for review in reviews %}
+      {% include "reviews/partials/review_card.html" %}
+    {% empty %}
+      <p class="muted">{{ empty }}</p>
+    {% endfor %}
+  </div>
 </section>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{# The Log In page's layout (no site header, card over colored circles), for the password reset screens. #}
+
+{% block site_header %}{% endblock %}
+{% block main_class %}auth-main{% endblock %}
+{% block messages %}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=11">
+
+<section class="auth-screen" aria-labelledby="auth-title">
+    <span class="auth-circle auth-circle-lavender" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-yellow" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-pink" aria-hidden="true"></span>
+    <span class="auth-circle auth-circle-mint" aria-hidden="true"></span>
+
+    <div class="auth-panel auth-form-panel">
+        <div class="auth-brand">
+            <span class="auth-brand-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+            <span>PawPal</span>
+        </div>
+        {% block auth_body %}{% endblock %}
+    </div>
+</section>
+{% endblock %}

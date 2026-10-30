@@ -1,0 +1,9 @@
+{# The booking being reviewed: pet, service, who with, date and its Completed status. #}
+<div class="review-booking">
+  {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
+  <div class="review-booking-text">
+    <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+    <span>with {% if is_caregiver %}{{ booking.owner.first_name|default:booking.owner.username }}{% if booking.owner.last_name %} {{ booking.owner.last_name|first }}.{% endif %}{% else %}{{ booking.caregiver.name }}{% endif %} · {{ booking.start_time|date:"D, M j" }}</span>
+  </div>
+  {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+</div>

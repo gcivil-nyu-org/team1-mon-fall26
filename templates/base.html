@@ -74,3 +74,77 @@
   </main>
 </body>
 </html>
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PawPal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=10" rel="stylesheet">
+  <link href="{% static 'css/bookings.css' %}?v=16" rel="stylesheet">
+</head>
+<body>
+  {% block site_header %}
+  {# Teammates: name your URL "caregiver_list" and the Find caregivers link starts working. #}
+  {% url 'caregiver_list' as find_caregivers_url %}
+  {% url 'bookings:booking_list' as my_requests_url %}
+  {% with section=request.resolver_match.app_name %}
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}">
+      <span class="brand-mark">{% include "partials/paw_icon.html" %}</span>
+      <span class="brand-name">PawPal</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main">
+      {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
+      {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
+        {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
+        <a href="{% url 'bookings:caregiver_requests' %}" class="{% if section == 'bookings' %}active{% endif %}">Requests</a>
+        {% if user.caregiver_profile %}
+          <a href="{% url 'caregiver' user.caregiver_profile.pk %}" class="{% with page=request.resolver_match.url_name %}{% if page == 'caregiver' or page == 'edit_caregiver_profile' or page == 'services' or page == 'add_caregiver_service' or page == 'edit_caregiver_service' or page == 'delete_caregiver_service' %}active{% endif %}{% endwith %}">My profile</a>
+        {% else %}
+          <a href="{% url 'create_caregiver_profile' %}" class="{% if request.resolver_match.url_name == 'create_caregiver_profile' %}active{% endif %}">My profile</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
+        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Find caregivers</a>
+        <a href="{{ my_requests_url|default:'#' }}" class="{% if section == 'bookings' and request.resolver_match.url_name != 'booking_create' %}active{% endif %}">My requests</a>
+      {% endif %}
+    </nav>
+
+    <div class="account">
+      {% if user.is_authenticated %}
+        <details class="account-menu">
+          <summary>
+            <span class="account-role">{% if user.caregiver_profile or user.account_profile.role == "caregiver" %}Caregiver{% else %}Pet owner{% endif %}</span>
+            <span class="avatar{% if user.caregiver_profile or user.account_profile.role == "caregiver" %} avatar-caregiver{% endif %}">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+          </summary>
+          <div class="account-dropdown">
+            <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
+            <a class="delete-account-link" href="{% url 'delete_account' %}">Delete account</a>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="link-button">Log out</button>
+          </form>
+          </div>
+        </details>
+      {% else %}
+        <a class="btn btn-dark btn-small" href="{% url 'login' %}">Log in</a>
+      {% endif %}
+    </div>
+  </header>
+  {% endwith %}
+  {% endblock site_header %}
+
+  <main class="{% block main_class %}page{% endblock %}">
+    {% block messages %}
+      {% include "partials/messages.html" %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Thanks! · PawPal{% endblock %}
+
+{% block main_class %}page page-narrow{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{{ back_url }}"><span aria-hidden="true">&lsaquo;</span> {% if is_caregiver %}Back to requests{% else %}Back to my requests{% endif %}</a>
+
+  <article class="card review-thanks">
+    <span class="review-thanks-check" aria-hidden="true">✓</span>
+    <span class="review-thanks-paw" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+    <h1>Thanks, {{ request.user.first_name|default:request.user.username }}!</h1>
+    <p class="muted">{% if is_caregiver %}Other caregivers will see this when {{ booking.owner.first_name|default:booking.owner.username }} sends a request.{% else %}Your review is now on {{ booking.caregiver.name }}'s profile.{% endif %}</p>
+    {% include "reviews/partials/review_card.html" %}
+    {% if is_caregiver %}
+      <a class="btn btn-dark" href="{{ back_url }}">Back to requests</a>
+    {% else %}
+      <a class="btn btn-dark" href="{% url 'caregiver' booking.caregiver.pk %}">View {{ booking.caregiver.name }}'s profile</a>
+    {% endif %}
+  </article>
+{% endblock %}

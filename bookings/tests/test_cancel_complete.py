@@ -254,17 +254,24 @@ class MarkCompletedTests(SitterTestData):
         self.assertEqual(self.client.get(complete_url(booking)).status_code, 405)
 
     def test_unsafe_next_url_is_ignored(self):
-        booking = self.make_booking(status=Status.ACCEPTED, **started())
+        booking = self.make_booking(status=Status.PENDING, **started())
         response = self.client.post(
             complete_url(booking), {"next": "https://evil.example.com/"}
         )
         self.assertRedirects(response, booking.get_absolute_url())
 
-    def test_next_url_returns_to_the_requests_page(self):
-        booking = self.make_booking(status=Status.ACCEPTED, **started())
+    def test_next_url_returns_to_the_requests_page_when_it_cannot_complete(self):
+        booking = self.make_booking(status=Status.PENDING, **started())
         next_url = reverse("bookings:caregiver_requests") + "?status=accepted"
         response = self.client.post(complete_url(booking), {"next": next_url})
         self.assertRedirects(response, next_url)
+
+    def test_completing_goes_to_the_review_form(self):
+        # Figma: after "Mark as completed" the caregiver reviews the owner and pet.
+        booking = self.make_booking(status=Status.ACCEPTED, **started())
+        next_url = reverse("bookings:caregiver_requests") + "?status=accepted"
+        response = self.client.post(complete_url(booking), {"next": next_url})
+        self.assertRedirects(response, reverse("reviews:create", args=[booking.pk]))
 
     def test_owner_sees_completed_in_history(self):
         booking = self.make_booking(status=Status.ACCEPTED, **started())

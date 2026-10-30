@@ -1,0 +1,40 @@
+/* Delete account page (#48). */
+
+.delete-account { padding: 30px; }
+.delete-account h1 { margin: 10px 0 8px; font-size: 30px; }
+.delete-account-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--error-bg);
+  color: var(--error);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+}
+.delete-account-list { margin: 8px 0 14px; padding-left: 20px; line-height: 1.7; }
+.delete-account .small { margin-bottom: 18px; }
+.delete-account .field input {
+  display: block;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  font: inherit;
+}
+
+/* "Account deleted" note on the login page. */
+.auth-success-note {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  font-size: 13px;
+}

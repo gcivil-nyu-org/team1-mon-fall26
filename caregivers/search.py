@@ -124,7 +124,10 @@ def searchable_caregivers(viewer, available_only=True):
     By default only caregivers taking new bookings are included (#35); with
     available_only=False the others are listed too, but can't be requested.
     """
-    caregivers = CaregiverProfile.objects.filter(user__isnull=False)
+    # Only caregivers with an active account (deleted accounts are deactivated, #48).
+    caregivers = CaregiverProfile.objects.filter(
+        user__isnull=False, user__is_active=True
+    )
     if available_only:
         caregivers = caregivers.filter(accepting_new_bookings=True)
     caregivers = caregivers.prefetch_related(
@@ -180,7 +183,7 @@ def caregivers_matching_text(caregivers, text):
 def offered_service_types():
     """Service types at least one caregiver lists, for the service filter (#34)."""
     offered = listed_services().filter(
-        service_type=OuterRef("pk"), caregiver__user__isnull=False
+        service_type=OuterRef("pk"), caregiver__user__is_active=True
     )
     return ServiceType.objects.filter(Exists(offered)).order_by("name")
 

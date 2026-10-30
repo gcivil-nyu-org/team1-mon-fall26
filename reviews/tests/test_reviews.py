@@ -59,14 +59,16 @@ class OwnerReviewTests(ReviewTestData):
 
     def test_completed_booking_offers_a_review(self):
         response = self.client.get(self.booking.get_absolute_url())
-        self.assertContains(response, "How did Chloe Shih do?")
+        self.assertContains(response, "How was Chloe Shih?")
+        self.assertContains(response, "Rate this visit")
         self.assertContains(response, self.url)
 
     def test_rating_and_feedback_are_saved_to_the_booking(self):
         response = self.client.post(
             self.url, {"rating": 5, "comment": "Biscuit came home happy!"}
         )
-        self.assertRedirects(response, self.booking.get_absolute_url())
+        review = Review.objects.get()
+        self.assertRedirects(response, reverse("reviews:thanks", args=[review.pk]))
         review = Review.objects.get()
         self.assertEqual(review.booking, self.booking)
         self.assertEqual(review.author, self.owner)
@@ -83,7 +85,7 @@ class OwnerReviewTests(ReviewTestData):
             response = self.client.post(self.url, {"rating": bad})
             self.assertEqual(response.status_code, 200)
         self.assertContains(
-            self.client.post(self.url, {}), "Choose a rating from 1 to 5 stars."
+            self.client.post(self.url, {}), "Choose a rating from 1 to 5."
         )
         self.assertFalse(Review.objects.exists())
 
@@ -96,7 +98,7 @@ class OwnerReviewTests(ReviewTestData):
         self.client.post(reverse("reviews:create", args=[second.pk]), {"rating": 5})
 
         response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
-        self.assertContains(response, "Reviews from pet owners")
+        self.assertContains(response, "Reviews")
         self.assertContains(response, "On time and kind")
         self.assertContains(response, "4.5")
         self.assertContains(response, "2 reviews")
@@ -105,7 +107,7 @@ class OwnerReviewTests(ReviewTestData):
         self.client.post(self.url, {"rating": 3, "comment": "Fine"})
         response = self.client.get(self.booking.get_absolute_url())
         self.assertContains(response, "Your review")
-        self.assertContains(response, 'aria-label="3 out of 5 stars"')
+        self.assertContains(response, 'aria-label="Rated 3 out of 5"')
         self.assertNotContains(response, "Leave a review")
 
     def test_only_one_review_per_booking(self):
@@ -148,7 +150,7 @@ class CaregiverReviewTests(ReviewTestData):
 
     def test_caregiver_review_is_about_the_owner_and_pet(self):
         response = self.client.get(self.url)
-        self.assertContains(response, "Review Kat &amp; Biscuit")
+        self.assertContains(response, "How were Biscuit and Kat?")
         self.client.post(
             self.url, {"rating": 4, "comment": "Sweet dog, pulls on the leash"}
         )
@@ -158,7 +160,7 @@ class CaregiverReviewTests(ReviewTestData):
 
     def test_offered_in_the_request_panel_and_booking_page(self):
         panel = self.client.get(reverse("bookings:caregiver_requests") + "?status=all")
-        self.assertContains(panel, "How was caring for Biscuit?")
+        self.assertContains(panel, "How were Biscuit and Kat?")
         self.assertContains(self.client.get(self.booking.get_absolute_url()), self.url)
 
     def test_review_appears_on_the_pet_profile(self):
@@ -234,3 +236,76 @@ class ReviewAccessTests(ReviewTestData):
             booking=self.booking, author=self.owner, role="owner", rating=5
         )
         self.assertIn("5★", str(review))
+
+
+class FigmaReviewFlowTests(ReviewTestData):
+    """Kat's Figma: thanks page, paw ratings, "Rate this visit" and the 500-character limit."""
+
+    def test_owner_form_matches_the_design(self):
+        self.login(self.owner)
+        response = self.client.get(self.url)
+        self.assertContains(response, "How was Chloe?")
+        self.assertContains(response, "with Chloe Shih")
+        self.assertContains(response, "What went well? Anything Chloe could do better?")
+        self.assertContains(response, "0/500")
+        self.assertContains(response, reverse("bookings:booking_list"))
+
+    def test_caregiver_form_matches_the_design(self):
+        self.login(self.carer)
+        response = self.client.get(self.url)
+        self.assertContains(response, "How were Biscuit and Kat?")
+        self.assertContains(response, "How was Biscuit? Was Kat easy to work with?")
+        self.assertContains(response, reverse("bookings:caregiver_requests"))
+
+    def test_owner_thanks_page_links_to_the_caregiver(self):
+        self.login(self.owner)
+        response = self.client.post(
+            self.url, {"rating": 5, "comment": "Would book again!"}, follow=True
+        )
+        self.assertContains(response, "Thanks, Kat!")
+        self.assertContains(response, "Your review is now on Chloe Shih's profile.")
+        self.assertContains(response, "Would book again!")
+        self.assertContains(response, 'aria-label="Rated 5 out of 5"')
+        self.assertContains(response, reverse("caregiver", args=[self.caregiver.pk]))
+
+    def test_caregiver_thanks_page_goes_back_to_requests(self):
+        self.login(self.carer)
+        response = self.client.post(self.url, {"rating": 4}, follow=True)
+        self.assertContains(response, "Thanks, Chloe!")
+        self.assertContains(
+            response, "Other caregivers will see this when Kat sends a request."
+        )
+        self.assertContains(response, "Back to requests")
+
+    def test_only_the_author_sees_their_thanks_page(self):
+        review = Review.objects.create(
+            booking=self.booking, author=self.owner, role="owner", rating=5
+        )
+        self.login(self.carer)
+        self.assertEqual(
+            self.client.get(reverse("reviews:thanks", args=[review.pk])).status_code,
+            404,
+        )
+
+    def test_review_is_limited_to_500_characters(self):
+        self.login(self.owner)
+        response = self.client.post(self.url, {"rating": 5, "comment": "x" * 501})
+        self.assertContains(response, "Keep your review under 500 characters.")
+        self.assertFalse(Review.objects.exists())
+
+    def test_rate_this_visit_shows_in_the_owners_panel_until_reviewed(self):
+        self.login(self.owner)
+        panel = reverse("pets:list")
+        self.assertContains(self.client.get(panel), "Rate this visit")
+        self.client.post(self.url, {"rating": 5})
+        self.assertNotContains(self.client.get(panel), "Rate this visit")
+
+    def test_reviewer_shows_as_first_name_and_initial(self):
+        self.owner.last_name = "Wong"
+        self.owner.save()
+        self.login(self.owner)
+        self.client.post(self.url, {"rating": 5, "comment": "Great"})
+        response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
+        self.assertContains(response, "Kat W.")
+        self.assertContains(response, ">KW<")
+        self.assertContains(response, f"review-avatar tone-{self.owner.pk % 3}")
