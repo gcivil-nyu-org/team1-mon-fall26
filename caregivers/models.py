@@ -115,7 +115,7 @@ class ServiceType(models.Model):
 
 
 class CaregiverService(models.Model):
-    caregiver = models.ForeignKey("CaregiverProfile", on_delete=models.CASCADE,related_name="availability_slots")
+    caregiver = models.ForeignKey("CaregiverProfile", on_delete=models.CASCADE)
     name = models.CharField(max_length=100, blank=True, default="")
     service_type = models.ForeignKey("ServiceType", on_delete=models.CASCADE)
     PRICE_UNITS = [
@@ -139,7 +139,7 @@ class CaregiverService(models.Model):
         ]
 
 class CaregiverAvailability(models.Model):
-    caregiver = models.ForeignKey("CaregiverProfile", on_delete=models.CASCADE)
+    caregiver = models.ForeignKey("CaregiverProfile", on_delete=models.CASCADE,related_name="availability_slots")
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()

@@ -30,6 +30,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CaregiverAvailabilityForm
 from .models import CaregiverAvailability, CaregiverProfile
 from django.core.exceptions import ValidationError
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from bookings.models import Booking
+from django.utils import timezone
 
 def _neighborhood_label(neighborhood, borough):
     """ "Park Slope", "Brooklyn" -> "Park Slope, Brooklyn"."""
@@ -544,14 +548,47 @@ def manage_availability(request):
     caregiver=caregiver
     ).order_by("date", "start_time")
 
+    bookings = Booking.objects.filter(
+    caregiver=caregiver,
+    status__in=["accepted", "completed"],
+    ).select_related("pet").order_by("start_time")
+    calendar_slots = [
+    {
+        "id": slot.id,
+        "date": slot.date.isoformat(),
+        "start": slot.start_time.strftime("%H:%M"),
+        "end": slot.end_time.strftime("%H:%M"),
+    }
+    for slot in slots
+]
+    calendar_bookings = [
+    {
+        "id": booking.id,
+        "date": timezone.localtime(booking.start_time).date().isoformat(),
+        "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
+        "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
+        "status": booking.status,
+        "pet": booking.pet.name if booking.pet else "Pet",
+    }
+    for booking in bookings
+]
+
     return render(
-        request,
-        "caregivers/manage_availability.html",
-        {
-            "caregiver": caregiver,
-            "slots": slots,
-            "form": form,
-        },
+    request,
+    "caregivers/manage_availability.html",
+    {
+        "caregiver": caregiver,
+        "slots": slots,
+        "form": form,
+        "calendar_slots": json.dumps(
+            calendar_slots,
+            cls=DjangoJSONEncoder,
+        ),
+        "calendar_bookings": json.dumps(
+        calendar_bookings,
+        cls=DjangoJSONEncoder,
+    ),
+    },
     )
 
 

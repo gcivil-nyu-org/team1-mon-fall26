@@ -1,38 +1,664 @@
+
 {% extends "base.html" %}
 
+{% block title %}My Availability | PawPal{% endblock %}
+{% block main_class %}page page-wide{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1>Manage Availability</h1>
+<style>
+  .availability-page { max-width: 1180px; margin: 30px auto; }
+  .availability-heading { margin-bottom: 24px; }
+  .availability-heading p { color: #777; }
+  .availability-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+    gap: 24px;
+  }
+  .availability-card {
+    background: #fff;
+    border: 1px solid #f0d5c7;
+    border-radius: 18px;
+    padding: 24px;
+  }
+  .calendar-toolbar {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .calendar-controls { display: flex; gap: 8px; align-items: center; }
+  .calendar-controls button, .view-toggle button {
+    border: 1px solid #e9d8cc; border-radius: 9px;
+    background: white; padding: 8px 13px; cursor: pointer;
+  }
+  .view-toggle { display: flex; gap: 6px; }
+  .view-toggle button.active { background: #d8efe0; font-weight: 700; }
+  .calendar-grid {
+    display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .weekday { text-align: center; font-size: 12px; color: #777; }
+  .calendar-day {
+    min-height: 76px; border: 1px solid #f1e4da;
+    border-radius: 10px; background: #fff;
+    cursor: pointer; padding: 8px 5px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px;
+  }
+  .calendar-day.selected { background: #d8efe0; border-color: #6aa983; }
+  .calendar-day.outside { opacity: .35; }
+  .calendar-day.has-slots::after {
+    content: ""; width: 7px; height: 7px;
+    background: #5ba477; border-radius: 50%;
+  }
+  .slot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; flex-wrap: wrap; background: #e0f1e4;
+    padding: 12px; border-radius: 10px; margin: 10px 0;
+  }
+  .slot-actions { display: flex; gap: 10px; align-items: center; }
+  .slot-actions form { margin: 0; }
+  .slot-actions button { cursor: pointer; }
+  .slot-form { display: grid; gap: 12px; margin-top: 20px; }
+  .slot-form input {
+    display: block; width: 100%; padding: 10px;
+    border: 1px solid #ddd; border-radius: 8px;
+  }
+  .slot-form label { font-weight: 600; }
+  .save-button {
+    background: #292929; color: white; border: none;
+    padding: 12px; border-radius: 9px; cursor: pointer;
+  }
+  .form-errors { color: #a32929; margin: 12px 0; }
+  @media (max-width: 760px) {
+    .availability-layout { grid-template-columns: 1fr; }
+    .availability-card { padding: 15px; }
+    .calendar-day { min-height: 58px; }
+  }
+  
+/* PawPal availability — consolidated Figma-style layout */
+.availability-page { max-width: 1120px; margin: 22px auto; }
+.availability-heading { margin-bottom: 0; }
+.availability-heading h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; line-height: 1.12; }
+.availability-heading p { margin-top: 6px; color: #786960; font-size: 14px; }
+.availability-topbar { display: flex; justify-content: flex-end; margin: -24px 0 32px; }
+.view-toggle { display: inline-flex; gap: 2px; padding: 4px; border: 1px solid #efd8cd; border-radius: 999px; background: #fff; }
+.view-toggle button { border: 0; border-radius: 999px; padding: 8px 19px; background: transparent; color: #614c43; font-size: 13px; font-weight: 700; }
+.view-toggle button.active { background: #222; color: #fff; font-weight: 800; }
+.availability-layout { grid-template-columns: minmax(0, 2.75fr) minmax(255px, .95fr); align-items: start; gap: 18px; }
+.availability-card { border-radius: 20px; padding: 20px; box-shadow: 0 4px 0 #f1ddd4; }
+.calendar-toolbar { justify-content: center; margin-bottom: 22px; }
+.calendar-controls strong { font-size: 15px; font-weight: 800; letter-spacing: -.025em; }
+.calendar-controls button { border: 0; font-size: 23px; padding: 3px 10px; }
+.calendar-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.weekday { text-align: center; font-size: 11px; font-weight: 800; color: #9d8175; text-transform: uppercase; letter-spacing: .035em; padding: 0 0 6px; }
+.calendar-day { min-width: 0; min-height: 48px; border: 0; border-radius: 17px; background: transparent; padding: 5px 2px 9px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 6px; cursor: pointer; color: inherit; font-family: inherit; }
+.calendar-day:hover, .calendar-day.selected { background: #faf4f1; }
+.calendar-day.outside { opacity: .38; }
+.day-number { align-self: center; display: grid; place-items: center; width: 39px; height: 39px; border: 2px solid #f0ddd4; border-radius: 13px; background: #fff; font-size: 21px; font-weight: 850; letter-spacing: -.05em; line-height: 1; }
+.calendar-day.today .day-number { background: #f6b83f; border-color: #f6b83f; box-shadow: 0 3px 0 #d49b30; }
+.calendar-day.selected:not(.today) .day-number { border-color: #e7c9bc; }
+.day-slots { display: flex; flex-direction: column; width: 100%; gap: 5px; }
+.day-slot { display: flex; justify-content: center; align-items: center; gap: 4px; min-width: 0; width: 100%; border-radius: 999px; background: #ccefdc; color: #205c3b; padding: 7px 2px; font-family: inherit; font-size: 11px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.day-slot.booked, .slot-row.booked { background: #ffc4d8; color: #7e2446; }
+.day-slot.completed, .slot-row.completed { background: #eee9e6; color: #ad9d95; }
+.day-slot .pet-initial { display: inline-grid; flex: 0 0 16px; width: 16px; height: 16px; place-items: center; border-radius: 50%; background: #fff; color: #7e2446; font-size: 10px; }
+.calendar-grid.week-view { align-items: stretch; }
+.calendar-grid.week-view .calendar-day { min-height: 0; }
+/* Final Figma polish: tilted date tiles and single-line, fitted time pills */
+.calendar-grid.week-view { column-gap: 5px; }
+.calendar-grid.week-view .calendar-day { padding-left: 0; padding-right: 0; gap: 8px; }
+.calendar-day.has-slots::after { display: none !important; }
+.day-number {
+  width: 44px; height: 44px; border-radius: 15px;
+  transform: rotate(-4deg); transition: transform .16s ease;
+  font-size: 23px; font-weight: 900;
+}
+.calendar-day:nth-child(3n) .day-number { transform: rotate(3deg); }
+.calendar-day.today .day-number {
+  background: #f7b83f; border-color: #f7b83f;
+  box-shadow: 0 4px 0 #d69b31;
+  transform: rotate(-6deg);
+}
+.calendar-day:hover .day-number { transform: rotate(0deg); }
+.calendar-day.selected:not(.today) .day-number { border-color: #eed7cd; }
+.day-slots { width: 100%; gap: 5px; }
+.day-slot {
+  width: 100%; min-width: 0; box-sizing: border-box;
+  padding: 7px 2px; gap: 2px;
+  font-size: 10px; line-height: 1.1;
+  white-space: nowrap; overflow: visible; text-overflow: clip;
+}
+.day-slot > .time-label { display: block; min-width: 0; white-space: nowrap; flex-shrink: 1; }
+.day-slot .pet-initial { flex-basis: 13px; width: 13px; height: 13px; font-size: 9px; }
+.calendar-grid.month-view .day-number { width: 30px; height: 30px; font-size: 14px; }
+@media (max-width: 760px) {
+  .calendar-grid.week-view { column-gap: 2px; }
+  .day-slot { padding: 5px 1px; }
+  .day-number { width: 35px; height: 35px; font-size: 18px; }
+}
+.calendar-grid.month-view .calendar-day { min-height: 47px; padding: 5px 2px; }
+.calendar-grid.month-view .day-number { width: 28px; height: 28px; font-size: 13px; border-width: 1px; }
+.month-indicator { width: 7px; height: 7px; margin: 0 auto; border-radius: 50%; background: #77b992; }
+.month-indicator.has-booking { background: #e995b3; }
+.availability-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; font-size: 13px; font-weight: 600; color: #665b56; }
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.legend-color { width: 15px; height: 15px; border-radius: 5px; }
+.legend-open { background: #ccefdc; } .legend-booked { background: #ffc4d8; } .legend-completed { background: #eee9e6; }
+.calendar-save-status { display: flex; align-items: center; width: 100%; margin-top: 14px; padding: 16px; border-radius: 14px; background: #faf4f0; color: #514640; font-size: 12px; font-weight: 600; }
+.availability-sidebar { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.sidebar-card { padding: 19px; }
+.selected-date-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.selected-date-badge { flex: 0 0 43px; height: 43px; display: grid; place-items: center; border-radius: 50%; background: #faf4f0; font-size: 19px; font-weight: 800; }
+.selected-date-text > span { display: block; color: #856d61; font-size: 11px; font-weight: 600; }
+.selected-date-text h2 { font-size: 20px; font-weight: 800; letter-spacing: -.035em; margin: 1px 0 0; line-height: 1.15; }
+.selected-slot-list { display: flex; flex-direction: column; gap: 7px; }
+.selected-slot-list > p { font-size: 12px; color: #76645d; margin: 0 0 6px; }
+.sidebar-card .slot-row { display: flex; flex-wrap: nowrap; gap: 8px; padding: 9px 10px; border-radius: 13px; margin: 0; background: #ccefdc; color: #205a3c; min-height: 40px; font-size: 12px; font-weight: 800; }
+.sidebar-card .slot-row > span { min-width: 0; }
+.sidebar-card .slot-actions { flex-shrink: 0; gap: 7px; }
+.sidebar-card .slot-edit-link { font-size: 11px; font-weight: 700; color: #285b46; }
+.sidebar-card .slot-remove-button { display: grid; place-items: center; width: 25px; height: 25px; border: 0; border-radius: 50%; background: #b1dfc8; color: #225b3c; font-size: 19px; line-height: 1; cursor: pointer; }
+.sidebar-card .slot-row.booked .slot-actions, .sidebar-card .slot-row.completed .slot-actions { display: none; }
+.sidebar-card .slot-row .booking-pet { margin-left: auto; font-size: 11px; font-weight: 700; }
+#add-time-form[hidden] { display: none; }
+.sidebar-card .add-time-button { width: 100%; margin-top: 12px; padding: 11px; background: #fff; border: 1px dashed #e7a68e; border-radius: 12px; color: #704a3c; font-size: 12px; font-weight: 800; cursor: pointer; }
+.sidebar-card .add-time-button:hover { background: #fff7f3; }
+.sidebar-card .slot-form { margin-top: 12px; }
+.repeat-placeholder { border: 1px solid #efd5c7; border-radius: 999px; padding: 12px; text-align: center; background: #fff; box-shadow: 0 3px 0 #f2ded5; color: #4e413b; font-size: 12px; font-weight: 800; }
+.repeat-placeholder small { font-size: 10px; color: #95857d; font-weight: 500; }
+@media (max-width: 760px) { .availability-layout { grid-template-columns: 1fr; } .availability-topbar { margin: 16px 0; justify-content: flex-start; } .availability-card { padding: 15px; } .day-number { width: 30px; height: 30px; font-size: 16px; } .day-slot { font-size: 9px; padding: 5px 1px; } }
+/* Consistent tilt for every date tile, including today and hover states. */
+.calendar-grid .calendar-day .day-number,
+.calendar-grid .calendar-day:nth-child(3n) .day-number,
+.calendar-grid .calendar-day.today .day-number,
+.calendar-grid .calendar-day:hover .day-number {
+  transform: rotate(-4deg);
+}
 
-    <h2>Add Available Time</h2>
+/* Past days are muted, but remain selectable to inspect past bookings. */
+.calendar-grid .calendar-day.past .day-number {
+  background: #f0ecea;
+  color: #b8aaa4;
+  border-color: transparent;
+  box-shadow: none;
+}
+.calendar-grid .calendar-day.past .day-slot {
+  background: #f0ecea;
+  color: #b8aaa4;
+  opacity: .85;
+}
+.calendar-grid .calendar-day.past .day-slot .pet-initial {
+  color: #9b8981;
+}
+/* PawPal monthly calendar pawprints */
+aw {
+    display: block;
+    align-self: center;
+    font-size: 15px;
+    line-height: 1;
+    margin-top: 3px;
+}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add Availability</button>
-    </form>
+.month-paw {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+    color: #f29bb5;
+}
 
-    <h2>My Availability</h2>
+.month-paw svg {
+    width: 17px;
+    height: 17px;
+}
+</style>
 
-    {% for slot in slots %}
-        <div>
-            <p>
-                {{ slot.date }}:
-                {{ slot.start_time }} – {{ slot.end_time }}
-            </p>
-            <a href="{% url 'edit_availability' slot.id %}">
-                Edit
-            </a>
-            <form
-                method="post"
-                action="{% url 'delete_availability' slot.id %}"
-            >
-                {% csrf_token %}
-                <button type="submit">Remove</button>
-            </form>
+<section class="availability-page">
+  <div class="availability-heading">
+    <h1>My Availability</h1>
+    <p>Choose when you're available to care for pets.</p>
+  </div>
+
+  <div class="availability-topbar">
+    <div class="view-toggle" role="group" aria-label="Calendar view">
+      <button type="button" id="week-button" class="active" aria-pressed="true">Week</button>
+      <button type="button" id="month-button" aria-pressed="false">Month</button>
+    </div>
+  </div>
+
+  <div class="availability-layout">
+    <section class="availability-card">
+      <div class="calendar-toolbar">
+        <div class="calendar-controls">
+          <button type="button" id="prev-period" aria-label="Previous period">‹</button>
+          <strong id="calendar-title"></strong>
+          <button type="button" id="next-period" aria-label="Next period">›</button>
         </div>
-    {% empty %}
-        <p>No availability added yet.</p>
-    {% endfor %}
-</div>
+      </div>
+
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="availability-legend">
+            <div class="legend-item">
+                <span class="legend-color legend-open"></span>
+                Open
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color legend-booked"></span>
+                Booked
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color legend-completed"></span>
+                Completed
+            </div>
+        </div>
+
+        <!-- Outside the legend -->
+        <div class="calendar-save-status">
+            <span>Changes are saved when you submit the form.</span>
+        </div>
+    </section>
+
+    <div class="availability-sidebar">
+    <section class="availability-card sidebar-card">
+      <div class="selected-date-header">
+        <span class="selected-date-badge" id="selected-date-number"></span>
+        <div class="selected-date-text">
+          <span id="selected-date-weekday"></span>
+          <h2 id="selected-date-heading"></h2>
+        </div>
+      </div>
+      <div id="selected-slots" class="selected-slot-list"></div>
+
+      <button
+        type="button"
+        id="add-time-button"
+        class="add-time-button"
+        aria-expanded="false"
+        aria-controls="add-time-form"
+    >
+        + Add time
+    </button>
+
+    <div id="add-time-form" hidden>
+        <h3>Add availability</h3>
+      <form method="post" class="slot-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            <div class="form-errors">{{ field.errors }}</div>
+          </div>
+        {% endfor %}
+        <button type="submit" class="save-button">Save availability</button>
+      </form>
+    </div>
+    </section>
+    <div class="repeat-placeholder" title="Recurring availability will be added in a future update">
+      <span aria-hidden="true">↻</span> Repeat next week <small>(coming soon)</small>
+    </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const slots = JSON.parse("{{ calendar_slots|escapejs }}");
+  const bookings = JSON.parse("{{ calendar_bookings|default:'[]'|escapejs }}");
+  const grid = document.getElementById("calendar-grid");
+  const title = document.getElementById("calendar-title");
+  const selectedHeading = document.getElementById("selected-date-heading");
+  const selectedNumber = document.getElementById("selected-date-number");
+  const selectedWeekday = document.getElementById("selected-date-weekday");
+  const selectedSlots = document.getElementById("selected-slots");
+  const dateInput = document.getElementById("id_date");
+  const weekButton = document.getElementById("week-button");
+  const monthButton = document.getElementById("month-button");
+
+  let selectedDate = new Date();
+  selectedDate.setHours(12, 0, 0, 0);
+  let viewMode = "week";
+
+  const dateKey = date => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const addDays = (date, count) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + count);
+    return result;
+  };
+
+  const startOfWeek = date => addDays(date, -date.getDay());
+
+  const formatTime = value => {
+    const [hour, minute] = value.split(":").map(Number);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${suffix}`;
+  };
+
+  function renderSlots() {
+    const key = dateKey(selectedDate);
+    selectedNumber.textContent = selectedDate.getDate();
+    selectedWeekday.textContent = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
+    selectedHeading.textContent = selectedDate.toLocaleDateString("en-US", {
+      month: "long", day: "numeric"
+    });
+
+    if (dateInput) dateInput.value = key;
+
+    const matching = slots.filter(slot => slot.date === key);
+    const dayBookings = bookings.filter(booking => booking.date === key);
+    selectedSlots.replaceChildren();
+
+    if (!matching.length && !dayBookings.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "No availability added for this day.";
+      selectedSlots.appendChild(empty);
+      return;
+    }
+
+    matching.forEach(slot => {
+      const row = document.createElement("div");
+      row.className = "slot-row";
+
+      const time = document.createElement("span");
+      time.textContent = `${formatTime(slot.start)} – ${formatTime(slot.end)}`;
+
+      const actions = document.createElement("div");
+      actions.className = "slot-actions";
+
+      const edit = document.createElement("a");
+      edit.href = `{% url 'edit_availability' 0 %}`.replace(/0\/$/, `${slot.id}/`);
+      edit.textContent = "Edit";
+      edit.className = "slot-edit-link";
+
+      const form = document.createElement("form");
+      form.method = "post";
+      form.action = `{% url 'delete_availability' 0 %}`.replace(/0\/$/, `${slot.id}/`);
+
+      const csrf = document.createElement("input");
+      csrf.type = "hidden";
+      csrf.name = "csrfmiddlewaretoken";
+      csrf.value = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+      const remove = document.createElement("button");
+      remove.type = "submit";
+      remove.textContent = "×";
+      remove.className = "slot-remove-button";
+      remove.setAttribute("aria-label", `Remove availability ${formatTime(slot.start)} to ${formatTime(slot.end)}`);
+      remove.title = "Remove time slot";
+
+      form.append(csrf, remove);
+      actions.append(edit, form);
+      row.append(time, actions);
+      selectedSlots.appendChild(row);
+    });
+
+    dayBookings.forEach(booking => {
+      const row = document.createElement("div");
+      row.className = `slot-row ${booking.status === "completed" ? "completed" : "booked"}`;
+      const time = document.createElement("span");
+      time.textContent = `${formatTime(booking.start)} – ${formatTime(booking.end)}`;
+      const pet = document.createElement("span");
+      pet.className = "booking-pet";
+      pet.textContent = `${booking.status === "completed" ? "✓" : "🔒"} ${booking.pet || "Pet"}`;
+      row.append(time, pet);
+      selectedSlots.appendChild(row);
+    });
+  }
+
+  
+  function fitPillLabels() {
+    grid.querySelectorAll(".day-slot").forEach(pill => {
+      const label = pill.querySelector(".time-label");
+      if (!label) return;
+      label.style.fontSize = "10px";
+      const badge = pill.querySelector(".pet-initial");
+      const available = pill.clientWidth - (badge ? badge.offsetWidth + 4 : 0) - 4;
+      let size = 10;
+      while (size > 6 && label.scrollWidth > available) {
+        size -= 0.5;
+        label.style.fontSize = `${size}px`;
+      }
+    });
+  }
+
+function renderCalendar() {
+    grid.replaceChildren();
+
+    grid.classList.toggle("week-view", viewMode === "week");
+    grid.classList.toggle("month-view", viewMode === "month");
+
+    // Monday is the first day of the week.
+    const startOfMondayWeek = date =>
+        addDays(date, (date.getDay() + 6) % 7 * -1);
+
+    const start = viewMode === "week"
+        ? startOfMondayWeek(selectedDate)
+        : startOfMondayWeek(
+            new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                1,
+                12
+            )
+        );
+
+    const count = viewMode === "week" ? 7 : 42;
+
+    title.textContent = viewMode === "week"
+        ? `${start.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric"
+          })} – ${addDays(start, 6).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+          })}`
+        : selectedDate.toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric"
+          });
+
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(day => {
+        const heading = document.createElement("div");
+        heading.className = "weekday";
+        heading.textContent = day;
+        grid.appendChild(heading);
+    });
+
+    for (let i = 0; i < count; i++) {
+        const date = addDays(start, i);
+        const key = dateKey(date);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "calendar-day";
+
+        const number = document.createElement("span");
+        number.className = "day-number";
+        number.textContent = date.getDate();
+        button.appendChild(number);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        if (dayStart < today) {
+            button.classList.add("past");
+        }
+
+        if (dateKey(date) === dateKey(today)) {
+            button.classList.add("today");
+        }
+
+        if (key === dateKey(selectedDate)) {
+            button.classList.add("selected");
+        }
+
+        if (
+            viewMode === "month" &&
+            date.getMonth() !== selectedDate.getMonth()
+        ) {
+            button.classList.add("outside");
+        }
+
+        const dayAvailability = slots
+            .filter(slot => slot.date === key)
+            .sort((a, b) => a.start.localeCompare(b.start));
+
+        const dayBookings = bookings.filter(booking => booking.date === key);
+        if (dayAvailability.length || dayBookings.length) {
+            button.classList.add("has-slots");
+
+            if (viewMode === "week") {
+                const slotContainer = document.createElement("div");
+                slotContainer.className = "day-slots";
+
+                const dayEntries = [
+                    ...dayAvailability.map(slot => ({ ...slot, kind: "open" })),
+                    ...dayBookings.map(booking => ({ ...booking, kind: booking.status === "completed" ? "completed" : "booked" }))
+                ].sort((a, b) => a.start.localeCompare(b.start));
+                dayEntries.forEach(slot => {
+                    const pill = document.createElement("span");
+                    pill.className = `day-slot ${slot.kind}`;
+                    const shortTime = value => {
+                    const [hour, minute] = value.split(":").map(Number);
+                    const period = hour >= 12 ? "p" : "a";
+                    const displayHour = hour % 12 || 12;
+
+                    return `${displayHour}${minute ? ":" + String(minute).padStart(2, "0") : ""}${period}`;
+                };
+
+                if (slot.kind !== "open" && slot.pet) {
+                    const initial = document.createElement("span");
+                    initial.className = "pet-initial";
+                    initial.textContent = slot.pet.charAt(0).toUpperCase();
+                    pill.appendChild(initial);
+                }
+                const timeLabel = document.createElement("span");
+                timeLabel.className = "time-label";
+                timeLabel.textContent = `${shortTime(slot.start)}–${shortTime(slot.end)}`;
+                pill.appendChild(timeLabel);
+                pill.title = `${formatTime(slot.start)} – ${formatTime(slot.end)}` +
+                    (slot.kind === "open" ? " · Available" : ` · ${slot.pet || "Pet"} (${slot.kind})`);
+                slotContainer.appendChild(pill);
+                });
+
+                button.appendChild(slotContainer);
+            } else {
+                const paw = document.createElement("span");
+
+                paw.className = `month-paw ${dayBookings.length ? "booked" : "available"}`;
+                paw.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="17" height="17"
+                        fill="currentColor" aria-hidden="true">
+                        <circle cx="6" cy="8" r="2"/>
+                        <circle cx="11" cy="5" r="2"/>
+                        <circle cx="16" cy="7" r="2"/>
+                        <circle cx="20" cy="11" r="1.8"/>
+                        <path d="M12 11 C9 11 8 14 6.5 16.5 C5 19 7 21 9.5 20 C11 19.5 13 19.5 14.5 20 C17 21 19 19 17.5 16.5 C16 14 15 11 12 11 Z"/>
+                    </svg>
+                `;
+                paw.setAttribute("aria-hidden", "true");
+
+                button.appendChild(paw);
+            }
+        }
+
+        button.addEventListener("click", () => {
+            selectedDate = date;
+            renderCalendar();
+            renderSlots();
+        });
+
+        grid.appendChild(button);
+    }
+
+    // Fit each full time range inside its pill without wrapping or clipping.
+    // Font sizing responds to the actual column width, including on resize.
+    fitPillLabels();
+
+    
+    weekButton.classList.toggle("active", viewMode === "week");
+    monthButton.classList.toggle("active", viewMode === "month");
+    weekButton.setAttribute("aria-pressed", String(viewMode === "week"));
+    monthButton.setAttribute("aria-pressed", String(viewMode === "month"));
+}
+
+    // Switch between Week and Month
+    weekButton.addEventListener("click", () => {
+        viewMode = "week";
+        renderCalendar();
+    });
+
+    monthButton.addEventListener("click", () => {
+        viewMode = "month";
+        renderCalendar();
+    });
+
+    // Navigate backward
+    document.getElementById("prev-period").addEventListener("click", () => {
+        selectedDate = viewMode === "week"
+            ? addDays(selectedDate, -7)
+            : new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth() - 1,
+                1,
+                12
+            );
+
+        renderCalendar();
+        renderSlots();
+    });
+
+    // Navigate forward
+    document.getElementById("next-period").addEventListener("click", () => {
+        selectedDate = viewMode === "week"
+            ? addDays(selectedDate, 7)
+            : new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth() + 1,
+                1,
+                12
+            );
+
+        renderCalendar();
+        renderSlots();
+    });
+
+  
+  // Toggle the add-time form without affecting the existing Django form.
+  const addTimeButton = document.getElementById("add-time-button");
+  const addTimeForm = document.getElementById("add-time-form");
+  addTimeButton.addEventListener("click", () => {
+    const opening = addTimeForm.hidden;
+    addTimeForm.hidden = !opening;
+    addTimeButton.setAttribute("aria-expanded", String(opening));
+  });
+
+  // Keep validation errors visible after a rejected submission.
+  const hasFormErrors = {{ form.errors|yesno:"true,false" }};
+  if (hasFormErrors) {
+    addTimeForm.hidden = false;
+    addTimeButton.setAttribute("aria-expanded", "true");
+  }
+
+  // Initialize calendar
+    renderCalendar();
+    renderSlots();
+    window.addEventListener("resize", fitPillLabels);
+
+    });
+
+</script>
 {% endblock %}
