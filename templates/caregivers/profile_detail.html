@@ -1,11 +1,44 @@
 {% extends "base.html" %}
 {% load static review_tags %}
 
-{% block title %}{{ caregiver.name }} | PawPal{% endblock %}
+{% block title %}{{ caregiver.name }} | PawPal
+{% endblock %}
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=5">
+
+
+<style>
+/* Scoped public calendar: does not alter caregiver management calendar or global styles. */
+.public-availability-card {min-width:0;}
+.public-availability-head,.public-availability-nav {display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.public-availability-head h2 {margin:0;}
+.public-availability-toggle {display:flex;align-items:center;gap:2px;border:1px solid #f0d6ca;border-radius:99px;padding:3px;background:#fff;}
+.public-availability-toggle button {font:inherit;font-size:12px;font-weight:700;border:0;background:transparent;border-radius:99px;padding:7px 14px;cursor:pointer;color:#3c3432;}
+.public-availability-toggle button.active {background:#242222;color:#fff;}
+.public-availability-nav {justify-content:center;margin:18px 0 14px;}
+.public-availability-nav strong {min-width:130px;text-align:center;font-size:14px;}
+.public-availability-nav button {border:0;background:transparent;font:inherit;font-size:22px;cursor:pointer;padding:0 12px;color:#473b37;}
+.public-availability-days,.public-availability-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;}
+.public-availability-days {margin-bottom:8px;text-align:center;color:#9a847b;font-size:10px;font-weight:700;}
+.public-availability-grid {min-height:120px;}
+.public-day {min-width:0;min-height:37px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:3px 1px;border:1px solid transparent;border-radius:12px;background:transparent;color:#806f68;font:inherit;cursor:pointer;}
+.public-day:focus-visible {outline:2px solid #8057ad;outline-offset:1px;}
+.public-day .public-day-number {display:grid;place-items:center;width:27px;height:27px;border-radius:8px;font-size:12px;font-weight:800;}
+.public-day.has-open .public-day-number {background:#cbefda;color:#2b6245;}
+.public-day.is-today .public-day-number {background:#f8be51;color:#242222;}
+.public-day.is-selected {background:#fbf6f3;border-color:#f1d7cb;}
+.public-day.is-outside {opacity:.45;}
+.public-day.is-past:not(.is-today) {opacity:.65;}
+.public-day .public-time-pill {display:block;width:100%;max-width:76px;box-sizing:border-box;border-radius:99px;background:#cbefda;color:#286043;font-size:10px;font-weight:750;text-align:center;padding:4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.public-day .public-today-label {font-size:9px;font-weight:800;color:#a46a18;}
+.public-selected-summary {margin-top:14px;padding:12px 14px;background:#faf5f2;border-radius:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;}
+.public-selected-summary strong {margin-right:4px;}
+.public-selected-summary .public-summary-time {background:#cbefda;color:#286043;padding:5px 9px;border-radius:99px;font-weight:750;}
+.public-selected-summary .public-empty {color:#897972;}
+@media(max-width:480px) {.public-availability-days,.public-availability-grid{gap:2px}.public-day .public-time-pill{font-size:9px;padding:3px 1px}.public-availability-toggle button{padding:6px 10px}}
+</style>
 
 {% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">← Back to find caregivers</a>{% endif %}
 
@@ -62,6 +95,27 @@
       {% endif %}
     </section>
 
+
+    <section class="caregiver-public-card caregiver-card-body public-availability-card" aria-label="Caregiver availability">
+      <div class="public-availability-head">
+        <h2>Availability</h2>
+        <div class="public-availability-toggle" role="group" aria-label="Calendar view">
+          <button type="button" id="public-week" aria-pressed="false">Week</button>
+          <button type="button" id="public-month" class="active" aria-pressed="true">Month</button>
+        </div>
+      </div>
+      <div class="public-availability-nav">
+        <button type="button" id="public-prev" aria-label="Previous period">‹</button>
+        <strong id="public-calendar-title"></strong>
+        <button type="button" id="public-next" aria-label="Next period">›</button>
+      </div>
+      <div class="public-availability-days" aria-hidden="true">
+        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+      </div>
+      <div id="public-calendar-grid" class="public-availability-grid"></div>
+      <div id="public-selected-summary" class="public-selected-summary" aria-live="polite"></div>
+    </section>
+
     <div class="caregiver-pair{% if not caregiver.pet_care_skill_labels %} caregiver-pair-single{% endif %}">
       <section class="caregiver-public-card caregiver-card-body">
         <h2>Happy to care for</h2>
@@ -114,4 +168,67 @@
   </aside>
   {% endif %}
 </div>
+{{ public_availability_json|json_script:"public-availability-data" }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const rawAvailability = JSON.parse(document.getElementById("public-availability-data").textContent);
+  // Support both JSON strings (older view) and arrays (updated view).
+  const slots = typeof rawAvailability === "string" ? JSON.parse(rawAvailability) : rawAvailability;
+  const grid = document.getElementById("public-calendar-grid");
+  const title = document.getElementById("public-calendar-title");
+  const summary = document.getElementById("public-selected-summary");
+  const weekButton = document.getElementById("public-week");
+  const monthButton = document.getElementById("public-month");
+  const now = new Date(); now.setHours(12,0,0,0);
+  let selected = new Date(now);
+  let focus = new Date(now);
+  let mode = "month";
+  const key = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const plusDays = (d,n) => { const result=new Date(d); result.setDate(result.getDate()+n); return result; };
+  const monday = d => plusDays(d, -((d.getDay()+6)%7));
+  const formatTime = time => {const [h,m]=time.split(":").map(Number);return `${h%12||12}${m ? ":"+String(m).padStart(2,"0") : ""}${h>=12?"p":"a"}`;};
+  const formatRange = slot => `${formatTime(slot.start)}–${formatTime(slot.end)}`;
+  const slotsFor = d => slots.filter(s => s.date===key(d) && (s.date>key(now) || (s.date===key(now) && s.end>`${String(new Date().getHours()).padStart(2,"0")}:${String(new Date().getMinutes()).padStart(2,"0")}`))).sort((a,b)=>a.start.localeCompare(b.start));
+  function render() {
+    weekButton.classList.toggle("active",mode==="week");
+    monthButton.classList.toggle("active",mode==="month");
+    weekButton.setAttribute("aria-pressed",String(mode==="week"));
+    monthButton.setAttribute("aria-pressed",String(mode==="month"));
+    const first=mode==="week"?monday(focus):monday(new Date(focus.getFullYear(),focus.getMonth(),1,12));
+    const count=mode==="week"?7:42;
+    const last=plusDays(first,mode==="week"?6:41);
+    title.textContent=mode==="month"?focus.toLocaleDateString("en-US",{month:"long",year:"numeric"}):`${first.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${last.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
+    grid.replaceChildren();
+    for(let i=0;i<count;i++) {
+      const day=plusDays(first,i), open=slotsFor(day), button=document.createElement("button");
+      button.type="button";button.className="public-day";
+      if(open.length)button.classList.add("has-open");
+      if(key(day)===key(now))button.classList.add("is-today");
+      if(key(day)===key(selected))button.classList.add("is-selected");
+      if(mode==="month"&&day.getMonth()!==focus.getMonth())button.classList.add("is-outside");
+      if(key(day)<key(now))button.classList.add("is-past");
+      button.setAttribute("aria-label",`${day.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}, ${open.length} open time slots`);
+      const number=document.createElement("span");number.className="public-day-number";number.textContent=day.getDate();button.append(number);
+      if(mode==="week") {
+        if(key(day)===key(now)){const today=document.createElement("span");today.className="public-today-label";today.textContent="TODAY";button.prepend(today);}
+        open.forEach(slot=>{const pill=document.createElement("span");pill.className="public-time-pill";pill.textContent=formatRange(slot);button.append(pill);});
+      }
+      button.addEventListener("click",()=>{selected=new Date(day);focus=new Date(day);render();});
+      grid.append(button);
+    }
+    summary.replaceChildren();
+    const dateLabel=document.createElement("strong");dateLabel.textContent=selected.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});summary.append(dateLabel);
+    const open=slotsFor(selected);
+    if(!open.length){const empty=document.createElement("span");empty.className="public-empty";empty.textContent="No open times";summary.append(empty);}
+    else open.forEach(slot=>{const pill=document.createElement("span");pill.className="public-summary-time";pill.textContent=formatRange(slot);summary.append(pill);});
+  }
+  weekButton.addEventListener("click",()=>{mode="week";render();});
+  monthButton.addEventListener("click",()=>{mode="month";render();});
+  document.getElementById("public-prev").addEventListener("click",()=>{focus=mode==="week"?plusDays(focus,-7):new Date(focus.getFullYear(),focus.getMonth()-1,1,12);render();});
+  document.getElementById("public-next").addEventListener("click",()=>{focus=mode==="week"?plusDays(focus,7):new Date(focus.getFullYear(),focus.getMonth()+1,1,12);render();});
+  render();
+});
+</script>
+
+
 {% endblock %}

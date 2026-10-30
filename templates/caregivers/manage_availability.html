@@ -166,6 +166,9 @@
 .sidebar-card .slot-form { margin-top: 12px; }
 .repeat-placeholder { border: 1px solid #efd5c7; border-radius: 999px; padding: 12px; text-align: center; background: #fff; box-shadow: 0 3px 0 #f2ded5; color: #4e413b; font-size: 12px; font-weight: 800; }
 .repeat-placeholder small { font-size: 10px; color: #95857d; font-weight: 500; }
+button.repeat-placeholder { display: block; width: 100%; font-family: inherit; cursor: pointer; }
+button.repeat-placeholder:hover { background: #fff7f3; }
+button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-offset: 3px; }
 @media (max-width: 760px) { .availability-layout { grid-template-columns: 1fr; } .availability-topbar { margin: 16px 0; justify-content: flex-start; } .availability-card { padding: 15px; } .day-number { width: 30px; height: 30px; font-size: 16px; } .day-slot { font-size: 9px; padding: 5px 1px; } }
 /* Consistent tilt for every date tile, including today and hover states. */
 .calendar-grid .calendar-day .day-number,
@@ -191,13 +194,6 @@
   color: #9b8981;
 }
 /* PawPal monthly calendar pawprints */
-aw {
-    display: block;
-    align-self: center;
-    font-size: 15px;
-    line-height: 1;
-    margin-top: 3px;
-}
 
 .month-paw {
     display: flex;
@@ -211,6 +207,172 @@ aw {
     width: 17px;
     height: 17px;
 }
+
+/* Compact Figma-inspired sidebar editor; preserves the Django ModelForm. */
+.inline-time-editor { margin-top: 9px; padding: 12px; background: #faf3ef; border-radius: 16px; }
+#add-time-form[hidden] { display: none !important; }
+.compact-slot-form { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.inline-time-row { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; }
+.inline-time-row label { font-size: 12px; font-weight: 700; color: #66514a; }
+.inline-time-row input, .inline-time-row select { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 9px; border: 1px solid #ead0c4; border-radius: 10px; background: white; color: #2c2623; font: inherit; font-size: 12px; }
+.inline-time-row input:focus, .inline-time-row select:focus { outline: 2px solid #eab59e; outline-offset: 1px; }
+.visually-hidden-date { display: none; }
+.inline-time-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 2px; }
+.inline-time-actions button { padding: 10px 8px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.inline-add-button { background: #242222; color: #fff; border: 1px solid #242222; box-shadow: 0 3px 0 #e8a889; }
+.inline-cancel-button { background: white; color: #4e403a; border: 1px solid #ead0c4; }
+.inline-time-editor .form-errors:empty { display: none; }
+
+
+/* Figma fidelity: full-width saved-state bar and anchored pill actions. */
+.availability-page .calendar-save-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 86px;
+  margin-top: 24px;
+  padding: 18px 22px;
+  border-radius: 26px;
+  background: #faf4f0;
+  color: #403936;
+  font-size: 19px;
+  font-weight: 750;
+}
+.availability-page .save-status-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-shrink: 0; }
+.availability-page #save-changes,
+.availability-page #discard-changes {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  min-width: 104px;
+  min-height: 58px;
+  padding: 13px 25px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.availability-page #save-changes { background: #242222; color: #fff; border: 0; box-shadow: 0 5px 0 #f0c5b5; }
+.availability-page #save-changes:disabled { background: #9e9a9a; color: #fff; cursor: default; opacity: 1; }
+.availability-page #discard-changes { background: #fff; color: #6a4e43; border: 1px solid #efd1c5; }
+/* Figma's pale-yellow warning when the calendar has pending edits. */
+.availability-page .calendar-save-status.has-unsaved-changes {
+  background: #fff0bf;
+  color: #272323;
+  min-height: 76px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #discard-changes {
+  min-width: 90px;
+  min-height: 44px;
+  padding: 10px 18px;
+  font-size: 14px;
+}
+.availability-page .calendar-save-status.has-unsaved-changes #discard-changes {
+  border-color: #efc9bc;
+  box-shadow: 0 2px 0 #f2d8cb;
+}
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes {
+  box-shadow: 0 4px 0 #efbba4;
+}
+/* Keep the sidebar focused on one action at a time. */
+.availability-page #add-time-button[hidden] { display: none !important; }
+/* Native time controls otherwise pick up the browser's default serif font. */
+.availability-page .inline-time-row input[type="time"] {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #2c2623;
+  font-variant-numeric: tabular-nums;
+}
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+/* Final typography and compact footer controls. Use the app's own font. */
+.availability-page .view-toggle button,
+.availability-page .calendar-save-status button,
+.availability-page .inline-time-row input[type="time"] {
+  font-family: inherit !important;
+}
+.availability-page .view-toggle button {
+  font-size: 13px;
+  font-weight: 750;
+}
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
+  font-family: inherit !important;
+}
+.availability-page #save-changes,
+.availability-page #discard-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #discard-changes {
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 17px;
+  font-size: 13px;
+  line-height: 1.1;
+}
+@media (max-width: 520px) {
+  .availability-page .calendar-save-status { padding: 14px; min-height: 76px; font-size: 14px; }
+  .availability-page #save-changes, .availability-page #discard-changes { min-width: 0; min-height: 38px; padding: 8px 14px; font-size: 13px; }
+}
+
+
+/* Final compact sizing: time values and the entire save-status area. */
+.availability-page .inline-time-row input[type="time"],
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
+.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+.availability-page .inline-time-row input[type="time"] {
+  padding: 8px 9px;
+}
+.availability-page .calendar-save-status,
+.availability-page .calendar-save-status.has-unsaved-changes {
+  min-height: 58px;
+  margin-top: 16px;
+  padding: 11px 15px;
+  border-radius: 17px;
+  font-size: 14px;
+  gap: 10px;
+}
+.availability-page .save-status-actions { gap: 7px; }
+.availability-page #save-changes,
+.availability-page #discard-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #discard-changes {
+  min-height: 32px;
+  padding: 7px 13px;
+  font-size: 12px;
+}
+
+#save-status-text { font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; color: #403936; }
 </style>
 
 <section class="availability-page">
@@ -255,8 +417,12 @@ aw {
         </div>
 
         <!-- Outside the legend -->
-        <div class="calendar-save-status">
-            <span>Changes are saved when you submit the form.</span>
+        <div class="calendar-save-status" id="calendar-save-status" role="status" aria-live="polite">
+            <span id="save-status-text">All changes saved.</span>
+            <div class="save-status-actions">
+                <button type="button" id="discard-changes" hidden>Discard</button>
+                <button type="button" id="save-changes" disabled>Save</button>
+            </div>
         </div>
     </section>
 
@@ -281,34 +447,99 @@ aw {
         + Add time
     </button>
 
-    <div id="add-time-form" hidden>
-        <h3>Add availability</h3>
-      <form method="post" class="slot-form">
+    <div id="add-time-form" class="inline-time-editor" hidden>
+      <form method="post" class="compact-slot-form" id="availability-create-form">
         {% csrf_token %}
         {% if form.non_field_errors %}
           <div class="form-errors">{{ form.non_field_errors }}</div>
         {% endif %}
         {% for field in form %}
-          <div>
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+          {% if field.name == "date" %}
+            <div class="visually-hidden-date">{{ field }}</div>
             <div class="form-errors">{{ field.errors }}</div>
-          </div>
+          {% elif field.name == "start_time" or field.name == "end_time" %}
+            <div class="inline-time-row">
+              <label for="{{ field.id_for_label }}">{% if field.name == "start_time" %}From{% else %}To{% endif %}</label>
+              {{ field }}
+            </div>
+            <div class="form-errors">{{ field.errors }}</div>
+          {% else %}
+            <div class="inline-time-row">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+            <div class="form-errors">{{ field.errors }}</div>
+          {% endif %}
         {% endfor %}
-        <button type="submit" class="save-button">Save availability</button>
+        <div class="inline-time-actions">
+          <button type="submit" class="inline-add-button">Add</button>
+          <button type="button" class="inline-cancel-button" id="cancel-add-time">Cancel</button>
+        </div>
       </form>
     </div>
     </section>
-    <div class="repeat-placeholder" title="Recurring availability will be added in a future update">
-      <span aria-hidden="true">↻</span> Repeat next week <small>(coming soon)</small>
-    </div>
+    <button type="button" class="repeat-placeholder" id="repeat-next-week" title="Copy this week's open availability to next week">
+      <span aria-hidden="true">↻</span> Repeat next week
+    </button>
     </div>
   </div>
 </section>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const slots = JSON.parse("{{ calendar_slots|escapejs }}");
+  // A working copy of server data; edits remain local until Save.
+  const savedSlots = JSON.parse("{{ calendar_slots|escapejs }}");
+  let slots = savedSlots.map(slot => ({...slot}));
+  let pendingChanges = [];
+  const statusBar = document.getElementById("calendar-save-status");
+  const statusText = document.getElementById("save-status-text");
+  const saveButton = document.getElementById("save-changes");
+  const discardButton = document.getElementById("discard-changes");
+  const createForm = document.getElementById("availability-create-form");
+  const startInput = document.getElementById("id_start_time");
+  const endInput = document.getElementById("id_end_time");
+  let editingId = null;
+  const normalizeTime = value => (value || "").slice(0, 5);
+  const refreshPending = () => {
+    const original = new Map(savedSlots.map(s => [String(s.id), s]));
+    const current = new Map(slots.filter(s => !String(s.id).startsWith("draft-")).map(s => [String(s.id), s]));
+    pendingChanges = [];
+    for (const [id, slot] of original) {
+      if (!current.has(id)) pendingChanges.push({action:"delete", id:slot.id});
+      else {
+        const changed = current.get(id);
+        if (slot.date !== changed.date || normalizeTime(slot.start) !== normalizeTime(changed.start) || normalizeTime(slot.end) !== normalizeTime(changed.end)) {
+          pendingChanges.push({action:"update", id:slot.id, date:changed.date, start:normalizeTime(changed.start), end:normalizeTime(changed.end)});
+        }
+      }
+    }
+    for (const slot of slots.filter(s => String(s.id).startsWith("draft-"))) {
+      pendingChanges.push({action:"create", date:slot.date, start:normalizeTime(slot.start), end:normalizeTime(slot.end)});
+    }
+    const dirty = pendingChanges.length > 0;
+    statusText.textContent = dirty ? "You have unsaved changes." : "All changes saved.";
+    statusBar.classList.toggle("has-unsaved-changes", dirty);
+    saveButton.disabled = !dirty;
+    discardButton.hidden = !dirty;
+  };
+  const openEditor = slot => {
+    editingId = slot ? slot.id : null;
+    if (slot) {
+      selectedDate = new Date(`${slot.date}T12:00:00`);
+      if (startInput) startInput.value = normalizeTime(slot.start);
+      if (endInput) endInput.value = normalizeTime(slot.end);
+    } else {
+      if (startInput) startInput.value = "";
+      if (endInput) endInput.value = "";
+    }
+    addTimeForm.hidden = false;
+    addTimeButton.hidden = true;
+    addTimeButton.setAttribute("aria-expanded", "true");
+    createForm.querySelector(".inline-add-button").textContent = slot ? "Update" : "Add";
+    renderCalendar();
+    renderSlots();
+    if (startInput) startInput.focus();
+  };
   const bookings = JSON.parse("{{ calendar_bookings|default:'[]'|escapejs }}");
   const grid = document.getElementById("calendar-grid");
   const title = document.getElementById("calendar-title");
@@ -376,30 +607,32 @@ document.addEventListener("DOMContentLoaded", () => {
       const actions = document.createElement("div");
       actions.className = "slot-actions";
 
-      const edit = document.createElement("a");
-      edit.href = `{% url 'edit_availability' 0 %}`.replace(/0\/$/, `${slot.id}/`);
-      edit.textContent = "Edit";
-      edit.className = "slot-edit-link";
+             const protectedByBooking = bookings.some(b => b.date === slot.date &&
+         normalizeTime(slot.start) < normalizeTime(b.end) &&
+         normalizeTime(slot.end) > normalizeTime(b.start));
+       const edit = document.createElement("button");
+       edit.type = "button";
+       edit.textContent = "Edit";
+       edit.className = "slot-edit-link";
+       edit.disabled = protectedByBooking;
+       edit.title = protectedByBooking ? "Booked availability cannot be edited" : "Edit time slot";
+       edit.addEventListener("click", () => openEditor(slot));
 
-      const form = document.createElement("form");
-      form.method = "post";
-      form.action = `{% url 'delete_availability' 0 %}`.replace(/0\/$/, `${slot.id}/`);
-
-      const csrf = document.createElement("input");
-      csrf.type = "hidden";
-      csrf.name = "csrfmiddlewaretoken";
-      csrf.value = document.querySelector("[name=csrfmiddlewaretoken]").value;
-
-      const remove = document.createElement("button");
-      remove.type = "submit";
-      remove.textContent = "×";
-      remove.className = "slot-remove-button";
-      remove.setAttribute("aria-label", `Remove availability ${formatTime(slot.start)} to ${formatTime(slot.end)}`);
-      remove.title = "Remove time slot";
-
-      form.append(csrf, remove);
-      actions.append(edit, form);
-      row.append(time, actions);
+       const remove = document.createElement("button");
+       remove.type = "button";
+       remove.textContent = "×";
+       remove.className = "slot-remove-button";
+       remove.setAttribute("aria-label", `Remove availability ${formatTime(slot.start)} to ${formatTime(slot.end)}`);
+       remove.title = protectedByBooking ? "Booked availability cannot be removed" : "Remove time slot";
+       remove.disabled = protectedByBooking;
+       remove.addEventListener("click", () => {
+         slots = slots.filter(s => s !== slot);
+         refreshPending();
+         renderCalendar();
+         renderSlots();
+       });
+       actions.append(edit, remove);
+row.append(time, actions);
       selectedSlots.appendChild(row);
     });
 
@@ -637,25 +870,160 @@ function renderCalendar() {
     });
 
   
+  // Copy the selected Monday–Sunday week to the following week.
+  // The copied slots are drafts, so Save / Discard work as usual.
+  const repeatNextWeekButton = document.getElementById("repeat-next-week");
+  repeatNextWeekButton.addEventListener("click", () => {
+    const weekStart = addDays(selectedDate, -((selectedDate.getDay() + 6) % 7));
+    const weekEnd = addDays(weekStart, 7);
+    const sourceSlots = slots.filter(slot =>
+      slot.date >= dateKey(weekStart) && slot.date < dateKey(weekEnd)
+    );
+
+    if (!sourceSlots.length) {
+      statusText.textContent = "No availability to repeat in the selected week.";
+      return;
+    }
+
+    let added = 0;
+    let skipped = 0;
+    const now = new Date();
+    for (const source of sourceSlots) {
+      const targetDate = dateKey(addDays(new Date(`${source.date}T12:00:00`), 7));
+      const start = normalizeTime(source.start);
+      const end = normalizeTime(source.end);
+      const targetEnd = new Date(`${targetDate}T${end}:00`);
+      const overlapsSlot = slots.some(slot =>
+        slot.date === targetDate && start < normalizeTime(slot.end) && end > normalizeTime(slot.start)
+      );
+      const overlapsBooking = bookings.some(booking =>
+        booking.date === targetDate && start < normalizeTime(booking.end) && end > normalizeTime(booking.start)
+      );
+      if (targetEnd <= now || overlapsSlot || overlapsBooking) {
+        skipped++;
+        continue;
+      }
+      slots.push({
+        id: `draft-repeat-${Date.now()}-${added}-${Math.random().toString(36).slice(2)}`,
+        date: targetDate, start, end
+      });
+      added++;
+    }
+
+    if (added) {
+      selectedDate = addDays(selectedDate, 7);
+      viewMode = "week";
+      weekButton.classList.add("active");
+      monthButton.classList.remove("active");
+      refreshPending();
+      renderCalendar();
+      renderSlots();
+      statusText.textContent = `You have unsaved changes. ${added} time slot${added === 1 ? "" : "s"} copied${skipped ? `; ${skipped} skipped (conflict or past date)` : ""}.`;
+    } else {
+      statusText.textContent = `Nothing copied: ${skipped} slot${skipped === 1 ? "" : "s"} already exist, conflict, or are in the past.`;
+    }
+  });
+
   // Toggle the add-time form without affecting the existing Django form.
   const addTimeButton = document.getElementById("add-time-button");
   const addTimeForm = document.getElementById("add-time-form");
   addTimeButton.addEventListener("click", () => {
-    const opening = addTimeForm.hidden;
-    addTimeForm.hidden = !opening;
-    addTimeButton.setAttribute("aria-expanded", String(opening));
+    if (addTimeForm.hidden) openEditor(null);
+    else {
+      addTimeForm.hidden = true;
+      addTimeButton.hidden = false;
+      addTimeButton.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  const cancelAddTime = document.getElementById("cancel-add-time");
+  cancelAddTime.addEventListener("click", () => {
+    addTimeForm.hidden = true;
+    addTimeButton.hidden = false;
+    editingId = null;
+    addTimeButton.setAttribute("aria-expanded", "false");
+  });
+
+  // Stage new and edited slots locally. Django receives changes only on Save.
+  createForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const date = dateInput.value;
+    const start = normalizeTime(startInput.value);
+    const end = normalizeTime(endInput.value);
+    if (!date || !start || !end || start >= end) {
+      statusText.textContent = "Choose a date and an end time after the start time.";
+      return;
+    }
+    if (slots.some(s => s.id !== editingId && s.date === date && start < normalizeTime(s.end) && end > normalizeTime(s.start))) {
+      statusText.textContent = "That time overlaps an existing availability slot.";
+      return;
+    }
+    if (bookings.some(b => b.date === date && start < normalizeTime(b.end) && end > normalizeTime(b.start))) {
+      statusText.textContent = "That time overlaps a booked or completed care request.";
+      return;
+    }
+    if (editingId !== null) {
+      const target = slots.find(s => s.id === editingId);
+      if (target) Object.assign(target, {date, start, end});
+    } else {
+      slots.push({id:`draft-${Date.now()}-${Math.random().toString(36).slice(2)}`, date, start, end});
+    }
+    editingId = null;
+    addTimeForm.hidden = true;
+    addTimeButton.hidden = false;
+    addTimeButton.setAttribute("aria-expanded", "false");
+    refreshPending();
+    renderCalendar();
+    renderSlots();
+  });
+
+  discardButton.addEventListener("click", () => {
+    slots = savedSlots.map(s => ({...s}));
+    pendingChanges = [];
+    editingId = null;
+    addTimeForm.hidden = true;
+    addTimeButton.hidden = false;
+    refreshPending();
+    renderCalendar();
+    renderSlots();
+  });
+
+  // This endpoint must be registered in caregivers/urls.py and implemented
+  // in views.py with atomic validation and ownership checks.
+  saveButton.addEventListener("click", async () => {
+    if (!pendingChanges.length) return;
+    saveButton.disabled = true;
+    statusText.textContent = "Saving changes…";
+    try {
+      const response = await fetch("{% url 'save_availability_changes' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": createForm.querySelector("[name=csrfmiddlewaretoken]").value
+        },
+        body: JSON.stringify({changes: pendingChanges})
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "Save failed.");
+      window.location.reload();
+    } catch (error) {
+      statusText.textContent = `Not saved: ${error.message}. Your changes are still here.`;
+      saveButton.disabled = false;
+    }
   });
 
   // Keep validation errors visible after a rejected submission.
   const hasFormErrors = {{ form.errors|yesno:"true,false" }};
   if (hasFormErrors) {
     addTimeForm.hidden = false;
+    addTimeButton.hidden = true;
     addTimeButton.setAttribute("aria-expanded", "true");
   }
 
   // Initialize calendar
     renderCalendar();
     renderSlots();
+    refreshPending();
     window.addEventListener("resize", fitPillLabels);
 
     });
