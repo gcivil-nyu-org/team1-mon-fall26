@@ -707,9 +707,14 @@ def edit_availability(request, slot_id):
         if form.is_valid():
             updated_slot = form.save(commit=False)
             updated_slot.caregiver = caregiver
-            updated_slot.full_clean()
-            updated_slot.save()
-            return redirect("manage_availability")
+            # An overlapping slot is a form error, not a server error.
+            try:
+                updated_slot.full_clean()
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                updated_slot.save()
+                return redirect("manage_availability")
     else:
         form = CaregiverAvailabilityForm(instance=slot)
 
