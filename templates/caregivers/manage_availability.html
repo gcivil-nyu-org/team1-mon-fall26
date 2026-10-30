@@ -373,6 +373,34 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
 }
 
 #save-status-text { font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; color: #403936; }
+/* Compact, single-line selected-day pills (matches the Figma reference). */
+.sidebar-card .slot-row {
+  flex-wrap: nowrap;
+  min-width: 0;
+  gap: 6px;
+  padding: 8px 9px;
+  font-size: 11px;
+}
+.sidebar-card .slot-row > .slot-time {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.sidebar-card .slot-row .slot-actions { margin-left: auto; flex: 0 0 auto; }
+.sidebar-card .slot-row .booking-pet {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-card .slot-row.booked { background: #ffc4d8; color: #7e2446; }
+.sidebar-card .slot-row.completed { background: #eee9e6; color: #85756e; }
+.sidebar-card .slot-row.editable { cursor: pointer; }
+.sidebar-card .slot-row.editable:focus-visible { outline: 2px solid #317b58; outline-offset: 2px; }
 </style>
 
 <section class="availability-page">
@@ -576,14 +604,30 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${suffix}`;
   };
 
+  // Short, readable ranges that stay on one line in the narrow sidebar.
+  const compactTime = value => {
+    const [hour, minute] = normalizeTime(value).split(":").map(Number);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    return `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""} ${suffix}`;
+  };
+  const compactRange = (start, end) => {
+    const first = compactTime(start);
+    const last = compactTime(end);
+    const firstSuffix = first.endsWith("AM") ? "AM" : "PM";
+    return firstSuffix === (last.endsWith("AM") ? "AM" : "PM")
+      ? `${first.slice(0, -3)}–${last}`
+      : `${first}–${last}`;
+  };
+  const overlapsBooking = slot => bookings.some(b =>
+    b.date === slot.date && normalizeTime(slot.start) < normalizeTime(b.end) &&
+    normalizeTime(slot.end) > normalizeTime(b.start)
+  );
+
   function renderSlots() {
     const key = dateKey(selectedDate);
     selectedNumber.textContent = selectedDate.getDate();
     selectedWeekday.textContent = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
-    selectedHeading.textContent = selectedDate.toLocaleDateString("en-US", {
-      month: "long", day: "numeric"
-    });
-
+    selectedHeading.textContent = selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
     if (dateInput) dateInput.value = key;
 
     const matching = slots.filter(slot => slot.date === key);
@@ -597,59 +641,69 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    matching.forEach(slot => {
+    // Booked time is shown in its own pink row; don't show the exact same
+    // fully-covered availability interval as an additional green row.
+    const entries = [
+      ...matching.filter(slot => !dayBookings.some(b =>
+        normalizeTime(b.start) <= normalizeTime(slot.start) &&
+        normalizeTime(b.end) >= normalizeTime(slot.end)
+      )).map(slot => ({ kind: "open", data: slot })),
+      ...dayBookings.map(booking => ({ kind: booking.status === "completed" ? "completed" : "booked", data: booking }))
+    ].sort((a, b) => normalizeTime(a.data.start).localeCompare(normalizeTime(b.data.start)));
+
+    entries.forEach(({kind, data}) => {
       const row = document.createElement("div");
-      row.className = "slot-row";
-
+      row.className = `slot-row ${kind}`;
       const time = document.createElement("span");
-      time.textContent = `${formatTime(slot.start)} – ${formatTime(slot.end)}`;
+      time.className = "slot-time";
+      time.textContent = compactRange(data.start, data.end);
+      time.title = `${formatTime(data.start)} – ${formatTime(data.end)}`;
+      row.appendChild(time);
 
-      const actions = document.createElement("div");
-      actions.className = "slot-actions";
-
-             const protectedByBooking = bookings.some(b => b.date === slot.date &&
-         normalizeTime(slot.start) < normalizeTime(b.end) &&
-         normalizeTime(slot.end) > normalizeTime(b.start));
-       const edit = document.createElement("button");
-       edit.type = "button";
-       edit.textContent = "Edit";
-       edit.className = "slot-edit-link";
-       edit.disabled = protectedByBooking;
-       edit.title = protectedByBooking ? "Booked availability cannot be edited" : "Edit time slot";
-       edit.addEventListener("click", () => openEditor(slot));
-
-       const remove = document.createElement("button");
-       remove.type = "button";
-       remove.textContent = "×";
-       remove.className = "slot-remove-button";
-       remove.setAttribute("aria-label", `Remove availability ${formatTime(slot.start)} to ${formatTime(slot.end)}`);
-       remove.title = protectedByBooking ? "Booked availability cannot be removed" : "Remove time slot";
-       remove.disabled = protectedByBooking;
-       remove.addEventListener("click", () => {
-         slots = slots.filter(s => s !== slot);
-         refreshPending();
-         renderCalendar();
-         renderSlots();
-       });
-       actions.append(edit, remove);
-row.append(time, actions);
-      selectedSlots.appendChild(row);
-    });
-
-    dayBookings.forEach(booking => {
-      const row = document.createElement("div");
-      row.className = `slot-row ${booking.status === "completed" ? "completed" : "booked"}`;
-      const time = document.createElement("span");
-      time.textContent = `${formatTime(booking.start)} – ${formatTime(booking.end)}`;
-      const pet = document.createElement("span");
-      pet.className = "booking-pet";
-      pet.textContent = `${booking.status === "completed" ? "✓" : "🔒"} ${booking.pet || "Pet"}`;
-      row.append(time, pet);
+      if (kind !== "open") {
+        const pet = document.createElement("span");
+        pet.className = "booking-pet";
+        pet.textContent = `${kind === "completed" ? "✓" : "🔒"} ${data.pet || "Booked"}`;
+        row.appendChild(pet);
+      } else {
+        const protectedByBooking = overlapsBooking(data);
+        if (!protectedByBooking) {
+          // Clicking the pill opens the same existing editor; no Edit button.
+          row.classList.add("editable");
+          row.tabIndex = 0;
+          row.setAttribute("role", "button");
+          row.setAttribute("aria-label", `Edit availability ${formatTime(data.start)} to ${formatTime(data.end)}`);
+          row.addEventListener("click", () => openEditor(data));
+          row.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openEditor(data);
+            }
+          });
+          const actions = document.createElement("div");
+          actions.className = "slot-actions";
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "×";
+          remove.className = "slot-remove-button";
+          remove.setAttribute("aria-label", `Remove availability ${formatTime(data.start)} to ${formatTime(data.end)}`);
+          remove.addEventListener("click", event => {
+            event.stopPropagation();
+            slots = slots.filter(s => s !== data);
+            refreshPending();
+            renderCalendar();
+            renderSlots();
+          });
+          actions.appendChild(remove);
+          row.appendChild(actions);
+        } else {
+          row.title = "This availability overlaps a booking and cannot be edited or removed";
+        }
+      }
       selectedSlots.appendChild(row);
     });
   }
 
-  
   function fitPillLabels() {
     grid.querySelectorAll(".day-slot").forEach(pill => {
       const label = pill.querySelector(".time-label");
