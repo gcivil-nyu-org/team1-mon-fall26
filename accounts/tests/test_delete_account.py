@@ -3,7 +3,10 @@ is deactivated, and they can't log in with it any more."""
 
 from datetime import timedelta
 
+import re
+
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
 
@@ -94,6 +97,23 @@ class DeleteAccountTests(BookingTestData):
             },
         )
         self.assertRedirects(response, reverse("signup_success"))
+
+    def test_deleted_account_gets_no_reset_email(self):
+        # #46 + #48: the email was cleared and the account is inactive.
+        self.delete(self.owner)
+        response = self.client.post(
+            reverse("password_reset"), {"email": "owner@example.com"}, follow=True
+        )
+        self.assertContains(response, "Check your email")
+        self.assertEqual(mail.outbox, [])
+
+    def test_reset_link_sent_before_deletion_stops_working(self):
+        self.client.post(reverse("password_reset"), {"email": "owner@example.com"})
+        link = re.search(r"https?://[^/]+(/accounts/reset/\S+/)", mail.outbox[0].body)
+        self.delete(self.owner)
+        self.client.logout()
+        response = self.client.get(link.group(1), follow=True)
+        self.assertContains(response, "This link has expired")
 
     def test_owners_open_bookings_are_cancelled(self):
         pending = self.make_booking()
