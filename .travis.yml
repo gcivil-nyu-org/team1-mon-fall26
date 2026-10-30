@@ -14,6 +14,13 @@ branches:
 
 cache: pip
 
+env:
+  global:
+    # travis-ci.com needs this name; with the default (travis-ci, the old
+    # travis-ci.org) Coveralls saves builds without a branch, so the README
+    # badges show "unknown".
+    - COVERALLS_SERVICE_NAME=travis-pro
+
 install:
   - pip install --upgrade pip
   - pip install -r requirements-dev.txt
