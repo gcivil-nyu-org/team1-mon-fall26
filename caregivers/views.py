@@ -1,12 +1,26 @@
+import json
+from datetime import date, time
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_GET
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CaregiverProfile, CaregiverService
-from .forms import CaregiverProfileForm, CaregiverServicesForm
+from django.utils import timezone
+from django.views.decorators.http import require_GET, require_POST
+
+from bookings.models import Booking
+
+from .forms import (
+    CaregiverAvailabilityForm,
+    CaregiverProfileForm,
+    CaregiverServicesForm,
+)
 from .geocoding import GeocodingUnavailable, autocomplete, geocode
+from .models import CaregiverAvailability, CaregiverProfile, CaregiverService
 from .search import (
     DEFAULT_DISTANCE,
     DISTANCE_CHOICES,
@@ -193,6 +207,68 @@ def caregiver_profile_detail(request, pk):
 
     service_listings = provided_services.filter(is_active=True, price__isnull=False)
 
+    # Public calendar: only advertise saved, unbooked time ranges.
+    # Split accepted/completed bookings out of availability (including overnight bookings).
+    from collections import defaultdict
+    from datetime import datetime, timedelta
+
+    open_by_day = defaultdict(list)
+    for slot in CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
+        "date", "start_time"
+    ):
+        start_min = slot.start_time.hour * 60 + slot.start_time.minute
+        end_min = slot.end_time.hour * 60 + slot.end_time.minute
+        open_by_day[slot.date].append((start_min, end_min))
+
+    blocked_by_day = defaultdict(list)
+    for booking in Booking.objects.filter(
+        caregiver=caregiver, status__in=["accepted", "completed"]
+    ).only("start_time", "end_time"):
+        beginning = timezone.localtime(booking.start_time)
+        ending = timezone.localtime(booking.end_time)
+        day = beginning.date()
+        while day <= ending.date():
+            day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
+            next_start = timezone.make_aware(
+                datetime.combine(day + timedelta(days=1), datetime.min.time())
+            )
+            overlap_start = max(beginning, day_start)
+            overlap_end = min(ending, next_start)
+            if overlap_start < overlap_end:
+                start_min = overlap_start.hour * 60 + overlap_start.minute
+                end_min = (
+                    1440
+                    if overlap_end == next_start
+                    else overlap_end.hour * 60 + overlap_end.minute
+                )
+                blocked_by_day[day].append((start_min, end_min))
+            day += timedelta(days=1)
+
+    public_slots = []
+    for day, ranges in open_by_day.items():
+        for start_min, end_min in ranges:
+            pieces = [(start_min, end_min)]
+            for blocked_start, blocked_end in blocked_by_day.get(day, []):
+                next_pieces = []
+                for a, b in pieces:
+                    if blocked_end <= a or blocked_start >= b:
+                        next_pieces.append((a, b))
+                    else:
+                        if a < blocked_start:
+                            next_pieces.append((a, blocked_start))
+                        if blocked_end < b:
+                            next_pieces.append((blocked_end, b))
+                pieces = next_pieces
+            for a, b in pieces:
+                if a < b:
+                    public_slots.append(
+                        {
+                            "date": day.isoformat(),
+                            "start": f"{a // 60:02d}:{a % 60:02d}",
+                            "end": f"{b // 60:02d}:{b % 60:02d}",
+                        }
+                    )
+
     return render(
         request,
         "caregivers/profile_detail.html",
@@ -202,6 +278,7 @@ def caregiver_profile_detail(request, pk):
             "is_own": bool(caregiver.user_id) and caregiver.user_id == request.user.id,
             "provided_services": provided_services,
             "service_listings": service_listings,
+            "public_availability_json": json.dumps(public_slots),
         },
     )
 
@@ -511,3 +588,276 @@ def _coordinates(params):
     if not (40.4 <= latitude <= 41.0 and -74.3 <= longitude <= -73.6):
         return None, None
     return latitude, longitude
+
+
+@login_required
+def manage_availability(request):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    if request.method == "POST":
+        form = CaregiverAvailabilityForm(request.POST)
+
+        if form.is_valid():
+            slot = form.save(commit=False)
+            slot.caregiver = caregiver
+
+            try:
+                slot.full_clean()
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                slot.save()
+                return redirect("manage_availability")
+    else:
+        form = CaregiverAvailabilityForm()
+
+    slots = CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
+        "date", "start_time"
+    )
+
+    bookings = (
+        Booking.objects.filter(
+            caregiver=caregiver,
+            status__in=["accepted", "completed"],
+        )
+        .select_related("pet")
+        .order_by("start_time")
+    )
+    calendar_slots = [
+        {
+            "id": slot.id,
+            "date": slot.date.isoformat(),
+            "start": slot.start_time.strftime("%H:%M"),
+            "end": slot.end_time.strftime("%H:%M"),
+        }
+        for slot in slots
+    ]
+    calendar_bookings = [
+        {
+            "id": booking.id,
+            "date": timezone.localtime(booking.start_time).date().isoformat(),
+            "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
+            "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
+            "status": booking.status,
+            "pet": booking.pet.name if booking.pet else "Pet",
+        }
+        for booking in bookings
+    ]
+
+    return render(
+        request,
+        "caregivers/manage_availability.html",
+        {
+            "caregiver": caregiver,
+            "slots": slots,
+            "form": form,
+            "calendar_slots": json.dumps(
+                calendar_slots,
+                cls=DjangoJSONEncoder,
+            ),
+            "calendar_bookings": json.dumps(
+                calendar_bookings,
+                cls=DjangoJSONEncoder,
+            ),
+        },
+    )
+
+
+@login_required
+def delete_availability(request, slot_id):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    slot = get_object_or_404(
+        CaregiverAvailability,
+        pk=slot_id,
+        caregiver=caregiver,
+    )
+
+    if request.method == "POST":
+        slot.delete()
+
+    return redirect("manage_availability")
+
+
+@login_required
+def edit_availability(request, slot_id):
+    caregiver = get_object_or_404(
+        CaregiverProfile,
+        user=request.user,
+    )
+
+    slot = get_object_or_404(
+        CaregiverAvailability,
+        pk=slot_id,
+        caregiver=caregiver,
+    )
+
+    if request.method == "POST":
+        form = CaregiverAvailabilityForm(
+            request.POST,
+            instance=slot,
+        )
+
+        if form.is_valid():
+            updated_slot = form.save(commit=False)
+            updated_slot.caregiver = caregiver
+            # An overlapping slot is a form error, not a server error.
+            try:
+                updated_slot.full_clean()
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                updated_slot.save()
+                return redirect("manage_availability")
+    else:
+        form = CaregiverAvailabilityForm(instance=slot)
+
+    return render(
+        request,
+        "caregivers/edit_availability.html",
+        {"form": form, "slot": slot},
+    )
+
+
+@login_required
+@require_POST
+def save_availability_changes(request):
+    """Apply a caregiver's staged calendar changes as one atomic operation."""
+    caregiver = get_object_or_404(CaregiverProfile, user=request.user)
+
+    try:
+        payload = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"ok": False, "error": "Invalid JSON request."}, status=400)
+
+    changes = payload.get("changes") if isinstance(payload, dict) else None
+    if not isinstance(changes, list) or not 1 <= len(changes) <= 100:
+        return JsonResponse(
+            {"ok": False, "error": "Submit between 1 and 100 changes."}, status=400
+        )
+
+    try:
+        # Lock the caregiver row to serialize calendar saves for this caregiver.
+        with transaction.atomic():
+            CaregiverProfile.objects.select_for_update().get(pk=caregiver.pk)
+            existing = {
+                slot.pk: slot
+                for slot in CaregiverAvailability.objects.filter(caregiver=caregiver)
+            }
+            final = dict(existing)
+            new_slots = []
+            seen_ids = set()
+            modified = []
+
+            for change in changes:
+                if not isinstance(change, dict):
+                    raise ValueError("Each change must be an object.")
+                action = change.get("action")
+                if action not in ("create", "update", "delete"):
+                    raise ValueError("Unknown availability action.")
+
+                slot_id = None
+                if action != "create":
+                    slot_id = change.get("id")
+                    if type(slot_id) is not int or slot_id not in existing:
+                        raise ValueError(
+                            "An availability slot was not found on your profile."
+                        )
+                    if slot_id in seen_ids:
+                        raise ValueError("The same slot was changed more than once.")
+                    seen_ids.add(slot_id)
+
+                if action == "delete":
+                    modified.append(existing[slot_id])
+                    del final[slot_id]
+                    continue
+
+                try:
+                    day = date.fromisoformat(change["date"])
+                    start = time.fromisoformat(change["start"])
+                    end = time.fromisoformat(change["end"])
+                except (KeyError, TypeError, ValueError):
+                    raise ValueError("Choose a valid date and start/end time.")
+                if start >= end:
+                    raise ValueError("End time must be after start time.")
+
+                if action == "create":
+                    new_slots.append(
+                        CaregiverAvailability(
+                            caregiver=caregiver,
+                            date=day,
+                            start_time=start,
+                            end_time=end,
+                        )
+                    )
+                else:
+                    original = existing[slot_id]
+                    modified.append(original)
+                    final[slot_id] = CaregiverAvailability(
+                        pk=slot_id,
+                        caregiver=caregiver,
+                        date=day,
+                        start_time=start,
+                        end_time=end,
+                    )
+
+            # Validate the final calendar, rather than intermediate DB states.
+            final_slots = list(final.values()) + new_slots
+            by_day = {}
+            for slot in final_slots:
+                by_day.setdefault(slot.date, []).append(slot)
+            for day_slots in by_day.values():
+                day_slots.sort(key=lambda s: s.start_time)
+                for previous, following in zip(day_slots, day_slots[1:]):
+                    if previous.end_time > following.start_time:
+                        raise ValueError("Availability slots cannot overlap.")
+
+            # Never change or remove availability already covering a booking.
+            active_bookings = Booking.objects.filter(
+                caregiver=caregiver, status__in=["accepted", "completed"]
+            )
+            for booking in active_bookings:
+                booking_start = timezone.localtime(booking.start_time)
+                booking_end = timezone.localtime(booking.end_time)
+                for old in modified:
+                    if old.date != booking_start.date():
+                        continue
+                    if (
+                        old.start_time < booking_end.time()
+                        and old.end_time > booking_start.time()
+                    ):
+                        raise ValueError(
+                            "Booked or completed availability cannot be edited or removed."
+                        )
+
+            deleted_ids = [c["id"] for c in changes if c["action"] == "delete"]
+            if deleted_ids:
+                CaregiverAvailability.objects.filter(
+                    caregiver=caregiver, pk__in=deleted_ids
+                ).delete()
+            for change in changes:
+                if change["action"] == "update":
+                    updated = final[change["id"]]
+                    CaregiverAvailability.objects.filter(
+                        caregiver=caregiver, pk=updated.pk
+                    ).update(
+                        date=updated.date,
+                        start_time=updated.start_time,
+                        end_time=updated.end_time,
+                    )
+            for slot in new_slots:
+                slot.full_clean()
+                slot.save()
+    except (ValueError, ValidationError) as exc:
+        message = (
+            "; ".join(exc.messages) if isinstance(exc, ValidationError) else str(exc)
+        )
+        return JsonResponse({"ok": False, "error": message}, status=400)
+
+    return JsonResponse({"ok": True})
