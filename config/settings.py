@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import sys
 import warnings
 from pathlib import Path
 
@@ -124,6 +125,13 @@ else:
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+
+# Tests create many users, and Django's default password hashing is slow on
+# purpose (~0.3 s per password). A fast hasher during `manage.py test` cuts the
+# suite from minutes to seconds. Real logins keep the secure default.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
+if TESTING:
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 AUTH_PASSWORD_VALIDATORS = [
     {

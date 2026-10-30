@@ -137,3 +137,29 @@ class EmailSettingsTests(SimpleTestCase):
         self.assertEqual(mail["OPTIONS"]["port"], 587)
         self.assertEqual(mail["OPTIONS"]["username"], "pawpal@example.com")
         self.assertTrue(mail["OPTIONS"]["use_tls"])
+
+
+class TestSpeedTests(SimpleTestCase):
+    """Only the test run uses the fast password hasher."""
+
+    def test_tests_use_the_fast_hasher(self):
+        from django.conf import settings
+
+        self.assertEqual(
+            settings.PASSWORD_HASHERS,
+            ["django.contrib.auth.hashers.MD5PasswordHasher"],
+        )
+
+    def test_the_site_keeps_the_secure_default(self):
+        script = (
+            "from config import settings as s; "
+            "print(getattr(s, 'PASSWORD_HASHERS', 'default'))"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        self.assertEqual(result.stdout.strip(), "default")
