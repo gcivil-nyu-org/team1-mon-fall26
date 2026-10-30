@@ -1,15 +1,26 @@
+import json
+from datetime import date, time
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
-from datetime import date, time
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_GET
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import CaregiverProfile, CaregiverService
-from .forms import CaregiverProfileForm, CaregiverServicesForm
+from django.utils import timezone
+from django.views.decorators.http import require_GET, require_POST
+
+from bookings.models import Booking
+
+from .forms import (
+    CaregiverAvailabilityForm,
+    CaregiverProfileForm,
+    CaregiverServicesForm,
+)
 from .geocoding import GeocodingUnavailable, autocomplete, geocode
+from .models import CaregiverAvailability, CaregiverProfile, CaregiverService
 from .search import (
     DEFAULT_DISTANCE,
     DISTANCE_CHOICES,
@@ -28,15 +39,7 @@ from .search import (
     searchable_caregivers,
     sort_caregivers,
 )
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-from .forms import CaregiverAvailabilityForm
-from .models import CaregiverAvailability, CaregiverProfile
-from django.core.exceptions import ValidationError
-import json
-from django.core.serializers.json import DjangoJSONEncoder
-from bookings.models import Booking
-from django.utils import timezone
+
 
 def _neighborhood_label(neighborhood, borough):
     """ "Park Slope", "Brooklyn" -> "Park Slope, Brooklyn"."""
@@ -210,7 +213,9 @@ def caregiver_profile_detail(request, pk):
     from datetime import datetime, timedelta
 
     open_by_day = defaultdict(list)
-    for slot in CaregiverAvailability.objects.filter(caregiver=caregiver).order_by("date", "start_time"):
+    for slot in CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
+        "date", "start_time"
+    ):
         start_min = slot.start_time.hour * 60 + slot.start_time.minute
         end_min = slot.end_time.hour * 60 + slot.end_time.minute
         open_by_day[slot.date].append((start_min, end_min))
@@ -224,12 +229,18 @@ def caregiver_profile_detail(request, pk):
         day = beginning.date()
         while day <= ending.date():
             day_start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-            next_start = timezone.make_aware(datetime.combine(day + timedelta(days=1), datetime.min.time()))
+            next_start = timezone.make_aware(
+                datetime.combine(day + timedelta(days=1), datetime.min.time())
+            )
             overlap_start = max(beginning, day_start)
             overlap_end = min(ending, next_start)
             if overlap_start < overlap_end:
                 start_min = overlap_start.hour * 60 + overlap_start.minute
-                end_min = 1440 if overlap_end == next_start else overlap_end.hour * 60 + overlap_end.minute
+                end_min = (
+                    1440
+                    if overlap_end == next_start
+                    else overlap_end.hour * 60 + overlap_end.minute
+                )
                 blocked_by_day[day].append((start_min, end_min))
             day += timedelta(days=1)
 
@@ -250,11 +261,13 @@ def caregiver_profile_detail(request, pk):
                 pieces = next_pieces
             for a, b in pieces:
                 if a < b:
-                    public_slots.append({
-                        "date": day.isoformat(),
-                        "start": f"{a // 60:02d}:{a % 60:02d}",
-                        "end": f"{b // 60:02d}:{b % 60:02d}",
-                    })
+                    public_slots.append(
+                        {
+                            "date": day.isoformat(),
+                            "start": f"{a // 60:02d}:{a % 60:02d}",
+                            "end": f"{b // 60:02d}:{b % 60:02d}",
+                        }
+                    )
 
     return render(
         request,
@@ -576,6 +589,7 @@ def _coordinates(params):
         return None, None
     return latitude, longitude
 
+
 @login_required
 def manage_availability(request):
     caregiver = get_object_or_404(
@@ -600,51 +614,55 @@ def manage_availability(request):
     else:
         form = CaregiverAvailabilityForm()
 
-    slots = CaregiverAvailability.objects.filter(
-    caregiver=caregiver
-    ).order_by("date", "start_time")
+    slots = CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
+        "date", "start_time"
+    )
 
-    bookings = Booking.objects.filter(
-    caregiver=caregiver,
-    status__in=["accepted", "completed"],
-    ).select_related("pet").order_by("start_time")
+    bookings = (
+        Booking.objects.filter(
+            caregiver=caregiver,
+            status__in=["accepted", "completed"],
+        )
+        .select_related("pet")
+        .order_by("start_time")
+    )
     calendar_slots = [
-    {
-        "id": slot.id,
-        "date": slot.date.isoformat(),
-        "start": slot.start_time.strftime("%H:%M"),
-        "end": slot.end_time.strftime("%H:%M"),
-    }
-    for slot in slots
-]
+        {
+            "id": slot.id,
+            "date": slot.date.isoformat(),
+            "start": slot.start_time.strftime("%H:%M"),
+            "end": slot.end_time.strftime("%H:%M"),
+        }
+        for slot in slots
+    ]
     calendar_bookings = [
-    {
-        "id": booking.id,
-        "date": timezone.localtime(booking.start_time).date().isoformat(),
-        "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
-        "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
-        "status": booking.status,
-        "pet": booking.pet.name if booking.pet else "Pet",
-    }
-    for booking in bookings
-]
+        {
+            "id": booking.id,
+            "date": timezone.localtime(booking.start_time).date().isoformat(),
+            "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
+            "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
+            "status": booking.status,
+            "pet": booking.pet.name if booking.pet else "Pet",
+        }
+        for booking in bookings
+    ]
 
     return render(
-    request,
-    "caregivers/manage_availability.html",
-    {
-        "caregiver": caregiver,
-        "slots": slots,
-        "form": form,
-        "calendar_slots": json.dumps(
-            calendar_slots,
-            cls=DjangoJSONEncoder,
-        ),
-        "calendar_bookings": json.dumps(
-        calendar_bookings,
-        cls=DjangoJSONEncoder,
-    ),
-    },
+        request,
+        "caregivers/manage_availability.html",
+        {
+            "caregiver": caregiver,
+            "slots": slots,
+            "form": form,
+            "calendar_slots": json.dumps(
+                calendar_slots,
+                cls=DjangoJSONEncoder,
+            ),
+            "calendar_bookings": json.dumps(
+                calendar_bookings,
+                cls=DjangoJSONEncoder,
+            ),
+        },
     )
 
 
@@ -665,6 +683,7 @@ def delete_availability(request, slot_id):
         slot.delete()
 
     return redirect("manage_availability")
+
 
 @login_required
 def edit_availability(request, slot_id):
@@ -700,6 +719,7 @@ def edit_availability(request, slot_id):
         {"form": form, "slot": slot},
     )
 
+
 @login_required
 @require_POST
 def save_availability_changes(request):
@@ -713,7 +733,9 @@ def save_availability_changes(request):
 
     changes = payload.get("changes") if isinstance(payload, dict) else None
     if not isinstance(changes, list) or not 1 <= len(changes) <= 100:
-        return JsonResponse({"ok": False, "error": "Submit between 1 and 100 changes."}, status=400)
+        return JsonResponse(
+            {"ok": False, "error": "Submit between 1 and 100 changes."}, status=400
+        )
 
     try:
         # Lock the caregiver row to serialize calendar saves for this caregiver.
@@ -739,7 +761,9 @@ def save_availability_changes(request):
                 if action != "create":
                     slot_id = change.get("id")
                     if type(slot_id) is not int or slot_id not in existing:
-                        raise ValueError("An availability slot was not found on your profile.")
+                        raise ValueError(
+                            "An availability slot was not found on your profile."
+                        )
                     if slot_id in seen_ids:
                         raise ValueError("The same slot was changed more than once.")
                     seen_ids.add(slot_id)
@@ -759,16 +783,23 @@ def save_availability_changes(request):
                     raise ValueError("End time must be after start time.")
 
                 if action == "create":
-                    new_slots.append(CaregiverAvailability(
-                        caregiver=caregiver, date=day,
-                        start_time=start, end_time=end,
-                    ))
+                    new_slots.append(
+                        CaregiverAvailability(
+                            caregiver=caregiver,
+                            date=day,
+                            start_time=start,
+                            end_time=end,
+                        )
+                    )
                 else:
                     original = existing[slot_id]
                     modified.append(original)
                     final[slot_id] = CaregiverAvailability(
-                        pk=slot_id, caregiver=caregiver, date=day,
-                        start_time=start, end_time=end,
+                        pk=slot_id,
+                        caregiver=caregiver,
+                        date=day,
+                        start_time=start,
+                        end_time=end,
                     )
 
             # Validate the final calendar, rather than intermediate DB states.
@@ -792,23 +823,36 @@ def save_availability_changes(request):
                 for old in modified:
                     if old.date != booking_start.date():
                         continue
-                    if old.start_time < booking_end.time() and old.end_time > booking_start.time():
-                        raise ValueError("Booked or completed availability cannot be edited or removed.")
+                    if (
+                        old.start_time < booking_end.time()
+                        and old.end_time > booking_start.time()
+                    ):
+                        raise ValueError(
+                            "Booked or completed availability cannot be edited or removed."
+                        )
 
             deleted_ids = [c["id"] for c in changes if c["action"] == "delete"]
             if deleted_ids:
-                CaregiverAvailability.objects.filter(caregiver=caregiver, pk__in=deleted_ids).delete()
+                CaregiverAvailability.objects.filter(
+                    caregiver=caregiver, pk__in=deleted_ids
+                ).delete()
             for change in changes:
                 if change["action"] == "update":
                     updated = final[change["id"]]
                     CaregiverAvailability.objects.filter(
                         caregiver=caregiver, pk=updated.pk
-                    ).update(date=updated.date, start_time=updated.start_time, end_time=updated.end_time)
+                    ).update(
+                        date=updated.date,
+                        start_time=updated.start_time,
+                        end_time=updated.end_time,
+                    )
             for slot in new_slots:
                 slot.full_clean()
                 slot.save()
     except (ValueError, ValidationError) as exc:
-        message = "; ".join(exc.messages) if isinstance(exc, ValidationError) else str(exc)
+        message = (
+            "; ".join(exc.messages) if isinstance(exc, ValidationError) else str(exc)
+        )
         return JsonResponse({"ok": False, "error": message}, status=400)
 
     return JsonResponse({"ok": True})

@@ -138,8 +138,11 @@ class CaregiverService(models.Model):
             )
         ]
 
+
 class CaregiverAvailability(models.Model):
-    caregiver = models.ForeignKey("CaregiverProfile", on_delete=models.CASCADE,related_name="availability_slots")
+    caregiver = models.ForeignKey(
+        "CaregiverProfile", on_delete=models.CASCADE, related_name="availability_slots"
+    )
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -151,9 +154,7 @@ class CaregiverAvailability(models.Model):
             return
 
         if self.end_time <= self.start_time:
-            raise ValidationError(
-                "End time must be after start time."
-            )
+            raise ValidationError("End time must be after start time.")
 
         if self.caregiver_id is None or self.date is None:
             return

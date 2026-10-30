@@ -26,11 +26,15 @@ urlpatterns = [
         views.delete_caregiver_service,
         name="delete_caregiver_service",
     ),
-    path("availability/save/", views.save_availability_changes, name="save_availability_changes"),
     path(
-    "availability/",
-    views.manage_availability,
-    name="manage_availability",
+        "availability/save/",
+        views.save_availability_changes,
+        name="save_availability_changes",
+    ),
+    path(
+        "availability/",
+        views.manage_availability,
+        name="manage_availability",
     ),
     path(
         "availability/<int:slot_id>/delete/",
@@ -38,8 +42,8 @@ urlpatterns = [
         name="delete_availability",
     ),
     path(
-    "availability/<int:slot_id>/edit/",
-    views.edit_availability,
-    name="edit_availability",
+        "availability/<int:slot_id>/edit/",
+        views.edit_availability,
+        name="edit_availability",
     ),
 ]

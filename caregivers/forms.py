@@ -8,7 +8,7 @@ from .models import (
     CaregiverService,
     ServiceType,
     experience_range,
-    CaregiverAvailability
+    CaregiverAvailability,
 )
 
 
@@ -167,6 +167,7 @@ class CaregiverServicesForm(forms.ModelForm):
         if price is not None and price < 0:
             raise forms.ValidationError("Price can't be negative.")
         return price
+
 
 class CaregiverAvailabilityForm(forms.ModelForm):
     class Meta:
