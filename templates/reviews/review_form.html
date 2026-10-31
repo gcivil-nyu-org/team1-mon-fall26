@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} · PawPal{% endblock %}
+
+{% block main_class %}page page-narrow{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{{ back_url }}"><span aria-hidden="true">&lsaquo;</span> {% if is_caregiver %}Back to requests{% else %}Back to my requests{% endif %}</a>
+
+  <form method="post" class="card form-card review-form" novalidate>
+    {% csrf_token %}
+    {% include "reviews/partials/booking_summary.html" %}
+
+    <h1>{{ heading }}</h1>
+
+    <fieldset class="field{% if form.rating.errors %} has-error{% endif %}">
+      <legend>{{ form.rating.label }}</legend>
+      <div class="paw-picker">
+        {% for radio in form.rating %}
+          <label class="paw-option" title="{{ radio.choice_label }}">{{ radio.tag }}<span class="paw-tile" aria-hidden="true">{% include "partials/paw_icon.html" %}</span><span class="visually-hidden">{{ radio.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      {% for error in form.rating.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="field{% if form.comment.errors %} has-error{% endif %}">
+      <div class="review-label-row">
+        <label for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
+        <span class="tag">Optional</span>
+      </div>
+      {{ form.comment }}
+      <p class="char-count" data-char-count>{{ form.comment.value|default:""|length }}/{{ max_length }}</p>
+      {% for error in form.comment.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-outline" href="{{ back_url }}">Cancel</a>
+      <button type="submit" class="btn btn-dark">Submit review</button>
+    </div>
+  </form>
+
+  <script>
+    // Live "0/500" counter under the review box.
+    (function () {
+      var box = document.getElementById("{{ form.comment.id_for_label }}");
+      var count = document.querySelector("[data-char-count]");
+      if (!box || !count) return;
+      box.addEventListener("input", function () {
+        count.textContent = box.value.length + "/{{ max_length }}";
+      });
+    })();
+  </script>
+{% endblock %}

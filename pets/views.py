@@ -1,9 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from bookings.models import Booking
 
@@ -15,7 +22,11 @@ class OwnerPetsMixin(LoginRequiredMixin):
     """Limit every pet query to the logged-in owner's own pets."""
 
     def get_queryset(self):
-        return Pet.objects.filter(owner=self.request.user).select_related("pet_type")
+        return (
+            Pet.objects.active()
+            .filter(owner=self.request.user)
+            .select_related("pet_type")
+        )
 
 
 class PetListView(OwnerPetsMixin, ListView):
@@ -67,6 +78,56 @@ class PetUpdateView(OwnerPetsMixin, UpdateView):
         return response
 
 
+def upcoming_bookings(pet):
+    """Bookings that still need this pet: pending requests and care that hasn't ended."""
+    now = timezone.now()
+    return (
+        pet.bookings.filter(
+            Q(status=Booking.Status.PENDING, start_time__gt=now)
+            | Q(status=Booking.Status.ACCEPTED, end_time__gt=now)
+        )
+        .select_related("caregiver", "service_type")
+        .order_by("start_time")
+    )
+
+
+class PetDeleteView(OwnerPetsMixin, DeleteView):
+    """
+    Story #24: delete a pet after the owner confirms.
+
+    Not allowed while the pet has upcoming bookings. A pet with past bookings
+    is hidden rather than removed, so those bookings keep their history.
+    """
+
+    model = Pet
+    template_name = "pets/pet_confirm_delete.html"
+    context_object_name = "pet"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["upcoming"] = upcoming_bookings(self.object)
+        return context
+
+    def form_valid(self, form):
+        pet = self.object
+        if upcoming_bookings(pet).exists():
+            messages.error(
+                self.request,
+                f"{pet.name} has upcoming bookings. Cancel them first, then delete the profile.",
+            )
+            return redirect("pets:delete", pk=pet.pk)
+
+        if pet.bookings.exists():
+            pet.deleted_at = timezone.now()
+            pet.save(update_fields=["deleted_at"])
+        else:
+            if pet.photo:
+                pet.photo.delete(save=False)
+            pet.delete()
+        messages.success(self.request, f"{pet.name}'s profile was deleted.")
+        return redirect("pets:list")
+
+
 def current_care(user):
     """Accepted bookings for this caregiver that haven't ended yet."""
     return Booking.objects.filter(
@@ -89,7 +150,7 @@ class CaregiverPetView(LoginRequiredMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         # Owners already have their own page for their pet.
-        if Pet.objects.filter(pk=kwargs["pk"], owner=request.user).exists():
+        if Pet.objects.active().filter(pk=kwargs["pk"], owner=request.user).exists():
             return redirect("pets:detail", pk=kwargs["pk"])
         return super().get(request, *args, **kwargs)
 

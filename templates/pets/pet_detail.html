@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load review_tags %}
 
 {% block title %}{{ pet.name }} · PawPal{% endblock %}
 
@@ -34,6 +35,7 @@
       </dl>
 
       {% include "pets/partials/care_info.html" with is_owner=True %}
+      {% pet_reviews pet %}
     </div>
   </article>
 

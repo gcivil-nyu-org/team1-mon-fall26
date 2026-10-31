@@ -91,8 +91,8 @@ class BookingRequestForm(forms.ModelForm):
 
     def __init__(self, *args, owner, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["pet"].queryset = Pet.objects.filter(owner=owner).select_related(
-            "pet_type"
+        self.fields["pet"].queryset = (
+            Pet.objects.active().filter(owner=owner).select_related("pet_type")
         )
         # Owners can't send a request to their own caregiver profile.
         self.fields["caregiver"].queryset = (
@@ -104,8 +104,8 @@ class BookingRequestForm(forms.ModelForm):
 
         # Readable choice labels without touching the other apps' models.
         self.fields["pet"].label_from_instance = lambda pet: pet.name
-        self.fields["caregiver"].label_from_instance = (
-            lambda cg: f"{cg.name} · {cg.service_area}" if cg.service_area else cg.name
+        self.fields["caregiver"].label_from_instance = lambda cg: (
+            f"{cg.name} · {cg.service_area}" if cg.service_area else cg.name
         )
         self.fields["service_type"].label_from_instance = lambda st: st.name
         # The date pickers start at today.

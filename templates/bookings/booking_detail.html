@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load review_tags %}
 
 {% block title %}{{ booking.pet.name }} · {{ booking.service_type.name }} · PawPal{% endblock %}
 
@@ -13,7 +14,7 @@
 
   <article class="card booking-detail">
     <header class="booking-detail-header theme-{{ booking.pet.theme }}">
-      <span class="booking-avatar booking-avatar-large theme-{{ booking.pet.theme }}" aria-hidden="true">{{ booking.pet.name|first|upper }}</span>
+      {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar booking-avatar-large" %}
       <div>
         <p class="eyebrow">Booking request #{{ booking.pk }}</p>
         <h1>{{ booking.pet.name }} · {{ booking.service_type.name }}</h1>
@@ -91,6 +92,8 @@
           <span><strong>Request canceled.</strong> You canceled this booking on {{ booking.updated_at|date:"M j, g:i A" }}. {{ booking.caregiver.name }} can see it was canceled.</span>
         </div>
       {% endif %}
+
+      {% booking_review_box booking %}
 
       {% if can_cancel %}
         <div class="booking-cancel-row">

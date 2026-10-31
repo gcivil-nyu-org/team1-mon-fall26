@@ -1,5 +1,6 @@
 # Tools for checking code locally and in CI (not needed on the server).
 -r requirements.txt
 coverage==7.10.7
+coveralls==4.1.0
 flake8==7.3.0
 black==25.9.0

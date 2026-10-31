@@ -1,9 +1,27 @@
 {% comment %}
-  A pet's feeding, medication and emergency information as three cards.
+  A pet's temperament (full width), then feeding, medication and emergency
+  information as three cards.
   Used on the owner's pet page and on the caregiver's view of the pet.
   Pass is_owner=True on the owner's page; it changes the wording for missing info.
   Caregivers also pass show_contacts: emergency contacts only while the care is happening.
 {% endcomment %}
+<section class="care-card temperament-card" aria-labelledby="care-temperament">
+  <div class="care-card-heading">
+    {% include "pets/partials/care_icon.html" with kind="temperament" %}
+    <h2 id="care-temperament">Temperament</h2>
+  </div>
+  {% if pet.has_temperament_info %}
+    {% if pet.temperament_labels %}
+      <ul class="trait-tags">
+        {% for label in pet.temperament_labels %}<li class="tag">{{ label }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% if pet.behavior_notes %}<p class="care-notes">{{ pet.behavior_notes|linebreaksbr }}</p>{% endif %}
+  {% else %}
+    <p class="muted care-empty">No temperament details{% if is_owner %} yet{% else %}. Ask the owner how {{ pet.name }} is with new people{% endif %}.</p>
+  {% endif %}
+</section>
+
 <div class="care-cards">
   <section class="care-card" aria-labelledby="care-feeding">
     <div class="care-card-heading">

@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
-from .forms import SignUpForm
-from .models import AccountProfile
-from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+
+from .deletion import delete_account
+from .forms import DeleteAccountForm, SignUpForm
+from .models import AccountProfile
 
 
 def home_view(request):
@@ -46,3 +49,18 @@ def signup_success_view(request):
             "is_caregiver": profile.role == "caregiver",
         },
     )
+
+
+@login_required
+def delete_account_view(request):
+    """Story #48: confirm with the password, then the account is deleted."""
+    if request.method == "POST":
+        form = DeleteAccountForm(request.POST, user=request.user)
+        if form.is_valid():
+            delete_account(request.user)
+            logout(request)
+            messages.success(request, "Your PawPal account has been deleted.")
+            return redirect("login")
+    else:
+        form = DeleteAccountForm(user=request.user)
+    return render(request, "accounts/delete_account.html", {"form": form})

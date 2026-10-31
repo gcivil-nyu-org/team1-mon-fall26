@@ -1,6 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
 
 from .models import AccountProfile
 
@@ -68,8 +73,66 @@ class SignUpForm(UserCreationForm):
         fields = ["username", "first_name", "last_name", "email"]
 
 
+class DeleteAccountForm(forms.Form):
+    """Story #48: confirm account deletion with the current password."""
+
+    password = forms.CharField(
+        label="Your password",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "current-password", "placeholder": "Your password"}
+        ),
+        error_messages={"required": "Enter your password to confirm."},
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(
+                "That password isn't right.", code="wrong_password"
+            )
+        return password
+
+
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs["placeholder"] = "Your username"
         self.fields["password"].widget.attrs["placeholder"] = "Your password"
+
+
+class ResetRequestForm(PasswordResetForm):
+    """Story #46: ask for a reset link by the email on the account."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field = self.fields["email"]
+        field.widget.attrs["placeholder"] = "you@example.com"
+        field.error_messages["required"] = "Enter your email."
+        field.error_messages["invalid"] = "Enter a valid email address."
+
+
+class NewPasswordForm(SetPasswordForm):
+    """Story #46: choose a new password from the emailed link."""
+
+    error_messages = {
+        **SetPasswordForm.error_messages,
+        "password_mismatch": "Passwords don't match.",
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].widget.attrs[
+            "placeholder"
+        ] = "At least 8 characters"
+        self.fields["new_password2"].widget.attrs["placeholder"] = "Type it again"
+        self.fields["new_password1"].error_messages[
+            "required"
+        ] = "Enter a new password."
+        self.fields["new_password2"].error_messages[
+            "required"
+        ] = "Retype your new password."

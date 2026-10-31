@@ -1,6 +1,11 @@
 
 # PawPal 🐾
 
+| Branch | Build | Coverage |
+|---|---|---|
+| `main` | [![Build Status](https://app.travis-ci.com/gcivil-nyu-org/team1-mon-fall26.svg?branch=main)](https://app.travis-ci.com/gcivil-nyu-org/team1-mon-fall26) | [![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/team1-mon-fall26/badge.svg?branch=main)](https://coveralls.io/github/gcivil-nyu-org/team1-mon-fall26?branch=main) |
+| `develop` | [![Build Status](https://app.travis-ci.com/gcivil-nyu-org/team1-mon-fall26.svg?branch=develop)](https://app.travis-ci.com/gcivil-nyu-org/team1-mon-fall26) | [![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/team1-mon-fall26/badge.svg?branch=develop)](https://coveralls.io/github/gcivil-nyu-org/team1-mon-fall26?branch=develop) |
+
 PawPal is a web application designed to connect pet owners with caregivers who provide services such as pet sitting, walking, feeding, and drop-in visits.
 
 The platform aims to simplify the process of finding reliable pet care, managing pet profiles, coordinating bookings, and connecting members of the pet-care community.
@@ -91,6 +96,8 @@ team1-mon-fall26/
 ├── templates/          # Shared HTML templates
 ├── manage.py           # Django management utility
 ├── requirements.txt    # Python dependencies
+├── requirements-dev.txt # Test, lint and coverage tools (CI)
+├── .travis.yml         # Travis CI build
 ├── .gitignore          # Git exclusion rules
 └── README.md           # Project documentation
 ```
@@ -147,9 +154,27 @@ git switch -c feature/example-feature
 
 Avoid committing directly to `main`.
 
+### Continuous Integration
+
+[Travis CI](https://app.travis-ci.com/gcivil-nyu-org/team1-mon-fall26) checks every pull request into `develop` or `main`, every push to them, and `main` once a day. A build fails if any of these steps fails, so run them before you push:
+
+```bash
+# Once: install the test and lint tools (includes requirements.txt)
+python -m pip install -r requirements-dev.txt
+
+black .                                              # format (CI runs: black --check .)
+flake8 .                                             # lint (settings in .flake8)
+python manage.py makemigrations --check --dry-run    # no missing migrations
+coverage run manage.py test                          # tests, in each app's tests/ folder
+coverage report --fail-under=90                      # coverage (CI fails below 90%)
+```
+
+Coverage from `develop` and `main` builds is uploaded to [Coveralls](https://coveralls.io/github/gcivil-nyu-org/team1-mon-fall26).
+
 ## Development Notes
 
 - Use a local virtual environment for Python dependencies.
+- Put tests in the app's `tests/` folder (for example `pets/tests/test_pet_profiles.py`). File names must start with `test_` so Django finds them, and code inside imports the app with `..` (for example `from ..models import Pet`).
 - Do not commit `.venv/`, local databases, or sensitive configuration files.
 - Coordinate changes to shared models and project configuration.
 - Keep dependencies documented in `requirements.txt`.

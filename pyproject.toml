@@ -1,0 +1,10 @@
+# Formatting settings for black (run by CI with `black --check .`).
+[tool.black]
+target-version = ["py312"]
+extend-exclude = '''
+/(
+    migrations
+  | staticfiles
+  | media
+)/
+'''
