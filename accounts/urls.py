@@ -18,6 +18,14 @@ urlpatterns = [
     # Story #48: delete your own account.
     path("delete/", views.delete_account_view, name="delete_account"),
     path("signup/success/", views.signup_success_view, name="signup_success"),
+    # Sign-up email verification.
+    path("verify-email/sent/", views.verify_email_sent_view, name="verify_email_sent"),
+    path(
+        "verify-email/resend/",
+        views.resend_verification_view,
+        name="resend_verification",
+    ),
+    path("verify-email/<str:token>/", views.verify_email_view, name="verify_email"),
     # Story #46: reset a forgotten password with a link sent by email.
     path(
         "password-reset/",
