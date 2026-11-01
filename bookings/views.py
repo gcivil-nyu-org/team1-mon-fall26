@@ -119,9 +119,7 @@ def booking_detail(request, pk):
 
 def can_cancel(booking):
     """Story #43: owners can cancel a pending or accepted booking before it starts."""
-    return (
-        booking.status in ACTIVE_STATUSES and booking.start_time > timezone.now()
-    )
+    return booking.status in ACTIVE_STATUSES and booking.start_time > timezone.now()
 
 
 def can_complete(booking):
@@ -179,6 +177,8 @@ def booking_complete(request, pk):
             request,
             f"Marked as completed. {owner_name(booking.owner)} will see it as Completed.",
         )
+        # Figma: completing care goes straight to reviewing the owner and pet (#66).
+        return redirect("reviews:create", booking_pk=booking.pk)
     else:
         messages.error(request, "Only accepted care that has started can be completed.")
     return redirect(next_url or booking)

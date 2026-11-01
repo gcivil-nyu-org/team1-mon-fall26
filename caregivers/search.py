@@ -71,8 +71,7 @@ def find_neighborhood(text):
     if not name:
         return None
     candidates = [
-        n for n in neighborhoods()
-        if not borough or _simplify(n["borough"]) == borough
+        n for n in neighborhoods() if not borough or _simplify(n["borough"]) == borough
     ]
     for n in candidates:
         if _simplify(n["name"]) == name:
@@ -108,7 +107,9 @@ def nearest_neighborhood(latitude, longitude):
     """The neighborhood whose center is closest to the point."""
     return min(
         neighborhoods(),
-        key=lambda n: distance_miles(latitude, longitude, n["latitude"], n["longitude"]),
+        key=lambda n: distance_miles(
+            latitude, longitude, n["latitude"], n["longitude"]
+        ),
     )
 
 
@@ -123,22 +124,22 @@ def searchable_caregivers(viewer, available_only=True):
     By default only caregivers taking new bookings are included (#35); with
     available_only=False the others are listed too, but can't be requested.
     """
-    caregivers = CaregiverProfile.objects.filter(user__isnull=False)
+    # Only caregivers with an active account (deleted accounts are deactivated, #48).
+    caregivers = CaregiverProfile.objects.filter(
+        user__isnull=False, user__is_active=True
+    )
     if available_only:
         caregivers = caregivers.filter(accepting_new_bookings=True)
-    caregivers = (
-        caregivers.prefetch_related(
-            "supported_pet_types",
-            Prefetch(
-                "caregiverservice_set",
-                queryset=listed_services()
-                .select_related("service_type")
-                .order_by("service_type__name"),
-                to_attr="listed_services",
-            ),
-        )
-        .order_by("name")
-    )
+    caregivers = caregivers.prefetch_related(
+        "supported_pet_types",
+        Prefetch(
+            "caregiverservice_set",
+            queryset=listed_services()
+            .select_related("service_type")
+            .order_by("service_type__name"),
+            to_attr="listed_services",
+        ),
+    ).order_by("name")
     if viewer.is_authenticated:
         caregivers = caregivers.exclude(user=viewer)
     return caregivers
@@ -173,14 +174,16 @@ def caregivers_near(caregivers, latitude, longitude, max_miles=None):
 def caregivers_matching_text(caregivers, text):
     """Fallback when the address lookup is down: match the area by name."""
     return list(
-        caregivers.filter(Q(neighborhood__icontains=text) | Q(service_area__icontains=text))
+        caregivers.filter(
+            Q(neighborhood__icontains=text) | Q(service_area__icontains=text)
+        )
     )
 
 
 def offered_service_types():
     """Service types at least one caregiver lists, for the service filter (#34)."""
     offered = listed_services().filter(
-        service_type=OuterRef("pk"), caregiver__user__isnull=False
+        service_type=OuterRef("pk"), caregiver__user__is_active=True
     )
     return ServiceType.objects.filter(Exists(offered)).order_by("name")
 

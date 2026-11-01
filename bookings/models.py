@@ -70,7 +70,8 @@ class Booking(models.Model):
         """Emergency and vet contacts are only shared while the care is happening."""
         now = timezone.now()
         return (
-            self.status == self.Status.ACCEPTED and self.start_time <= now < self.end_time
+            self.status == self.Status.ACCEPTED
+            and self.start_time <= now < self.end_time
         )
 
     @property
@@ -85,9 +86,9 @@ class Booking(models.Model):
     def decline_expired(cls):
         """Pending requests nobody answered before their start time become Declined."""
         now = timezone.now()
-        return cls.objects.filter(status=cls.Status.PENDING, start_time__lte=now).update(
-            status=cls.Status.DECLINED, updated_at=now
-        )
+        return cls.objects.filter(
+            status=cls.Status.PENDING, start_time__lte=now
+        ).update(status=cls.Status.DECLINED, updated_at=now)
 
     @classmethod
     def complete_overdue(cls):
@@ -97,7 +98,9 @@ class Booking(models.Model):
         return cls.objects.filter(
             status=cls.Status.ACCEPTED,
             end_time__lte=timezone.now() - AUTO_COMPLETE_AFTER,
-        ).update(status=cls.Status.COMPLETED, updated_at=F("end_time") + AUTO_COMPLETE_AFTER)
+        ).update(
+            status=cls.Status.COMPLETED, updated_at=F("end_time") + AUTO_COMPLETE_AFTER
+        )
 
     @classmethod
     def update_overdue(cls):

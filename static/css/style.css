@@ -221,6 +221,14 @@ a {
   margin-bottom: 6px;
 }
 
+/* Delete account (#48), above Log out in the account menu. */
+.account-dropdown .delete-account-link {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .link-button {
   padding: 0;
   border: 0;
@@ -1786,6 +1794,9 @@ img.pet-initial-large {
   height: 16px;
 }
 
+.care-icon-temperament { background: var(--lavender); color: var(--purple-dark); }
+.care-icon-rating { background: var(--yellow-soft); color: #e0a12f; }
+.care-icon-rating svg { fill: currentColor; }
 .care-icon-feeding { background: #ffd3b0; color: #7a3410; }
 .care-icon-medication { background: #ffc8d9; color: #7a1f45; }
 .care-icon-emergency { background: #bde0f5; color: #2d3a8c; }
@@ -2906,4 +2917,445 @@ img.pet-initial-large {
   .page-pet-profile .deco-dot {
     display: none;
   }
+}
+
+
+/* ---------- Delete a pet (#24) ---------- */
+
+.delete-link {
+  margin-right: auto;
+  align-self: center;
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.delete-link:hover {
+  text-decoration: underline;
+}
+
+.delete-card {
+  padding: 28px 24px 24px;
+}
+
+.delete-card h1 {
+  margin-bottom: 10px;
+  font-size: 26px;
+}
+
+.delete-card p {
+  margin-bottom: 8px;
+}
+
+.delete-bookings {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.delete-bookings a {
+  display: block;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.delete-bookings a:hover {
+  background: var(--bg);
+}
+
+.delete-card .form-actions {
+  margin-top: 18px;
+}
+
+
+/* ---------- Temperament (#22, #87) ---------- */
+
+.trait-chips {
+  column-gap: 8px;
+  row-gap: 10px;
+  margin-top: 4px;
+}
+
+.trait-chips .chip span {
+  min-height: 34px;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.temperament-card {
+  margin-top: 14px;
+}
+
+.temperament-card .care-notes {
+  max-width: none;
+}
+
+.trait-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trait-tags .tag {
+  padding: 4px 11px;
+  background: var(--lavender);
+  color: var(--purple-dark);
+  font-size: 12px;
+}
+
+/* ---------- Ratings and reviews (#62, #63, #66, Figma "Reviews") ---------- */
+
+/* Paw ratings: filled paws are yellow, empty ones pale. */
+.paws {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: -2px;
+}
+
+.paw {
+  display: inline-grid;
+  color: #ecd9cf;
+}
+
+.paw svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+
+.paw.is-on {
+  color: var(--yellow);
+}
+
+.care-summary .phone-link {
+  font-size: 13px;
+}
+
+/* The paw picker: five rounded tiles. Radios are listed 5..1 and shown
+   right to left, so the picked tile and every tile "before" it light up. */
+.paw-picker {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 8px;
+}
+
+.paw-option {
+  position: relative;
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+.paw-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.paw-tile {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f5ebe6;
+  color: #dcc7bd;
+  transition: background 0.1s, color 0.1s;
+}
+
+.paw-tile svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.paw-option:hover .paw-tile,
+.paw-option:hover ~ .paw-option .paw-tile,
+.paw-option:has(input:checked) .paw-tile,
+.paw-option:has(input:checked) ~ .paw-option .paw-tile {
+  background: var(--yellow-soft);
+  color: #e0a12f;
+}
+
+.paw-option input:focus-visible + .paw-tile {
+  outline: 3px solid rgba(244, 162, 122, 0.5);
+}
+
+/* Review form */
+
+.review-form h1 {
+  margin: 18px 0 16px;
+  font-size: 30px;
+}
+
+.review-booking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f8eee9;
+}
+
+.review-booking .status-pill.status-completed {
+  background: #dcebfa;
+  color: #1f4e79;
+  box-shadow: none;
+}
+
+.review-booking .status-pill.status-completed .status-dot {
+  background: #1f4e79;
+}
+
+.review-booking-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.review-booking-text span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.review-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.review-label-row label {
+  margin: 0 !important;
+}
+
+.char-count {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+/* Review cards (thanks page, profiles, booking page) */
+
+.review-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.review-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f8eee9;
+}
+
+.review-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--yellow);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.review-avatar.tone-1 {
+  background: #cfe4f7;
+  color: #1f4e79;
+}
+
+.review-avatar.tone-2 {
+  background: #fde1e8;
+  color: #8a2846;
+}
+
+.review-card-who {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.review-card-who span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.review-card p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.review-list {
+  margin-top: 22px;
+}
+
+.caregiver-card-body .review-list {
+  margin-top: 0;
+}
+
+.review-list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 12px;
+}
+
+.review-list-head h2 {
+  font-size: 20px;
+}
+
+.review-average {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.review-average strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+/* Thanks page */
+
+.review-thanks {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.review-thanks-check {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--success-ink);
+  font-weight: 700;
+}
+
+.review-thanks-paw {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  color: var(--pink);
+}
+
+.review-thanks-paw svg {
+  width: 52px;
+  height: 52px;
+  fill: currentColor;
+  transform: rotate(12deg);
+}
+
+.review-thanks h1 {
+  font-size: 30px;
+}
+
+.review-thanks > p.muted {
+  margin: 4px 0 16px;
+  font-size: 13px;
+}
+
+.review-thanks .btn {
+  margin-top: 16px;
+}
+
+/* Booking page: your review / leave one */
+
+.review-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fcf6f2;
+}
+
+.review-box h3 {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.review-box-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.review-box-cta h3 {
+  margin-bottom: 2px;
+}
+
+.review-box-cta p {
+  font-size: 13px;
+}
+
+.review-box-cta .btn {
+  flex: none;
+}
+
+/* "Rate this visit" inside a past row of the owner's booking panel */
+
+.booking-row-rate {
+  position: relative;
+}
+
+.booking-row-rate .booking-row,
+.dashboard .booking-row-rate .booking-row.status-completed {
+  padding-bottom: 50px;
+}
+
+.rate-visit {
+  position: absolute;
+  left: 68px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rate-visit svg {
+  width: 13px;
+  height: 13px;
+  fill: var(--yellow);
+}
+
+.rate-visit:hover {
+  border-color: var(--orange);
+}
+
+.pet-rating-line .paws svg {
+  width: 12px;
+  height: 12px;
 }

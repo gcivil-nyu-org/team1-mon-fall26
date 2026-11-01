@@ -5,9 +5,11 @@
 {% block title %}Log in | PawPal{% endblock %}
 {% block site_header %}{% endblock %}
 {% block main_class %}auth-main{% endblock %}
+{% block messages %}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=10">
+<link rel="stylesheet" href="{% static 'css/delete_account.css' %}">
 
 <section class="auth-screen" aria-labelledby="login-title">
     <span class="auth-circle auth-circle-lavender" aria-hidden="true"></span>
@@ -28,6 +30,10 @@
         <p class="auth-subtitle">
             Good to see you again.
         </p>
+
+        {% for message in messages %}
+            <p class="auth-success-note" role="status"><span aria-hidden="true">✓</span>{{ message }}</p>
+        {% endfor %}
 
         <form method="post" novalidate>
             {% csrf_token %}
@@ -60,6 +66,8 @@
                     <p class="auth-field-error" role="alert">{{ error }}</p>
                 {% endfor %}
             </div>
+
+            <p class="auth-forgot"><a href="{% url 'password_reset' %}">Forgot password?</a></p>
 
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}">

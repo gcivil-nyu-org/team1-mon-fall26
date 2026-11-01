@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ pet.name }} · PawPal{% endblock %}
+
+{% block main_class %}page page-narrow{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'pets:edit' pet.pk %}"><span aria-hidden="true">&lsaquo;</span> Back to {{ pet.name }}'s profile</a>
+
+  <article class="card delete-card">
+    {% if upcoming %}
+      <h1>{{ pet.name }} has upcoming bookings</h1>
+      <p class="muted">Cancel these before deleting {{ pet.name }}'s profile, so no caregiver is expecting to look after {{ pet.name }}.</p>
+      <ul class="delete-bookings">
+        {% for booking in upcoming %}
+          <li>
+            <a href="{{ booking.get_absolute_url }}">
+              <strong>{{ booking.service_type.name }}</strong> with {{ booking.caregiver.name }}
+              <span class="muted">· {{ booking.start_time|date:"D, M j, g:i A" }} · {{ booking.get_status_display }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      <div class="form-actions">
+        <a class="btn btn-dark" href="{% url 'pets:edit' pet.pk %}">Back to profile</a>
+      </div>
+    {% else %}
+      <h1>Delete {{ pet.name }}'s profile?</h1>
+      <p>{{ pet.name }} will be removed from My pets, and you won't be able to request care for {{ pet.name }} anymore.</p>
+      <p class="muted">Past bookings stay in your history. You can't undo this.</p>
+      <form method="post" class="form-actions">
+        {% csrf_token %}
+        <a class="btn btn-outline" href="{% url 'pets:edit' pet.pk %}">Keep profile</a>
+        <button type="submit" class="btn btn-danger">Yes, delete {{ pet.name }}</button>
+      </form>
+    {% endif %}
+  </article>
+{% endblock %}

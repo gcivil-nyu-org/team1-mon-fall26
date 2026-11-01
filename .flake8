@@ -1,3 +1,5 @@
 [flake8]
 max-line-length = 120
 exclude = .git,.venv,venv,env,__pycache__,migrations,staticfiles,media
+# E203 (space before ":") conflicts with how black formats slices.
+extend-ignore = E203

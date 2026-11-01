@@ -1,0 +1,44 @@
+# Continuous integration for PawPal (Travis CI).
+# Runs on every pull request into develop or main and every push to them,
+# and once a day on main (cron job set in the Travis repository settings).
+language: python
+os: linux
+dist: jammy
+python:
+  - "3.12" # Django 6.1 needs Python 3.12+
+
+branches:
+  only:
+    - develop
+    - main
+
+cache: pip
+
+env:
+  global:
+    # travis-ci.com needs this name; with the default (travis-ci, the old
+    # travis-ci.org) Coveralls saves builds without a branch, so the README
+    # badges show "unknown".
+    - COVERALLS_SERVICE_NAME=travis-pro
+
+install:
+  - pip install --upgrade pip
+  - pip install -r requirements-dev.txt
+
+script:
+  - black --check .
+  - flake8 .
+  - python manage.py check
+  - python manage.py makemigrations --check --dry-run
+  - coverage run manage.py test
+  - coverage report --fail-under=90
+
+after_success:
+  # Needs COVERALLS_REPO_TOKEN in the Travis repository settings. Pull
+  # requests from forks don't get the token, so they skip the upload.
+  - if [ -n "$COVERALLS_REPO_TOKEN" ]; then coveralls; fi
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always

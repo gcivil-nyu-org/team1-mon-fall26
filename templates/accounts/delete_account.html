@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete account · PawPal{% endblock %}
+
+{% block main_class %}page page-medium{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/delete_account.css' %}">
+
+  <article class="card delete-account">
+    <span class="delete-account-icon" aria-hidden="true">!</span>
+    <h1>Delete your account?</h1>
+    <p>This deletes the PawPal account <strong>{{ user.username }}</strong>. What happens:</p>
+    <ul class="delete-account-list">
+      <li>You won't be able to log in with this account again.</li>
+      <li>Your pending and upcoming bookings are cancelled, and caregivers or owners will see them as Cancelled or Declined.</li>
+      {% if user.caregiver_profile %}<li>Your caregiver profile is hidden from search and stops taking requests.</li>{% endif %}
+      <li>Past bookings and reviews stay in other people's history.</li>
+    </ul>
+    <p class="muted small">You can't undo this. Your email is freed up, so you can sign up again later.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field{% if form.password.errors %} has-error{% endif %}">
+        <label for="{{ form.password.id_for_label }}">Enter your password to confirm <span class="required">*</span></label>
+        {{ form.password }}
+        {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="form-actions">
+        <a class="btn btn-outline" href="{% url 'home' %}">Keep my account</a>
+        <button type="submit" class="btn btn-danger">Delete my account</button>
+      </div>
+    </form>
+  </article>
+{% endblock %}

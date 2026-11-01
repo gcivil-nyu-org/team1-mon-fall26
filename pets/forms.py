@@ -4,7 +4,7 @@ from datetime import date
 from django import forms
 from django.db.models import Case, IntegerField, Value, When
 
-from .models import Pet, PetType
+from .models import TEMPERAMENT_TRAITS, Pet, PetType
 
 # Pet types appear as chips in this order; any others follow alphabetically,
 # and "Other" always comes last.
@@ -19,12 +19,10 @@ PHONE_ERROR = "Enter a phone number with 7 to 15 digits, e.g. (212) 555-0142."
 
 
 def pet_type_choices():
-    order = [When(name=name, then=Value(i))
-             for i, name in enumerate(CHIP_ORDER)]
+    order = [When(name=name, then=Value(i)) for i, name in enumerate(CHIP_ORDER)]
     order.append(When(name="Other", then=Value(1000)))
     return PetType.objects.annotate(
-        chip_order=Case(*order, default=Value(500),
-                        output_field=IntegerField())
+        chip_order=Case(*order, default=Value(500), output_field=IntegerField())
     ).order_by("chip_order", "name")
 
 
@@ -74,6 +72,12 @@ class PetForm(forms.ModelForm):
         label="Age unit",
     )
     remove_photo = forms.BooleanField(required=False, label="Remove photo")
+    temperament_traits = forms.MultipleChoiceField(
+        choices=TEMPERAMENT_TRAITS,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Temperament",
+    )
 
     class Meta:
         model = Pet
@@ -85,6 +89,8 @@ class PetForm(forms.ModelForm):
             "portion",
             "feeding_times",
             "feeding_instructions",
+            "temperament_traits",
+            "behavior_notes",
             "medications",
             "medication_dose",
             "medication_schedule",
@@ -105,6 +111,7 @@ class PetForm(forms.ModelForm):
             "medication_dose": "Dose",
             "medication_schedule": "Schedule",
             "special_care_instructions": "Special care instructions",
+            "behavior_notes": "Behavior notes & preferences",
             "vet_name": "Vet name & clinic",
             "vet_phone": "Vet phone",
             "emergency_contact_name": "Emergency contact",
@@ -113,26 +120,46 @@ class PetForm(forms.ModelForm):
         widgets = {
             "photo": forms.FileInput(attrs={"accept": "image/*"}),
             "name": forms.TextInput(attrs={"placeholder": "e.g. Pepper"}),
-            "food": forms.TextInput(attrs={"placeholder": "e.g. Timothy hay, kibble brand"}),
+            "food": forms.TextInput(
+                attrs={"placeholder": "e.g. Timothy hay, kibble brand"}
+            ),
             "portion": forms.TextInput(attrs={"placeholder": "e.g. 1 cup"}),
-            "feeding_times": forms.TextInput(attrs={"placeholder": "e.g. 8:00 AM, 6:00 PM"}),
+            "feeding_times": forms.TextInput(
+                attrs={"placeholder": "e.g. 8:00 AM, 6:00 PM"}
+            ),
             "feeding_instructions": forms.Textarea(
                 attrs={"rows": 2, "placeholder": "Treats, water, foods to avoid"}
             ),
             # One line in the design, but kept as a text field so longer names fit.
             "medications": forms.TextInput(attrs={"placeholder": "e.g. Probiotic"}),
             "medication_dose": forms.TextInput(attrs={"placeholder": "e.g. 1 g"}),
-            "medication_schedule": forms.TextInput(attrs={"placeholder": "e.g. Once daily with breakfast"}),
+            "medication_schedule": forms.TextInput(
+                attrs={"placeholder": "e.g. Once daily with breakfast"}
+            ),
+            "behavior_notes": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "e.g. Loves belly rubs. Nervous around bikes, so keep the leash short.",
+                }
+            ),
             "special_care_instructions": forms.Textarea(
                 attrs={
                     "rows": 3,
-                    "placeholder": "Temperament, handling, health conditions, routines",
+                    "placeholder": "Handling, health conditions, routines",
                 }
             ),
-            "vet_name": forms.TextInput(attrs={"placeholder": "e.g. Dr. Patel, Brooklyn Vets"}),
-            "vet_phone": forms.TextInput(attrs={"placeholder": "(000) 000-0000", "type": "tel"}),
-            "emergency_contact_name": forms.TextInput(attrs={"placeholder": "Name and relationship"}),
-            "emergency_contact_phone": forms.TextInput(attrs={"placeholder": "(000) 000-0000", "type": "tel"}),
+            "vet_name": forms.TextInput(
+                attrs={"placeholder": "e.g. Dr. Patel, Brooklyn Vets"}
+            ),
+            "vet_phone": forms.TextInput(
+                attrs={"placeholder": "(000) 000-0000", "type": "tel"}
+            ),
+            "emergency_contact_name": forms.TextInput(
+                attrs={"placeholder": "Name and relationship"}
+            ),
+            "emergency_contact_phone": forms.TextInput(
+                attrs={"placeholder": "(000) 000-0000", "type": "tel"}
+            ),
         }
         error_messages = {
             "name": {"required": "Enter your pet's name."},
@@ -181,25 +208,33 @@ class PetForm(forms.ModelForm):
         age = cleaned.get("age")
         unit = cleaned.get("age_unit")
         if age is not None and unit and age > MAX_AGE[unit]:
-            self.add_error(
-                "age", f"Enter an age of {MAX_AGE[unit]} {unit} or less.")
+            self.add_error("age", f"Enter an age of {MAX_AGE[unit]} {unit} or less.")
 
         # A name without a number (or the reverse) is no use in an emergency.
         pairs = [
             ("vet_name", "vet_phone", "Add the vet's phone number too."),
-            ("emergency_contact_name", "emergency_contact_phone",
-             "Add a phone number for your emergency contact."),
+            (
+                "emergency_contact_name",
+                "emergency_contact_phone",
+                "Add a phone number for your emergency contact.",
+            ),
         ]
         for name_field, phone_field, message in pairs:
-            if cleaned.get(name_field) and not cleaned.get(phone_field) \
-                    and phone_field not in self.errors:
+            if (
+                cleaned.get(name_field)
+                and not cleaned.get(phone_field)
+                and phone_field not in self.errors
+            ):
                 self.add_error(phone_field, message)
-        if cleaned.get("emergency_contact_phone") \
-                and not cleaned.get("emergency_contact_name"):
-            self.add_error("emergency_contact_name",
-                           "Add your emergency contact's name.")
-        if (cleaned.get("medication_dose") or cleaned.get("medication_schedule")) \
-                and not cleaned.get("medications"):
+        if cleaned.get("emergency_contact_phone") and not cleaned.get(
+            "emergency_contact_name"
+        ):
+            self.add_error(
+                "emergency_contact_name", "Add your emergency contact's name."
+            )
+        if (
+            cleaned.get("medication_dose") or cleaned.get("medication_schedule")
+        ) and not cleaned.get("medications"):
             self.add_error("medications", "Add the medication's name.")
         return cleaned
 

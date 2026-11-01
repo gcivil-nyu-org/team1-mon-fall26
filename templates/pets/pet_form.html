@@ -93,6 +93,25 @@
       {% for error in form.age.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
+    <section class="care-form-section care-form-temperament" aria-labelledby="temperament-heading">
+      <div class="care-form-heading">
+        {% include "pets/partials/care_icon.html" with kind="temperament" %}
+        <h2 id="temperament-heading">Temperament</h2>
+        <span class="tag">Optional</span>
+      </div>
+      <p class="care-form-note">How {% if pet %}{{ pet.name }} acts{% else %}your pet acts{% endif %}, so caregivers know how to interact safely and comfortably.</p>
+      <fieldset class="field{% if form.temperament_traits.errors %} has-error{% endif %}">
+        <legend>Pick any that fit</legend>
+        <div class="chips trait-chips">
+          {% for box in form.temperament_traits %}
+            <label class="chip">{{ box.tag }}<span>{{ box.choice_label }}</span></label>
+          {% endfor %}
+        </div>
+        {% for error in form.temperament_traits.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </fieldset>
+      {% include "pets/partials/care_field.html" with field=form.behavior_notes %}
+    </section>
+
     <section class="care-form-section care-form-feeding" aria-labelledby="feeding-heading">
       <div class="care-form-heading">
         {% include "pets/partials/care_icon.html" with kind="feeding" %}
@@ -145,6 +164,7 @@
     </section>
 
     <div class="form-actions">
+      {% if pet %}<a class="delete-link" href="{% url 'pets:delete' pet.pk %}">Delete pet profile</a>{% endif %}
       <a class="btn btn-outline" href="{% if pet %}{{ pet.get_absolute_url }}{% else %}{% url 'pets:list' %}{% endif %}">Cancel</a>
       <button type="submit" class="btn btn-dark">{% if pet %}Save changes{% else %}Save pet profile{% endif %}</button>
     </div>

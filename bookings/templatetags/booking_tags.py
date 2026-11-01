@@ -5,7 +5,9 @@ from bookings.views import owner_name, split_owner_bookings
 register = template.Library()
 
 
-@register.inclusion_tag("bookings/partials/request_panel_items.html", takes_context=True)
+@register.inclusion_tag(
+    "bookings/partials/request_panel_items.html", takes_context=True
+)
 def my_booking_requests(context, limit=3):
     """The owner's upcoming and past requests, for the "My booking requests" panel."""
     user = context["request"].user

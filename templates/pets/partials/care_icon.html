@@ -1,7 +1,9 @@
-{# Round icon for a care section. kind = "feeding", "medication" or "emergency". Paths are from the Figma icons. #}
+{# Round icon for a care section. kind = "temperament", "feeding", "medication" or "emergency". Paths are from the Figma icons. #}
 <span class="care-icon care-icon-{{ kind }}" aria-hidden="true">
   {% if kind == "feeding" %}
     <svg viewBox="0 0 22 22" focusable="false" fill="none" stroke="currentColor" stroke-width="1.83" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 11.92h16.5"/><path d="M4.13 11.92l1.46 4.76a1.5 1.5 0 0 0 1.28.92h8.26a1.5 1.5 0 0 0 1.28-.92l1.46-4.76"/><g fill="currentColor" stroke="none"><circle cx="8.25" cy="9.17" r="1.19"/><circle cx="11.18" cy="7.52" r="1.19"/><circle cx="13.93" cy="9.17" r="1.19"/></g></svg>
+  {% elif kind == "temperament" %}
+    <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.2" cy="10" r="1.1" fill="currentColor"/><circle cx="14.8" cy="10" r="1.1" fill="currentColor"/></svg>
   {% elif kind == "medication" %}
     <svg viewBox="0 0 22 22" focusable="false" fill="none" stroke="currentColor" stroke-width="1.83" stroke-linecap="round" stroke-linejoin="round"><path d="M5.41 11l7.5-5.26a3.2 3.2 0 0 1 3.68 5.26l-7.5 5.26A3.2 3.2 0 0 1 5.41 11z"/><path d="M8.8 7.88l4.4 6.24"/></svg>
   {% else %}

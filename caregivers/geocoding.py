@@ -36,7 +36,9 @@ class Location:
     longitude: Decimal
     neighborhood: str
     borough: str
-    label: str = ""  # the matched address, e.g. "70 WASHINGTON SQUARE SOUTH, New York, NY, USA"
+    label: str = (
+        ""  # the matched address, e.g. "70 WASHINGTON SQUARE SOUTH, New York, NY, USA"
+    )
 
 
 # A leading house number such as "70" or Queens-style "31-00".

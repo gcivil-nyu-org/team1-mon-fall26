@@ -1,3 +1,4 @@
+{% load review_tags %}
 {% if upcoming or past %}
   {% if upcoming %}
     <h3 class="panel-heading">Upcoming</h3>
@@ -11,7 +12,14 @@
     <h3 class="panel-heading">Past</h3>
     <div class="booking-rows">
       {% for booking in past %}
-        {% include "bookings/partials/booking_row.html" %}
+        {% if booking|owner_can_rate %}
+          <div class="booking-row-rate">
+            {% include "bookings/partials/booking_row.html" %}
+            <a class="rate-visit" href="{% url 'reviews:create' booking.pk %}">{% include "partials/paw_icon.html" %} Rate this visit</a>
+          </div>
+        {% else %}
+          {% include "bookings/partials/booking_row.html" %}
+        {% endif %}
       {% endfor %}
     </div>
   {% endif %}

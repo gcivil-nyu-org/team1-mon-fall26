@@ -1,0 +1,1 @@
+<span class="paws paws-{{ size }}" role="img" aria-label="Rated {{ rating }} out of 5">{% for i in filled %}<span class="paw is-on" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>{% endfor %}{% for i in empty %}<span class="paw" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>{% endfor %}</span>
