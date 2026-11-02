@@ -15,7 +15,7 @@ class ReviewForm(forms.ModelForm):
         coerce=int,
         widget=forms.RadioSelect,
         label="Rating",
-        error_messages={"required": "Choose a rating from 1 to 5."},
+        error_messages={"required": "Pick a rating first."},
     )
     comment = forms.CharField(
         label="Review",

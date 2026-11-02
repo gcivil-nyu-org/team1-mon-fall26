@@ -6,7 +6,7 @@
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=7">
 
 
 <style>
@@ -48,7 +48,7 @@
 @media(max-width:600px) {.public-availability-days,.public-availability-grid{gap:2px}.public-week .public-day{padding:6px 1px 8px}.public-week .public-day-number{width:32px;height:32px;font-size:16px}.public-day-label{font-size:10px;letter-spacing:0}.public-time-pill{font-size:10px;padding:3px 1px}.public-availability-toggle button{padding:0 12px}.public-availability-nav strong{min-width:0;font-size:16px}}
 </style>
 
-{% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">← Back to find caregivers</a>{% endif %}
+{% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">{% include "partials/chevron_left_icon.html" %} Back to caregivers</a>{% endif %}
 
 {# On a caregiver's own profile there's no request card, so the profile sits in the middle. #}
 <div class="caregiver-public-grid{% if is_own %} is-own-profile{% endif %}">
@@ -167,7 +167,7 @@
     <span class="booking-deco booking-deco-pink" aria-hidden="true"></span>
     <h2>Request care from {{ caregiver.first_name }}</h2>
     {% if caregiver.accepting_new_bookings %}
-      <p>Pick a pet, a service and a time. {{ caregiver.first_name }} will accept or decline, and you'll see the status in My requests.</p>
+      <p>Pick a pet, a service and one of {{ caregiver.first_name }}'s open times. {{ caregiver.first_name }} will accept or decline, and you'll see the status in My requests.</p>
       <a href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}" class="caregiver-booking-button">Send a booking request</a>
     {% else %}
       <p>{{ caregiver.first_name }} is taking a little paws right now and isn't accepting new booking requests.</p>

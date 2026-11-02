@@ -3054,11 +3054,14 @@ img.pet-initial-large {
 .paw-picker {
   display: inline-flex;
   flex-direction: row-reverse;
-  gap: 8px;
+  gap: 10px;
+  max-width: 100%;
 }
 
 .paw-option {
   position: relative;
+  flex: 0 1 62px;
+  min-width: 0;
   margin: 0 !important;
   cursor: pointer;
 }
@@ -3071,17 +3074,17 @@ img.pet-initial-large {
 .paw-tile {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #f5ebe6;
-  color: #dcc7bd;
-  transition: background 0.1s, color 0.1s;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 20px;
+  background: var(--bg);
+  color: #e3d6cf;
+  transition: color 0.1s;
 }
 
 .paw-tile svg {
-  width: 20px;
-  height: 20px;
+  width: 55%;
+  height: 55%;
   fill: currentColor;
 }
 
@@ -3089,8 +3092,7 @@ img.pet-initial-large {
 .paw-option:hover ~ .paw-option .paw-tile,
 .paw-option:has(input:checked) .paw-tile,
 .paw-option:has(input:checked) ~ .paw-option .paw-tile {
-  background: var(--yellow-soft);
-  color: #e0a12f;
+  color: var(--yellow);
 }
 
 .paw-option input:focus-visible + .paw-tile {
@@ -3099,18 +3101,67 @@ img.pet-initial-large {
 
 /* Review form */
 
+.page-review {
+  padding-right: 32px;
+  padding-left: 32px;
+}
+
+.page-review .back-link {
+  gap: 6px;
+  min-height: 44px;
+  margin: 0 0 18px;
+  color: #5c3d2e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.review-form.form-card {
+  padding: 32px;
+}
+
 .review-form h1 {
-  margin: 18px 0 16px;
-  font-size: 30px;
+  margin: 22px 0;
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -0.2px;
+}
+
+.review-form .field {
+  margin-bottom: 22px;
+}
+
+.review-form .field-error {
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.review-form .form-actions {
+  margin-top: 0;
+}
+
+.review-form .btn,
+.review-thanks .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
 }
 
 .review-booking {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: #f8eee9;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: var(--bg);
+}
+
+.review-booking .booking-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 22px;
 }
 
 .review-booking .status-pill.status-completed {
@@ -3127,12 +3178,13 @@ img.pet-initial-large {
   display: grid;
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .review-booking-text span {
-  color: var(--muted);
-  font-size: 12px;
+  color: #6a5a54;
+  font-size: 14px;
 }
 
 .review-label-row {
@@ -3147,9 +3199,9 @@ img.pet-initial-large {
 }
 
 .char-count {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 11px;
+  margin-top: 8px;
+  color: #8a6f64;
+  font-size: 13px;
   text-align: right;
 }
 
@@ -3161,32 +3213,60 @@ img.pet-initial-large {
 }
 
 .review-card {
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: #f8eee9;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: var(--bg);
 }
 
 .review-card-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.review-card .paws {
+  gap: 2px;
+}
+
+.review-card .paw svg {
+  width: 18px;
+  height: 18px;
 }
 
 .review-avatar {
   display: grid;
   place-items: center;
   flex: none;
-  width: 30px;
-  height: 30px;
+  box-sizing: border-box;
+  width: 46px;
+  height: 46px;
+  border: 3px solid #fff;
   border-radius: 50%;
   background: var(--yellow);
-  font-size: 11px;
+  box-shadow: 0 0 0 1.5px var(--line);
+  font-size: 14px;
   font-weight: 700;
 }
 
+.review-list .review-avatar {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  box-shadow: none;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.review-list .review-card .paw svg {
+  width: 17px;
+  height: 17px;
+}
+
 .review-avatar.tone-1 {
-  background: #cfe4f7;
-  color: #1f4e79;
+  background: #bde0f5;
+  color: #2d3a8c;
 }
 
 .review-avatar.tone-2 {
@@ -3196,20 +3276,22 @@ img.pet-initial-large {
 
 .review-card-who {
   display: grid;
-  flex: 1;
+  flex: 1 1 140px;
   min-width: 0;
-  font-size: 13px;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .review-card-who span {
-  color: var(--muted);
-  font-size: 11px;
+  color: #8a6f64;
+  font-size: 13px;
 }
 
 .review-card p {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.5;
+  margin-top: 10px;
+  color: #3d322e;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .review-list {
@@ -3245,51 +3327,115 @@ img.pet-initial-large {
   font-size: 18px;
 }
 
+/* The caregiver profile's larger Reviews header. */
+.caregiver-card-body .review-list-head {
+  margin-bottom: 16px;
+}
+
+.caregiver-card-body .review-list-head h2 {
+  font-size: 26px;
+}
+
+.caregiver-card-body .review-average {
+  gap: 10px;
+}
+
+.caregiver-card-body .review-average strong {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.caregiver-card-body .review-average .paws {
+  gap: 2px;
+}
+
+.caregiver-card-body .review-average .paw svg {
+  width: 17px;
+  height: 17px;
+}
+
+.caregiver-card-body .review-average .muted {
+  color: #6a5a54;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* Thanks page */
 
 .review-thanks {
   position: relative;
   overflow: hidden;
-  padding: 24px;
+  padding: 32px;
 }
 
 .review-thanks-check {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 12px;
+  width: 56px;
+  height: 54px;
+  margin-bottom: 18px;
   border-radius: 50%;
   background: var(--mint);
-  color: var(--success-ink);
-  font-weight: 700;
+}
+
+.review-thanks-check svg {
+  width: 26px;
+  height: 26px;
 }
 
 .review-thanks-paw {
   position: absolute;
-  top: 12px;
-  right: 14px;
-  color: var(--pink);
+  top: 6px;
+  right: 8px;
+  color: #f8e6df;
 }
 
 .review-thanks-paw svg {
-  width: 52px;
-  height: 52px;
+  width: 120px;
+  height: 120px;
   fill: currentColor;
-  transform: rotate(12deg);
+  transform: rotate(18deg);
 }
 
 .review-thanks h1 {
-  font-size: 30px;
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -0.2px;
 }
 
 .review-thanks > p.muted {
-  margin: 4px 0 16px;
-  font-size: 13px;
+  margin: 6px 0 18px;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .review-thanks .btn {
-  margin-top: 16px;
+  margin-top: 18px;
+}
+
+@media (max-width: 600px) {
+  .page-review {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .review-form.form-card,
+  .review-thanks {
+    padding: 24px 20px;
+  }
+
+  .paw-picker {
+    gap: 6px;
+  }
+
+  .paw-tile {
+    border-radius: 14px;
+  }
+
+  .review-thanks-paw svg {
+    width: 72px;
+    height: 72px;
+  }
 }
 
 /* Booking page: your review / leave one */
@@ -3299,7 +3445,7 @@ img.pet-initial-large {
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fcf6f2;
+  background: #fff;
 }
 
 .review-box h3 {
@@ -3334,7 +3480,7 @@ img.pet-initial-large {
 
 .booking-row-rate .booking-row,
 .dashboard .booking-row-rate .booking-row.status-completed {
-  padding-bottom: 50px;
+  padding-bottom: 62px;
 }
 
 .rate-visit {
@@ -3344,24 +3490,25 @@ img.pet-initial-large {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  border: 1px solid var(--line-strong);
+  min-height: 38px;
+  padding: 0 16px 0 12px;
   border-radius: 999px;
   background: #fff;
+  box-shadow: 0 0 0 1.5px #ead3c9, 0 3px 0 #ead3c9;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
 }
 
 .rate-visit svg {
-  width: 13px;
-  height: 13px;
+  width: 20px;
+  height: 20px;
   fill: var(--yellow);
 }
 
 .rate-visit:hover {
-  border-color: var(--orange);
+  box-shadow: 0 0 0 1.5px var(--orange), 0 3px 0 var(--orange);
 }
 
 .pet-rating-line .paws svg {
