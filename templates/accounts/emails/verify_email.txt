@@ -1,0 +1,10 @@
+{% autoescape off %}Hi {{ user.first_name|default:user.username }},
+
+Thanks for signing up for PawPal ({{ user.username }}). Confirm your email to finish creating your account:
+
+{{ link }}
+
+The link works for 24 hours. If you didn't sign up, you can ignore this email.
+
+The PawPal team
+{% endautoescape %}

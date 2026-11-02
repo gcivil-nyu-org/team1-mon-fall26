@@ -214,6 +214,9 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 # Password reset links stop working after this many seconds (1 hour).
 PASSWORD_RESET_TIMEOUT = 60 * 60
 
+# Links that verify a new account's email stop working after 24 hours.
+EMAIL_VERIFICATION_TIMEOUT = 60 * 60 * 24
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

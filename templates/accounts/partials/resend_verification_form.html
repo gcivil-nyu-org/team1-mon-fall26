@@ -1,0 +1,11 @@
+<form method="post" action="{% url 'resend_verification' %}" novalidate>
+    {% csrf_token %}
+    <div class="auth-form-field">
+        <label for="{{ form.email.id_for_label }}">Email <span class="required">*</span></label>
+        {{ form.email }}
+        {% for error in form.email.errors %}
+            <p class="auth-field-error" role="alert">{{ error }}</p>
+        {% endfor %}
+    </div>
+    <button type="submit" class="auth-submit">Send a new link</button>
+</form>

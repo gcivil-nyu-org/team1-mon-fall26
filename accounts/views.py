@@ -1,11 +1,20 @@
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from .deletion import delete_account
-from .forms import DeleteAccountForm, SignUpForm
+from .forms import DeleteAccountForm, ResendVerificationForm, SignUpForm
 from .models import AccountProfile
+from .verification import (
+    mark_verified,
+    needs_verification,
+    send_verification_email,
+    user_from_token,
+)
+
+SENT_TO = "verify_email_sent_to"
 
 
 def home_view(request):
@@ -28,13 +37,64 @@ def signup_view(request):
             AccountProfile.objects.create(
                 user=user,
                 role=form.cleaned_data["account_type"],
+                email_verified=False,
             )
 
-            login(request, user)
-            return redirect("signup_success")
+            # The account works once they click the link we email them.
+            send_verification_email(request, user)
+            request.session[SENT_TO] = user.email
+            return redirect("verify_email_sent")
     else:
         form = SignUpForm()
     return render(request, "accounts/signup.html", {"form": form})
+
+
+def verify_email_sent_view(request):
+    """'Check your email' after signing up, with a way to get a new link."""
+    return render(
+        request,
+        "accounts/verify_email_sent.html",
+        {
+            "email": request.session.get(SENT_TO, ""),
+            "form": ResendVerificationForm(),
+        },
+    )
+
+
+@require_POST
+def resend_verification_view(request):
+    form = ResendVerificationForm(request.POST)
+    if not form.is_valid():
+        return render(
+            request,
+            "accounts/verify_email_sent.html",
+            {"email": request.session.get(SENT_TO, ""), "form": form},
+        )
+    email = form.cleaned_data["email"]
+    user = get_user_model().objects.filter(email__iexact=email, is_active=True).first()
+    if user is not None and needs_verification(user):
+        send_verification_email(request, user)
+    # Same answer whether or not the email has an account waiting.
+    request.session[SENT_TO] = email
+    messages.success(request, "We sent you a new link.")
+    return redirect("verify_email_sent")
+
+
+def verify_email_view(request, token):
+    user = user_from_token(token)
+    if user is None:
+        return render(
+            request,
+            "accounts/verify_email_invalid.html",
+            {"form": ResendVerificationForm()},
+        )
+    if not needs_verification(user):
+        messages.success(request, "Your email is already confirmed. Log in below.")
+        return redirect("login")
+    mark_verified(user)
+    request.session.pop(SENT_TO, None)
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return redirect("signup_success")
 
 
 @login_required

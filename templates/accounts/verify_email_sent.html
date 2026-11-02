@@ -1,0 +1,21 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}Confirm your email | PawPal{% endblock %}
+
+{% block auth_body %}
+<h1 id="auth-title">Confirm your email</h1>
+<p class="auth-subtitle">
+    {% if email %}We sent a link to <strong>{{ email }}</strong>.{% else %}We sent a link to the email on your account.{% endif %}
+    Click it to finish creating your account. The link works for 24 hours.
+</p>
+
+{% for message in messages %}
+    <p class="auth-success-note" role="status"><span aria-hidden="true">✓</span>{{ message }}</p>
+{% endfor %}
+
+<p class="auth-note">Didn't get it? Check your spam folder, or send a new link:</p>
+
+{% include "accounts/partials/resend_verification_form.html" %}
+
+<p class="auth-footer">Already confirmed? <a href="{% url 'login' %}">Log in</a></p>
+{% endblock %}

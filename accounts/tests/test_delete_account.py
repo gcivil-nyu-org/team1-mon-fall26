@@ -96,7 +96,7 @@ class DeleteAccountTests(BookingTestData):
                 "account_type": "pet_owner",
             },
         )
-        self.assertRedirects(response, reverse("signup_success"))
+        self.assertRedirects(response, reverse("verify_email_sent"))
 
     def test_deleted_account_gets_no_reset_email(self):
         # #46 + #48: the email was cleared and the account is inactive.

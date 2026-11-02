@@ -1,0 +1,14 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}This link has expired | PawPal{% endblock %}
+
+{% block auth_body %}
+<h1 id="auth-title">This link has expired</h1>
+<p class="auth-subtitle">
+    Email confirmation links work for 24 hours. Enter the email you signed up with and we'll send a new one.
+</p>
+
+{% include "accounts/partials/resend_verification_form.html" %}
+
+<p class="auth-footer"><a href="{% url 'login' %}">Back to log in</a></p>
+{% endblock %}

@@ -8,6 +8,7 @@ from django.contrib.auth.forms import (
 )
 
 from .models import AccountProfile
+from .verification import mark_verified, needs_verification
 
 
 class SignUpForm(UserCreationForm):
@@ -99,10 +100,37 @@ class DeleteAccountForm(forms.Form):
 
 
 class LoginForm(AuthenticationForm):
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        "unverified": "Confirm your email before you log in.",
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.unverified_user = None
         self.fields["username"].widget.attrs["placeholder"] = "Your username"
         self.fields["password"].widget.attrs["placeholder"] = "Your password"
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        # The password was right, but the sign-up email isn't confirmed yet.
+        if needs_verification(user):
+            self.unverified_user = user
+            raise forms.ValidationError(
+                self.error_messages["unverified"], code="unverified"
+            )
+
+
+class ResendVerificationForm(forms.Form):
+    """Ask for a new email verification link."""
+
+    email = forms.EmailField(
+        error_messages={
+            "required": "Enter your email.",
+            "invalid": "Enter a valid email address.",
+        },
+        widget=forms.EmailInput(attrs={"placeholder": "you@example.com"}),
+    )
 
 
 class ResetRequestForm(PasswordResetForm):
@@ -136,3 +164,9 @@ class NewPasswordForm(SetPasswordForm):
         self.fields["new_password2"].error_messages[
             "required"
         ] = "Retype your new password."
+
+    def save(self, commit=True):
+        user = super().save(commit)
+        # The reset link came to their inbox, so the email is theirs.
+        mark_verified(user)
+        return user

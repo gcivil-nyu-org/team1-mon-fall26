@@ -38,14 +38,19 @@
         <form method="post" novalidate>
             {% csrf_token %}
 
-            {% if form.non_field_errors %}
+            {% if form.unverified_user %}
+                <div class="auth-error-summary" role="alert">
+                    <span aria-hidden="true">!</span>
+                    <p>Confirm your email before you log in. We sent a link to {{ form.unverified_user.email }}. <a href="{% url 'verify_email_sent' %}">Send a new link</a></p>
+                </div>
+            {% elif form.non_field_errors %}
                 <div class="auth-error-summary" role="alert">
                     <span aria-hidden="true">!</span>
                     <p>Incorrect username or password.</p>
                 </div>
             {% endif %}
 
-            <div class="auth-form-field{% if form.non_field_errors %} auth-form-field--error{% endif %}">
+            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
                 <label for="{{ form.username.id_for_label }}">
                     Username <span class="required">*</span>
                 </label>
@@ -56,7 +61,7 @@
                 {% endfor %}
             </div>
 
-            <div class="auth-form-field{% if form.non_field_errors %} auth-form-field--error{% endif %}">
+            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
                 <label for="{{ form.password.id_for_label }}">
                     Password <span class="required">*</span>
                 </label>
