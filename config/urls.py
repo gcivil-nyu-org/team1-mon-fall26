@@ -22,6 +22,7 @@ urlpatterns = [
     path("bookings/", include("bookings.urls")),
     path("reviews/", include("reviews.urls")),
     path("accounts/", include("accounts.urls")),
+    path("messages/", include("messaging.urls")),
 ]
 
 # Serve uploaded photos while developing locally.

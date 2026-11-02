@@ -33,6 +33,13 @@
         <div class="tile tile-age"><dt>Ends</dt><dd>{{ booking.end_time|date:"D, M j, g:i A" }}</dd></div>
       </dl>
 
+      {# Messages and care updates about this booking. #}
+      <div class="booking-message-row">
+        <a class="btn btn-outline btn-small" href="{% url 'messaging:message_booking' booking.pk %}">
+          {% if is_caregiver %}Message {{ booking.owner.first_name|default:booking.owner.username }}{% else %}Message {{ booking.caregiver.first_name }}{% endif %}
+        </a>
+      </div>
+
       <h2>Request details</h2>
       <p>{{ booking.notes|default:"No extra details added."|linebreaksbr }}</p>
 
