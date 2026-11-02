@@ -14,7 +14,7 @@ from .verification import mark_verified, needs_verification
 class SignUpForm(UserCreationForm):
     error_messages = {
         **UserCreationForm.error_messages,
-        "password_mismatch": "Passwords don't match.",
+        "password_mismatch": "Passwords don’t match.",
     }
 
     account_type = forms.ChoiceField(
@@ -149,7 +149,7 @@ class NewPasswordForm(SetPasswordForm):
 
     error_messages = {
         **SetPasswordForm.error_messages,
-        "password_mismatch": "Passwords don't match.",
+        "password_mismatch": "Passwords don’t match.",
     }
 
     def __init__(self, *args, **kwargs):

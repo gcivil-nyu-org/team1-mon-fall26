@@ -522,6 +522,10 @@
     line-height: 1.55;
 }
 
+.auth-form-panel .auth-role-field .auth-field-error {
+    margin-top: 10px;
+}
+
 .auth-form-panel .auth-field-error a {
     color: #8c1d13;
     text-decoration: underline;
