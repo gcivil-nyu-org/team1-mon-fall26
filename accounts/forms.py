@@ -121,6 +121,17 @@ class LoginForm(AuthenticationForm):
             )
 
 
+class NeighborhoodForm(forms.ModelForm):
+    """A pet owner's neighborhood, for the Messages header caregivers see."""
+
+    class Meta:
+        model = AccountProfile
+        fields = ["neighborhood"]
+        widgets = {
+            "neighborhood": forms.TextInput(attrs={"placeholder": "e.g. Park Slope"}),
+        }
+
+
 class ResendVerificationForm(forms.Form):
     """Ask for a new email verification link."""
 
