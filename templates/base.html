@@ -36,7 +36,9 @@
         {% else %}
           <a href="{% url 'create_caregiver_profile' %}" class="{% if request.resolver_match.url_name == 'create_caregiver_profile' %}active{% endif %}">My profile</a>
         {% endif %}
-        <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        {% if request.resolver_match.url_name != 'manage_availability' %}
+          <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        {% endif %}
       {% else %}
         <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
         <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Find caregivers</a>

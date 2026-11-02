@@ -323,6 +323,64 @@ class SaveAvailabilityChangesTests(AvailabilityTestData):
             "cannot be edited",
         )
 
+    def test_open_time_beside_a_booking_can_be_removed(self):
+        slot = self.slot("09:00", "12:00")
+        self.booking("10:00", "11:00", status="accepted")
+        response = self.save(
+            [
+                {
+                    "action": "update",
+                    "id": slot.pk,
+                    "date": DAY.isoformat(),
+                    "start": "10:00",
+                    "end": "12:00",
+                }
+            ]
+        )
+        self.assertEqual(response.status_code, 200)
+        slot.refresh_from_db()
+        self.assertEqual(slot.start_time, time(10, 0))
+
+    def test_splitting_a_slot_around_a_booking_keeps_booked_time(self):
+        slot = self.slot("09:00", "18:00")
+        self.booking("10:00", "11:00", status="accepted")
+        self.booking("14:00", "15:00", status="accepted")
+        response = self.save(
+            [
+                {
+                    "action": "update",
+                    "id": slot.pk,
+                    "date": DAY.isoformat(),
+                    "start": "09:00",
+                    "end": "11:00",
+                },
+                {
+                    "action": "create",
+                    "date": DAY.isoformat(),
+                    "start": "14:00",
+                    "end": "18:00",
+                },
+            ]
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(CaregiverAvailability.objects.filter(date=DAY).count(), 2)
+
+    def test_shrinking_a_slot_off_a_booking_is_rejected(self):
+        slot = self.slot("09:00", "12:00")
+        self.booking("10:00", "11:00", status="accepted")
+        self.assert_rejected(
+            [
+                {
+                    "action": "update",
+                    "id": slot.pk,
+                    "date": DAY.isoformat(),
+                    "start": "10:30",
+                    "end": "12:00",
+                }
+            ],
+            "cannot be edited",
+        )
+
     def test_get_is_not_allowed_and_owners_have_no_calendar(self):
         self.assertEqual(self.client.get(SAVE_URL).status_code, 405)
         self.client.force_login(self.owner)

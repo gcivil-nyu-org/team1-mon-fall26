@@ -187,3 +187,24 @@ class CaregiverAvailabilityForm(forms.ModelForm):
                 format="%H:%M",
             ),
         }
+
+
+def half_hour_choices():
+    """Every half hour of the day, for the From and To dropdowns."""
+    choices = [("", "Select")]
+    for hour in range(24):
+        for minute in (0, 30):
+            label = f"{hour % 12 or 12}:{minute:02d} {'PM' if hour >= 12 else 'AM'}"
+            choices.append((f"{hour:02d}:{minute:02d}", label))
+    return choices
+
+
+class CalendarAvailabilityForm(CaregiverAvailabilityForm):
+    """The calendar sidebar's form, which picks times from dropdowns."""
+
+    class Meta(CaregiverAvailabilityForm.Meta):
+        widgets = {
+            **CaregiverAvailabilityForm.Meta.widgets,
+            "start_time": forms.Select(choices=half_hour_choices()),
+            "end_time": forms.Select(choices=half_hour_choices()),
+        }

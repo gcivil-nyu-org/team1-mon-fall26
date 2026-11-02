@@ -16,6 +16,7 @@ from bookings.models import Booking
 
 from .forms import (
     CaregiverAvailabilityForm,
+    CalendarAvailabilityForm,
     CaregiverProfileForm,
     CaregiverServicesForm,
 )
@@ -628,7 +629,7 @@ def manage_availability(request):
     )
 
     if request.method == "POST":
-        form = CaregiverAvailabilityForm(request.POST)
+        form = CalendarAvailabilityForm(request.POST)
 
         if form.is_valid():
             slot = form.save(commit=False)
@@ -642,7 +643,7 @@ def manage_availability(request):
                 slot.save()
                 return redirect("manage_availability")
     else:
-        form = CaregiverAvailabilityForm()
+        form = CalendarAvailabilityForm()
 
     slots = CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
         "date", "start_time"
@@ -848,7 +849,8 @@ def save_availability_changes(request):
                     if previous.end_time > following.start_time:
                         raise ValueError("Availability slots cannot overlap.")
 
-            # Never change or remove availability already covering a booking.
+            # Booked time must stay covered, so only the open parts of a slot
+            # around a booking can be edited or removed.
             active_bookings = Booking.objects.filter(
                 caregiver=caregiver, status__in=["accepted", "completed"]
             )
@@ -858,9 +860,13 @@ def save_availability_changes(request):
                 for old in modified:
                     if old.date != booking_start.date():
                         continue
-                    if (
-                        old.start_time < booking_end.time()
-                        and old.end_time > booking_start.time()
+                    booked_start = max(old.start_time, booking_start.time())
+                    booked_end = min(old.end_time, booking_end.time())
+                    if booked_start < booked_end and not any(
+                        slot.date == old.date
+                        and slot.start_time <= booked_start
+                        and slot.end_time >= booked_end
+                        for slot in final_slots
                     ):
                         raise ValueError(
                             "Booked or completed availability cannot be edited or removed."
