@@ -671,3 +671,34 @@
 .auth-label-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
 .auth-label-row label { font-size: 16px; font-weight: 700; line-height: 1.55; }
 .auth-forgot { color: #5c3d2e; font-size: 14px; font-weight: 700; line-height: 1.55; text-decoration: underline; }
+
+/* Icon, heading and subtitle stacked at the top of a reset page (Figma) */
+.auth-status-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.auth-status-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f8e6df;
+}
+
+.auth-status-icon--success { background: #cdefdc; }
+
+.auth-form-panel .auth-status-header h1 {
+  min-height: 42px;
+  margin: 0;
+  padding-top: 4px;
+  font-size: 34px;
+  letter-spacing: -0.17px;
+}
+
+.auth-form-panel .auth-status-header .auth-subtitle { margin: 0; }
+.auth-sent-to { color: var(--ink); }
