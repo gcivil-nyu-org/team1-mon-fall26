@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
@@ -15,6 +16,7 @@ from .verification import (
 )
 
 SENT_TO = "verify_email_sent_to"
+RESET_SENT_TO = "password_reset_sent_to"
 
 
 def home_view(request):
@@ -109,6 +111,24 @@ def signup_success_view(request):
             "is_caregiver": profile.role == "caregiver",
         },
     )
+
+
+class ResetRequestView(auth_views.PasswordResetView):
+    """Story #46: remember the typed email for the 'Check your email' page."""
+
+    def form_valid(self, form):
+        # Same answer whether or not the email has an account.
+        self.request.session[RESET_SENT_TO] = form.cleaned_data["email"]
+        return super().form_valid(form)
+
+
+class ResetSentView(auth_views.PasswordResetDoneView):
+    """'Check your email' after asking for a reset link."""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["email"] = self.request.session.get(RESET_SENT_TO, "")
+        return context
 
 
 @login_required

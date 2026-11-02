@@ -141,7 +141,7 @@ class ResetRequestForm(PasswordResetForm):
         field = self.fields["email"]
         field.widget.attrs["placeholder"] = "you@example.com"
         field.error_messages["required"] = "Enter your email."
-        field.error_messages["invalid"] = "Enter a valid email address."
+        field.error_messages["invalid"] = "Enter a valid email."
 
 
 class NewPasswordForm(SetPasswordForm):

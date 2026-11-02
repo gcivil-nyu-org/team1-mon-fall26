@@ -29,7 +29,7 @@ urlpatterns = [
     # Story #46: reset a forgotten password with a link sent by email.
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
+        views.ResetRequestView.as_view(
             template_name="accounts/password_reset_form.html",
             form_class=ResetRequestForm,
             email_template_name="accounts/emails/password_reset_email.txt",
@@ -40,9 +40,7 @@ urlpatterns = [
     ),
     path(
         "password-reset/sent/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="accounts/password_reset_done.html"
-        ),
+        views.ResetSentView.as_view(template_name="accounts/password_reset_done.html"),
         name="password_reset_done",
     ),
     path(
