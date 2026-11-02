@@ -388,6 +388,7 @@ def caregiver_list(request):
     requested_date = params.get("date", "").strip()
     requested_start = params.get("start_time", "").strip()
     requested_end = params.get("end_time", "").strip()
+    time_filtered = False
     if any((requested_date, requested_start, requested_end)):
         if not all((requested_date, requested_start, requested_end)):
             notice = "Choose a date, start time, and end time to filter availability."
@@ -401,6 +402,7 @@ def caregiver_list(request):
                 caregivers = available_during(
                     caregivers, filter_day, filter_start, filter_end
                 )
+                time_filtered = True
             except ValueError:
                 notice = "Please choose a valid date and time range."
 
@@ -534,6 +536,10 @@ def caregiver_list(request):
             "requested_date": requested_date,
             "requested_start": requested_start,
             "requested_end": requested_end,
+            "time_filtered": time_filtered,
+            "query_without_availability": _without(
+                params, "date", "start_time", "end_time"
+            ),
             "show_map": params.get("map") == "1",
             "query_without_service": _without(params, "service"),
             # One chip per service (#34); each link keeps the rest of the search.

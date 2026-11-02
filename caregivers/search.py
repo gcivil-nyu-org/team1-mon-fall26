@@ -9,7 +9,12 @@ from pathlib import Path
 from django.db.models import Exists, OuterRef, Prefetch, Q
 
 from .geocoding import distance_miles
-from .models import CaregiverProfile, CaregiverService, ServiceType, CaregiverAvailability
+from .models import (
+    CaregiverAvailability,
+    CaregiverProfile,
+    CaregiverService,
+    ServiceType,
+)
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 NEIGHBORHOODS_FILE = DATA_DIR / "nyc_neighborhoods.json"
@@ -242,6 +247,7 @@ def nearby_suggestions(caregivers, latitude, longitude, max_miles, limit=3):
             if len(suggestions) == limit:
                 break
     return suggestions
+
 
 def available_during(caregivers, date, start_time, end_time):
     """Find caregivers available for the entire requested time range."""
