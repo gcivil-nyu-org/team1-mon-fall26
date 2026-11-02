@@ -84,9 +84,7 @@ class OwnerReviewTests(ReviewTestData):
         for bad in ("", "0", "6", "great"):
             response = self.client.post(self.url, {"rating": bad})
             self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            self.client.post(self.url, {}), "Choose a rating from 1 to 5."
-        )
+        self.assertContains(self.client.post(self.url, {}), "Pick a rating first.")
         self.assertFalse(Review.objects.exists())
 
     def test_review_appears_on_the_caregivers_profile(self):
@@ -263,7 +261,7 @@ class FigmaReviewFlowTests(ReviewTestData):
             self.url, {"rating": 5, "comment": "Would book again!"}, follow=True
         )
         self.assertContains(response, "Thanks, Kat!")
-        self.assertContains(response, "Your review is now on Chloe Shih's profile.")
+        self.assertContains(response, "Your review is now on Chloe's profile.")
         self.assertContains(response, "Would book again!")
         self.assertContains(response, 'aria-label="Rated 5 out of 5"')
         self.assertContains(response, reverse("caregiver", args=[self.caregiver.pk]))

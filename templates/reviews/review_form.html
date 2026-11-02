@@ -2,10 +2,10 @@
 
 {% block title %}{{ heading }} · PawPal{% endblock %}
 
-{% block main_class %}page page-narrow{% endblock %}
+{% block main_class %}page page-review{% endblock %}
 
 {% block content %}
-  <a class="back-link" href="{{ back_url }}"><span aria-hidden="true">&lsaquo;</span> {% if is_caregiver %}Back to requests{% else %}Back to my requests{% endif %}</a>
+  <a class="back-link" href="{{ back_url }}">{% include "partials/chevron_left_icon.html" %} {% if is_caregiver %}Back to requests{% else %}Back to my requests{% endif %}</a>
 
   <form method="post" class="card form-card review-form" novalidate>
     {% csrf_token %}
