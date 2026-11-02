@@ -7,7 +7,7 @@
 {% block main_class %}auth-main{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=10">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=12">
 
 <div class="auth-screen auth-success-screen">
     <span class="auth-circle auth-circle-lavender" aria-hidden="true"></span>
@@ -25,16 +25,16 @@
         </div>
 
         <div class="auth-success-check">
-            <svg viewBox="0 0 24 24"
+            <svg viewBox="0 0 34 34"
                  width="34"
                  height="34"
                  fill="none"
                  stroke="currentColor"
-                 stroke-width="2.5"
+                 stroke-width="3.68333"
                  stroke-linecap="round"
                  stroke-linejoin="round"
                  aria-hidden="true">
-                <path d="M5 12l4 4L19 6"></path>
+                <path d="M7.08333 17.7083L13.4583 24.0833L26.9167 10.625"></path>
             </svg>
         </div>
 
@@ -53,7 +53,7 @@
         {% else %}
             <p class="auth-success-description">
                 Your pet owner account is ready.
-                Add your first pet so caregivers know who they'll look after.
+                Add your first pet so caregivers know who they’ll look after.
             </p>
 
             <a href="{% url 'pets:list' %}"

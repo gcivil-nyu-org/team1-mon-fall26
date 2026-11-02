@@ -95,7 +95,7 @@ class ResetPasswordTests(TestCase):
             form_url,
             {"new_password1": "brand-new-pass-456!", "new_password2": "different-789!"},
         )
-        self.assertContains(response, "Passwords don&#x27;t match.")
+        self.assertContains(response, "Passwords don’t match.")
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("old-pass-123!"))
 
