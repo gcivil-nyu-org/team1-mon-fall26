@@ -25,5 +25,8 @@ class AccountProfile(models.Model):
     # ones made by an admin, count as verified.
     email_verified = models.BooleanField(default=True)
 
+    # A pet owner's neighborhood, shown to the caregivers they message.
+    neighborhood = models.CharField(max_length=100, blank=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"

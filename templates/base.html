@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="{% static 'css/style.css' %}?v=11" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=12" rel="stylesheet">
   <link href="{% static 'css/bookings.css' %}?v=17" rel="stylesheet">
 </head>
 <body>
@@ -54,6 +54,9 @@
           </summary>
           <div class="account-dropdown">
             <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
+            {% if not user.caregiver_profile and user.account_profile.role != "caregiver" %}
+              <a class="account-link" href="{% url 'neighborhood' %}">Your neighborhood</a>
+            {% endif %}
             <a class="delete-account-link" href="{% url 'delete_account' %}">Delete account</a>
             <form method="post" action="{% url 'logout' %}">
               {% csrf_token %}

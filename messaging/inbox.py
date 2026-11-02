@@ -26,6 +26,7 @@ def conversations_for(user):
         Q(owner=user) | Q(caregiver__user=user)
     ).select_related(
         "owner",
+        "owner__account_profile",
         "caregiver",
         "caregiver__user",
         "booking__pet",
@@ -97,11 +98,12 @@ def counterpart(conversation, user):
         }
     owner = conversation.owner
     full = owner.get_full_name() or owner.username
+    profile = getattr(owner, "account_profile", None)
     return {
         "name": owner_name(owner),
         "first_name": owner.first_name.strip() or owner.username,
         "role": "Pet owner",
-        "place": "",
+        "place": profile.neighborhood if profile else "",
         "initials": initials(full),
         "theme": OWNER_THEMES[owner.pk % len(OWNER_THEMES)],
     }

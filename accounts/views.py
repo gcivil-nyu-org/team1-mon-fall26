@@ -6,7 +6,12 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from .deletion import delete_account
-from .forms import DeleteAccountForm, ResendVerificationForm, SignUpForm
+from .forms import (
+    DeleteAccountForm,
+    NeighborhoodForm,
+    ResendVerificationForm,
+    SignUpForm,
+)
 from .models import AccountProfile
 from .verification import (
     mark_verified,
@@ -129,6 +134,23 @@ class ResetSentView(auth_views.PasswordResetDoneView):
         context = super().get_context_data(**kwargs)
         context["email"] = self.request.session.get(RESET_SENT_TO, "")
         return context
+
+
+@login_required
+def neighborhood_view(request):
+    """A pet owner sets the neighborhood caregivers see in Messages."""
+    profile, _ = AccountProfile.objects.get_or_create(user=request.user)
+    if (
+        hasattr(request.user, "caregiver_profile")
+        or profile.role == AccountProfile.Role.CAREGIVER
+    ):
+        return redirect("home")
+    form = NeighborhoodForm(request.POST or None, instance=profile)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Your neighborhood is saved.")
+        return redirect("neighborhood")
+    return render(request, "accounts/neighborhood.html", {"form": form})
 
 
 @login_required
