@@ -384,6 +384,31 @@
   box-shadow: none;
 }
 
+/* "Message Chloe": ask questions before requesting care. */
+.caregiver-message-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 24px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.caregiver-message-button:hover {
+  background: #7759b3;
+}
+
+.caregiver-message-button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 3px;
+}
+
 /* ---------- Smaller screens ---------- */
 
 @media (max-width: 960px) {

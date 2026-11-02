@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static messaging_tags %}
+
+{% block title %}Messages · PawPal{% endblock %}
+
+{% block main_class %}page page-messages{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=2">
+
+  <h1 class="messages-title">Messages</h1>
+
+  {% if not conversations %}
+    <div class="card empty-state messages-empty">
+      <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+      <h2>No messages yet</h2>
+      {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
+        <p class="muted">When pet owners message you, your conversations show up here.</p>
+      {% else %}
+        <p class="muted">Ask a caregiver anything before you book. Open their profile and choose Message.</p>
+        <a class="btn btn-dark" href="{% url 'caregiver_list' %}">Find caregivers</a>
+      {% endif %}
+    </div>
+  {% else %}
+    {% with other=selected.other %}
+    <div class="messages-layout{% if selected %} is-chosen{% endif %}">
+      <nav class="conversation-list" aria-label="Conversations">
+        {% for c in conversations %}
+          <a class="conversation-row{% if c.pk == selected.pk %} is-selected{% endif %}{% if c.unread %} is-unread{% endif %}" href="{{ c.get_absolute_url }}"{% if c.pk == selected.pk %} aria-current="page"{% endif %}>
+            <span class="chat-avatar theme-{{ c.other.theme }}" aria-hidden="true">{{ c.other.initials }}</span>
+            <span class="conversation-text">
+              <span class="conversation-top">
+                <span class="conversation-name">{{ c.other.name }}</span>
+                <span class="conversation-time">{{ c.last_message_at|inbox_time }}</span>
+              </span>
+              {% if c.state %}<span class="chat-status chat-status-{{ c.state.key }}">{{ c.state.label }}</span>{% endif %}
+              <span class="conversation-preview">
+                <span class="conversation-preview-text">{{ c.preview|default:"No messages yet" }}</span>
+                {% if c.unread %}<span class="unread-dot" aria-hidden="true"></span><span class="visually-hidden">(unread)</span>{% endif %}
+              </span>
+            </span>
+          </a>
+        {% endfor %}
+      </nav>
+
+      {% if not selected %}
+        {# Nothing opens (or is marked read) until a conversation is picked. #}
+        <section class="chat chat-placeholder" aria-label="No conversation open">
+          <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+          <h2>Pick a conversation</h2>
+          <p>Choose a chat on the left to read your messages.</p>
+        </section>
+      {% else %}
+      <section class="chat" aria-label="Conversation with {{ other.name }}">
+        <header class="chat-header">
+          <a class="chat-back" href="{% url 'messaging:inbox' %}"><span aria-hidden="true">&lsaquo;</span> All messages</a>
+          <div class="chat-person">
+            <span class="chat-avatar chat-avatar-large theme-{{ other.theme }}" aria-hidden="true">{{ other.initials }}</span>
+            <div>
+              <h2>{{ other.name }}</h2>
+              <p>{{ other.role }}{% if other.place %} · {{ other.place }}{% endif %}</p>
+            </div>
+          </div>
+
+          {% if selected.booking %}
+            {% with b=selected.booking %}
+            <div class="chat-context chat-booking">
+              {% include "bookings/partials/pet_avatar.html" with pet=b.pet classes="chat-pet-avatar" %}
+              <div class="chat-context-text">
+                <strong>{{ b.pet.name }} · {{ b.service_type.name }}</strong>
+                <span class="chat-context-sub">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  {{ b.start_time|booking_when }}
+                </span>
+              </div>
+              <span class="chat-status chat-status-{{ selected.state.key }} has-dot"><span class="chat-status-dot" aria-hidden="true"></span>{{ selected.state.label }}</span>
+              <a class="chat-pill-button" href="{{ b.get_absolute_url }}">View booking</a>
+            </div>
+            {% endwith %}
+          {% else %}
+            <div class="chat-context chat-no-request">
+              <span class="chat-context-icon" aria-hidden="true">
+                <svg viewBox="0 0 16 16" focusable="false"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.3 6.2a1.8 1.8 0 113 1.4c-.7.4-1.3.8-1.3 1.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
+              </span>
+              <div class="chat-context-text">
+                <strong>No request yet</strong>
+                <span class="chat-context-sub">{% if selected.viewer_is_owner %}Ask {{ other.first_name }} anything, then request care when you’re ready.{% else %}{{ other.first_name }} is asking questions before sending a request.{% endif %}</span>
+              </div>
+              {% if can_request_care %}<a class="chat-pill-button" href="{% url 'bookings:booking_create' %}?caregiver={{ selected.caregiver.pk }}">Request care</a>{% endif %}
+            </div>
+          {% endif %}
+        </header>
+
+        <div class="chat-messages" id="chat-messages" data-latest="{{ latest_id }}" data-latest-url="{% url 'messaging:latest' selected.pk %}" aria-live="polite">
+          {% for day in days %}
+            <p class="chat-day">{{ day.label }}</p>
+            {% for message in day.messages %}
+              <div class="bubble-row {% if message.sender_id == user.pk %}is-mine{% else %}is-theirs{% endif %}"{% if forloop.last and forloop.parentloop.last %} id="latest"{% endif %}>
+                <p class="chat-bubble">{{ message.body|linebreaksbr }}</p>
+                <time class="bubble-time" datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>
+              </div>
+            {% endfor %}
+          {% empty %}
+            <p class="chat-empty">{% if selected.booking %}No messages yet. Say hi to {{ other.first_name }}!{% elif selected.viewer_is_owner %}Say hi to {{ other.first_name }} and ask anything before you book.{% else %}No messages yet.{% endif %}</p>
+          {% endfor %}
+        </div>
+
+        {% if not can_reply %}
+          <p class="chat-closed">{{ other.first_name }}’s account has been deleted, so you can’t send new messages. Your earlier messages are still here.</p>
+        {% else %}
+        <form method="post" action="{% url 'messaging:send' selected.pk %}" class="chat-composer" id="chat-composer">
+          {% csrf_token %}
+          <label class="visually-hidden" for="chat-input">Message {{ other.name }}</label>
+          <div class="composer-box">
+            <input type="text" id="chat-input" name="body" maxlength="{{ max_length }}" placeholder="{{ placeholder }}" autocomplete="off" required>
+            <button type="submit" class="composer-send" aria-label="Send">
+              <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M9 14.5v-11M4.5 8L9 3.5 13.5 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </form>
+        {% endif %}
+      </section>
+      {% endif %}
+    </div>
+    {% endwith %}
+    <script src="{% static 'js/messaging.js' %}?v=1"></script>
+  {% endif %}
+{% endblock %}

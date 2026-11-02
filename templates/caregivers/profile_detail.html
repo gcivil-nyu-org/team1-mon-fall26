@@ -6,7 +6,7 @@
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=6">
 
 
 <style>
@@ -164,6 +164,10 @@
     {% else %}
       <p>{{ caregiver.first_name }} is taking a little paws right now and isn't accepting new booking requests.</p>
       <span class="caregiver-booking-button is-disabled">Currently unavailable</span>
+    {% endif %}
+    {# Message before a Service: owners can ask questions before they book. #}
+    {% if caregiver.user.is_active and not user.caregiver_profile %}
+      <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{ caregiver.first_name }}</a>
     {% endif %}
   </aside>
   {% endif %}

@@ -416,6 +416,7 @@
 
 /* Cancel (#43) and complete (#109) */
 .booking-cancel-row { display: flex; justify-content: flex-end; margin-top: 24px; }
+.booking-message-row { display: flex; margin-top: 14px; }
 .booking-cancel h1 { margin: 0 0 16px; color: var(--error); }
 .booking-cancel p { margin: 0 0 12px; line-height: 1.6; }
 .booking-cancel .respond-actions { margin-top: 28px; }

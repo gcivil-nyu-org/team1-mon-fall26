@@ -22,6 +22,7 @@ from .forms import (
 from .geocoding import GeocodingUnavailable, autocomplete, geocode
 from .models import CaregiverAvailability, CaregiverProfile, CaregiverService
 from .search import (
+    available_during,
     DEFAULT_DISTANCE,
     DISTANCE_CHOICES,
     SORT_CHOICES,
@@ -383,6 +384,28 @@ def caregiver_list(request):
         request.user, available_only=availability == "available"
     )
 
+    # Optional requested date/time filter; existing filters remain unchanged.
+    requested_date = params.get("date", "").strip()
+    requested_start = params.get("start_time", "").strip()
+    requested_end = params.get("end_time", "").strip()
+    time_filtered = False
+    if any((requested_date, requested_start, requested_end)):
+        if not all((requested_date, requested_start, requested_end)):
+            notice = "Choose a date, start time, and end time to filter availability."
+        else:
+            try:
+                filter_day = date.fromisoformat(requested_date)
+                filter_start = time.fromisoformat(requested_start)
+                filter_end = time.fromisoformat(requested_end)
+                if filter_start >= filter_end:
+                    raise ValueError("Invalid time range")
+                caregivers = available_during(
+                    caregivers, filter_day, filter_start, filter_end
+                )
+                time_filtered = True
+            except ValueError:
+                notice = "Please choose a valid date and time range."
+
     # Service (#34): only caregivers who list it.
     service_types = offered_service_types()
     service_code = params.get("service", "").strip()
@@ -510,6 +533,13 @@ def caregiver_list(request):
             "service_types": service_types,
             "service": service,
             "availability": availability,
+            "requested_date": requested_date,
+            "requested_start": requested_start,
+            "requested_end": requested_end,
+            "time_filtered": time_filtered,
+            "query_without_availability": _without(
+                params, "date", "start_time", "end_time"
+            ),
             "show_map": params.get("map") == "1",
             "query_without_service": _without(params, "service"),
             # One chip per service (#34); each link keeps the rest of the search.

@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "opportunities",
     "bookings",
     "reviews",
+    "messaging",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +90,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "messaging.context_processors.unread_messages",
             ],
         },
     },
@@ -211,6 +213,9 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 
 # Password reset links stop working after this many seconds (1 hour).
 PASSWORD_RESET_TIMEOUT = 60 * 60
+
+# Links that verify a new account's email stop working after 24 hours.
+EMAIL_VERIFICATION_TIMEOUT = 60 * 60 * 24
 
 LOGGING = {
     "version": 1,
