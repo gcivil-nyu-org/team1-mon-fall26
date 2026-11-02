@@ -40,7 +40,7 @@
 .auth-circle {
   position: absolute;
   display: block;
-  border-radius: 50%;
+  border-radius: 100px;
   pointer-events: none;
   z-index: -1;
 }
@@ -659,5 +659,6 @@
 }
 .auth-note a { color: var(--ink); font-weight: 700; }
 .auth-submit-link { text-align: center; text-decoration: none; }
-.auth-forgot { display: block; margin: -4px 0 16px; text-align: right; font-size: 12px; }
-.auth-forgot a { color: var(--purple); font-weight: 700; }
+.auth-label-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.auth-label-row label { font-size: 16px; font-weight: 700; line-height: 1.55; }
+.auth-forgot { color: #5c3d2e; font-size: 14px; font-weight: 700; line-height: 1.55; text-decoration: underline; }
