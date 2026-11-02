@@ -166,7 +166,7 @@
       <span class="caregiver-booking-button is-disabled">Currently unavailable</span>
     {% endif %}
     {# Message before a Service: owners can ask questions before they book. #}
-    {% if not user.caregiver_profile %}
+    {% if caregiver.user.is_active and not user.caregiver_profile %}
       <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{ caregiver.first_name }}</a>
     {% endif %}
   </aside>

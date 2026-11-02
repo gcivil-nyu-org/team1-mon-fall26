@@ -12,18 +12,21 @@ from django.views.decorators.http import require_POST
 from bookings.models import Booking
 from caregivers.models import CaregiverProfile
 
-from .inbox import by_day, conversations_for, describe, inbox
+from .inbox import by_day, conversations_for, counterpart, describe, inbox
 from .models import MAX_MESSAGE_LENGTH, Conversation, Message
+
+
+def closed_account_notice(first_name):
+    return f"{first_name}’s account has been deleted, so they can’t receive messages."
 
 
 @login_required
 def inbox_view(request):
-    """All conversations, with the newest one open."""
+    """All conversations. None is opened (or marked read) until the user picks one."""
     Booking.update_overdue()
-    conversations = inbox(request.user)
-    if not conversations:
-        return render(request, "messaging/inbox.html", {"conversations": []})
-    return _show(request, conversations, conversations[0], chosen=False)
+    return render(
+        request, "messaging/inbox.html", {"conversations": inbox(request.user)}
+    )
 
 
 @login_required
@@ -37,11 +40,12 @@ def conversation_view(request, pk):
         # A new conversation with no messages yet: show it at the top.
         match = describe(selected, request.user)
         conversations.insert(0, match)
-    return _show(request, conversations, match, chosen=True)
+    return _show(request, conversations, match)
 
 
-def _show(request, conversations, selected, chosen):
+def _show(request, conversations, selected):
     history = list(selected.messages.select_related("sender"))
+    # Opening a conversation is what counts as reading it.
     selected.mark_read(request.user)
     selected.unread = False
     other = selected.other
@@ -52,10 +56,9 @@ def _show(request, conversations, selected, chosen):
             "conversations": conversations,
             "selected": selected,
             "days": by_day(history),
-            # On phones the inbox and the conversation are separate screens.
-            "chosen": chosen,
             "latest_id": history[-1].pk if history else 0,
             "max_length": MAX_MESSAGE_LENGTH,
+            "can_reply": selected.other_can_receive(request.user),
             "can_request_care": (
                 selected.viewer_is_owner
                 and selected.booking_id is None
@@ -71,7 +74,10 @@ def _show(request, conversations, selected, chosen):
 def send_message(request, pk):
     conversation = get_object_or_404(conversations_for(request.user), pk=pk)
     body = request.POST.get("body", "").strip()
-    if not body:
+    if not conversation.other_can_receive(request.user):
+        name = counterpart(conversation, request.user)["first_name"]
+        messages.error(request, closed_account_notice(name))
+    elif not body:
         messages.error(request, "Write a message before sending.")
     elif len(body) > MAX_MESSAGE_LENGTH:
         messages.error(
@@ -98,7 +104,10 @@ def latest_message(request, pk):
 @login_required
 def message_caregiver(request, caregiver_pk):
     """An owner asks a caregiver questions before requesting care."""
-    caregiver = get_object_or_404(CaregiverProfile, pk=caregiver_pk, user__isnull=False)
+    # Deleted (inactive) caregiver accounts can't be messaged.
+    caregiver = get_object_or_404(
+        CaregiverProfile, pk=caregiver_pk, user__isnull=False, user__is_active=True
+    )
     if caregiver.user_id == request.user.pk or getattr(
         request.user, "caregiver_profile", None
     ):

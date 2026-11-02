@@ -1,8 +1,10 @@
 """Acceptance tests for View Message History, Message before a Service, and
 Inbox + Care Updates (the Figma "PawPal - Message" frames)."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from datetime import timezone as dt_timezone
+from unittest import mock
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
@@ -10,6 +12,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from accounts.deletion import delete_account
 from accounts.models import AccountProfile
 from bookings.models import Booking
 from caregivers.models import CaregiverProfile, ServiceType
@@ -29,6 +32,19 @@ def conversation_url(conversation):
 
 def send_url(conversation):
     return reverse("messaging:send", args=[conversation.pk])
+
+
+def local_noon(days_ago=0):
+    """Noon on a local calendar day. "24 hours ago" isn't always yesterday: on the
+    night the clocks go back it can still be today, so tests use calendar days."""
+    day = timezone.localdate() - timedelta(days=days_ago)
+    return timezone.make_aware(datetime.combine(day, time(12)))
+
+
+def at_new_york_time(*args):
+    """Pretend it's this New York time (patches what "now" is for the app)."""
+    when = datetime(*args, tzinfo=ZoneInfo("America/New_York"))
+    return mock.patch("django.utils.timezone.now", return_value=when)
 
 
 class MessagingTestData(TestCase):
@@ -136,8 +152,8 @@ class InboxHelperTests(MessagingTestData):
     def test_day_labels(self):
         now = timezone.now()
         self.assertEqual(day_label(now), "Today")
-        self.assertEqual(day_label(now - timedelta(days=1)), "Yesterday")
-        ten_days_ago = now - timedelta(days=10)
+        self.assertEqual(day_label(local_noon(1)), "Yesterday")
+        ten_days_ago = local_noon(10)
         expected = r"^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}"
         if timezone.localtime(ten_days_ago).year != timezone.localdate().year:
             expected += r", \d{4}"
@@ -148,8 +164,8 @@ class InboxHelperTests(MessagingTestData):
     def test_messages_are_grouped_by_day(self):
         conversation = self.general()
         now = timezone.now()
-        self.say(conversation, self.owner, "Hi", now - timedelta(days=1))
-        self.say(conversation, self.sitter, "Hello", now - timedelta(days=1))
+        self.say(conversation, self.owner, "Hi", local_noon(1))
+        self.say(conversation, self.sitter, "Hello", local_noon(1))
         self.say(conversation, self.owner, "Still free?", now)
         groups = by_day(conversation.messages.all())
         self.assertEqual([g["label"] for g in groups], ["Yesterday", "Today"])
@@ -159,8 +175,8 @@ class InboxHelperTests(MessagingTestData):
         now = timezone.now()
         self.assertEqual(inbox_time(None), "")
         self.assertRegex(inbox_time(now), r"^\d{1,2}:\d{2} (AM|PM)$")
-        self.assertEqual(inbox_time(now - timedelta(days=1)), "Yesterday")
-        ten_days_ago = now - timedelta(days=10)
+        self.assertEqual(inbox_time(local_noon(1)), "Yesterday")
+        ten_days_ago = local_noon(10)
         expected = r"^[A-Z][a-z]{2} \d{1,2}"
         if timezone.localtime(ten_days_ago).year != timezone.localdate().year:
             expected += r", \d{4}"
@@ -174,6 +190,24 @@ class InboxHelperTests(MessagingTestData):
         self.assertTrue(booking_when(timezone.now()).startswith("Today · "))
         when = datetime(2020, 10, 3, 21, 30, tzinfo=dt_timezone.utc)
         self.assertEqual(booking_when(when), "Sat, Oct 3 · 5:30 PM")
+
+    def test_yesterday_on_the_nights_the_clocks_change(self):
+        # Nov 1, 2026, 11:30 PM: the clocks went back that morning, so 24 hours
+        # earlier is still Nov 1. 11 PM on Oct 31 is yesterday.
+        with at_new_york_time(2026, 11, 1, 23, 30):
+            this_morning = datetime(
+                2026, 11, 1, 0, 30, tzinfo=ZoneInfo("America/New_York")
+            )
+            last_night = datetime(
+                2026, 10, 31, 23, 0, tzinfo=ZoneInfo("America/New_York")
+            )
+            self.assertEqual(day_label(this_morning), "Today")
+            self.assertEqual(day_label(last_night), "Yesterday")
+            self.assertEqual(inbox_time(last_night), "Yesterday")
+        # Mar 14, 2027, 12:30 AM: the clocks went forward, the day is 23 hours long.
+        with at_new_york_time(2027, 3, 14, 0, 30):
+            evening = datetime(2027, 3, 13, 1, 0, tzinfo=ZoneInfo("America/New_York"))
+            self.assertEqual(day_label(evening), "Yesterday")
 
     def test_unread_count(self):
         conversation = self.general()
@@ -319,8 +353,14 @@ class BookingConversationTests(MessagingTestData):
             send_url(conversation), {"body": "Miso is hiding under the bed."}
         )
         self.client.force_login(self.owner)
-        response = self.client.get(INBOX)
-        self.assertContains(response, "Miso is hiding under the bed.")
+        # The owner sees it as unread in the inbox...
+        inbox_page = self.client.get(INBOX)
+        self.assertContains(inbox_page, "Miso is hiding under the bed.")
+        self.assertContains(inbox_page, '<span class="nav-badge">', count=1)
+        # ...and reading the conversation clears it.
+        response = self.client.get(conversation_url(conversation))
+        html = response.content.decode().split('id="chat-messages"')[1]
+        self.assertIn("Miso is hiding under the bed.", html)
         self.assertContains(response, '<span class="nav-badge">', count=0)
 
     def test_booking_page_links_to_its_messages(self):
@@ -407,7 +447,7 @@ class MessageHistoryTests(MessagingTestData):
         self.client.force_login(self.owner)
         self.assertEqual(self.client.get(INBOX).context["conversations"], [])
 
-    def test_newest_conversation_first_and_open(self):
+    def test_newest_conversation_first_and_none_open(self):
         now = timezone.now()
         older = self.general()
         self.say(older, self.owner, "Older chat", now - timedelta(days=2))
@@ -418,8 +458,20 @@ class MessageHistoryTests(MessagingTestData):
         self.assertEqual(
             [c.pk for c in response.context["conversations"]], [newer.pk, older.pk]
         )
-        self.assertEqual(response.context["selected"].pk, newer.pk)
-        self.assertFalse(response.context["chosen"])
+        self.assertNotIn("selected", response.context)
+        self.assertContains(response, "Pick a conversation")
+        self.assertNotContains(response, 'id="chat-messages"')
+        self.assertNotContains(response, "is-selected")
+
+    def test_opening_the_inbox_does_not_mark_anything_read(self):
+        conversation = self.general()
+        self.say(conversation, self.sitter, "Hi Kat!")
+        self.client.force_login(self.owner)
+        response = self.client.get(INBOX)
+        self.assertContains(response, "is-unread", count=1)
+        self.assertEqual(unread_count(self.owner), 1)
+        conversation.refresh_from_db()
+        self.assertIsNone(conversation.owner_read_at)
 
     def test_full_history_in_order_with_sides(self):
         conversation = self.general()
@@ -437,7 +489,7 @@ class MessageHistoryTests(MessagingTestData):
         self.assertContains(response, 'class="bubble-row is-mine"', count=2)
         self.assertContains(response, 'class="bubble-row is-theirs"', count=1)
         self.assertContains(response, 'id="latest"', count=1)
-        self.assertTrue(response.context["chosen"])
+        self.assertContains(response, "messages-layout is-chosen")
 
     def test_messages_keep_line_breaks_and_are_escaped(self):
         conversation = self.general()
@@ -508,3 +560,65 @@ class LatestMessageTests(MessagingTestData):
         self.client.force_login(self.other_owner)
         url = reverse("messaging:latest", args=[conversation.pk])
         self.assertEqual(self.client.get(url).status_code, 404)
+
+
+class DeletedAccountTests(MessagingTestData):
+    """Deleted accounts are deactivated, not removed, and can't be messaged."""
+
+    def message_caregiver_url(self, caregiver):
+        return reverse("messaging:message_caregiver", args=[caregiver.pk])
+
+    def test_cannot_start_a_conversation_with_a_deleted_caregiver(self):
+        delete_account(self.sitter)
+        self.client.force_login(self.owner)
+        response = self.client.get(self.message_caregiver_url(self.caregiver))
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(Conversation.objects.exists())
+
+    def test_profile_has_no_message_button_for_a_deleted_caregiver(self):
+        delete_account(self.sitter)
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
+        self.assertNotContains(response, self.message_caregiver_url(self.caregiver))
+        self.assertNotContains(response, "Message Chloe")
+
+    def test_owner_cannot_send_to_a_deleted_caregiver(self):
+        conversation = self.general()
+        self.say(conversation, self.sitter, "Happy to help!")
+        delete_account(self.sitter)
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            send_url(conversation), {"body": "Are you there?"}, follow=True
+        )
+        self.assertFalse(Message.objects.filter(body="Are you there?").exists())
+        self.assertContains(
+            response,
+            "Chloe’s account has been deleted, so they can’t receive messages.",
+        )
+
+    def test_caregiver_cannot_send_to_a_deleted_owner(self):
+        booking = self.make_booking()
+        conversation = Conversation.objects.create(
+            owner=self.owner, caregiver=self.caregiver, booking=booking
+        )
+        delete_account(self.owner)
+        self.client.force_login(self.sitter)
+        self.client.post(send_url(conversation), {"body": "Miso ate dinner."})
+        self.assertFalse(conversation.messages.exists())
+
+    def test_history_stays_readable_but_there_is_no_message_box(self):
+        conversation = self.general()
+        self.say(conversation, self.sitter, "Happy to help!")
+        delete_account(self.sitter)
+        self.client.force_login(self.owner)
+        response = self.client.get(conversation_url(conversation))
+        self.assertContains(response, "Happy to help!")
+        self.assertContains(response, "Chloe’s account has been deleted")
+        self.assertNotContains(response, 'id="chat-composer"')
+
+    def test_active_accounts_can_still_be_messaged(self):
+        conversation = self.general()
+        self.assertTrue(conversation.other_can_receive(self.owner))
+        self.assertTrue(conversation.other_can_receive(self.sitter))
+        delete_account(self.other_owner)
+        self.assertTrue(conversation.other_can_receive(self.sitter))

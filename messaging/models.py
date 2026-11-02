@@ -63,6 +63,11 @@ class Conversation(models.Model):
     def is_owner(self, user):
         return self.owner_id == user.pk
 
+    def other_can_receive(self, user):
+        """False once the other person's account has been deleted (deactivated)."""
+        other = self.caregiver.user if self.is_owner(user) else self.owner
+        return other is None or other.is_active
+
     def mark_read(self, user, when=None):
         """Remember that `user` has seen everything up to now."""
         field = "owner_read_at" if self.is_owner(user) else "caregiver_read_at"

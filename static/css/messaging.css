@@ -210,6 +210,25 @@
 
 .chat-empty { margin: auto; color: #6a5a54; font-size: 15px; text-align: center; }
 
+/* /messages/ before a conversation is picked. */
+.chat-placeholder { align-items: center; justify-content: center; gap: 10px; padding: 32px; text-align: center; }
+.chat-placeholder .bubble { position: static; width: 56px; height: 56px; background: var(--yellow); color: var(--ink); }
+.chat-placeholder .bubble svg { width: 26px; height: 26px; }
+.chat-placeholder h2 { margin: 6px 0 0; font-size: 24px; line-height: 1.1; letter-spacing: -0.12px; }
+.chat-placeholder p { margin: 0; color: #6a5a54; font-size: 15px; line-height: 1.5; }
+
+/* In place of the composer when the other person's account was deleted. */
+.chat-closed {
+  flex: none;
+  margin: 0;
+  padding: 18px 22px 20px;
+  border-top: 1.5px solid #f2e2da;
+  color: #6a5a54;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .chat-composer { flex: none; padding: 14px 20px 18px; border-top: 1.5px solid #f2e2da; }
 .composer-box {
   display: flex;
