@@ -1,8 +1,8 @@
-
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}My Availability | PawPal{% endblock %}
-{% block main_class %}page page-wide{% endblock %}
+{% block main_class %}page page-availability{% endblock %}
 
 {% block content %}
 <style>
@@ -285,42 +285,14 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
 }
 /* Keep the sidebar focused on one action at a time. */
 .availability-page #add-time-button[hidden] { display: none !important; }
-/* Native time controls otherwise pick up the browser's default serif font. */
-.availability-page .inline-time-row input[type="time"] {
-  font-family: Arial, Helvetica, sans-serif !important;
-  font-size: 16px !important;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: #2c2623;
-  font-variant-numeric: tabular-nums;
-}
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-}
 /* Final typography and compact footer controls. Use the app's own font. */
 .availability-page .view-toggle button,
-.availability-page .calendar-save-status button,
-.availability-page .inline-time-row input[type="time"] {
+.availability-page .calendar-save-status button {
   font-family: inherit !important;
 }
 .availability-page .view-toggle button {
   font-size: 13px;
   font-weight: 750;
-}
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
-  font-family: inherit !important;
 }
 .availability-page #save-changes,
 .availability-page #discard-changes,
@@ -338,21 +310,7 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
 }
 
 
-/* Final compact sizing: time values and the entire save-status area. */
-.availability-page .inline-time-row input[type="time"],
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-fields-wrapper,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-text,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-hour-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-minute-field,
-.availability-page .inline-time-row input[type="time"]::-webkit-datetime-edit-ampm-field {
-  font-family: inherit !important;
-  font-size: 13px !important;
-  font-weight: 600;
-}
-.availability-page .inline-time-row input[type="time"] {
-  padding: 8px 9px;
-}
+/* Final compact sizing: the entire save-status area. */
 .availability-page .calendar-save-status,
 .availability-page .calendar-save-status.has-unsaved-changes {
   min-height: 58px;
@@ -401,28 +359,153 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
 .sidebar-card .slot-row.completed { background: #eee9e6; color: #85756e; }
 .sidebar-card .slot-row.editable { cursor: pointer; }
 .sidebar-card .slot-row.editable:focus-visible { outline: 2px solid #317b58; outline-offset: 2px; }
+
+/* Figma spec for the calendar, sidebar and save bar. */
+.page-availability { max-width: 1240px; padding-left: 32px; padding-right: 32px; }
+.availability-page { max-width: 1176px; margin: 16px auto 0; }
+.availability-page button { font-family: var(--font-body); }
+.availability-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.availability-heading h1 { font-family: var(--font-display); font-size: 46px; font-weight: 600; line-height: 48.3px; letter-spacing: -.23px; margin: 0; }
+.availability-heading p { margin: 6px 0 0; color: #6a5a54; font-size: 16px; font-weight: 500; line-height: 24.8px; }
+.availability-page .view-toggle { gap: 4px; padding: 5px; border: 0; box-shadow: 0 0 0 1.5px #f0ddd5, 0 3px 0 #f0ddd5; }
+.availability-page .view-toggle button { min-height: 38px; padding: 0 20px; color: #5a4038; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.availability-page .view-toggle button.active { background: #1c1a1a; color: #fff; font-weight: 700; }
+.availability-layout { grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; margin-top: 20px; }
+.availability-layout.month-layout { grid-template-columns: minmax(0, 1fr) 334px; }
+.availability-layout.month-layout #repeat-next-week { display: none; }
+.availability-card { border: 0; border-radius: 28px; padding: 26px; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.calendar-toolbar { margin-bottom: 18px; }
+.calendar-controls { gap: 6px; }
+.availability-page .calendar-controls strong { min-width: 160px; font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 31px; letter-spacing: 0; text-align: center; }
+.availability-page .calendar-controls button { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border-radius: 18px; background: transparent; }
+
+.availability-page .calendar-grid.week-view { gap: 6px; column-gap: 6px; }
+.availability-page .calendar-grid.week-view .calendar-day { align-items: center; gap: 6px; min-width: 0; padding: 10px 6px 12px; border-radius: 18px; }
+.availability-page .calendar-grid.week-view .calendar-day:hover,
+.availability-page .calendar-grid.week-view .calendar-day.selected { background: #faf5f2; }
+.availability-page .day-label { color: #8a6f64; font-size: 12px; font-weight: 700; line-height: 18.6px; letter-spacing: .72px; text-transform: uppercase; }
+.availability-page .calendar-day.past .day-label { color: #b8a8a1; }
+.availability-page .calendar-grid.week-view .calendar-day .day-number,
+.availability-page .calendar-grid.week-view .calendar-day:hover .day-number {
+  width: 42px; height: 42px; margin-bottom: 4px; border: 0; border-radius: 12px;
+  background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 3px 0 #f0ddd5;
+  color: #1c1a1a; font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: 0;
+}
+.availability-page .calendar-grid.week-view .calendar-day.today .day-number { background: #f2b94b; box-shadow: 0 3px 0 #d9982e; }
+.availability-page .calendar-grid.week-view .calendar-day.past .day-number { background: #f3eeeb; box-shadow: none; color: #b8a8a1; }
+.availability-page .day-slots { gap: 6px; }
+.availability-page .day-slot { gap: 3px; padding: 5px 3px; background: #cdefdc; color: #14532d; font-size: 12px; font-weight: 700; line-height: 18.6px; letter-spacing: -.1px; }
+.availability-page .day-slot.booked { background: #ffc8d9; color: #7a1f45; }
+.availability-page .day-slot.completed,
+.availability-page .calendar-grid .calendar-day.past .day-slot.completed { background: #efe9e6; color: #8a6f64; opacity: 1; }
+.availability-page .calendar-grid .calendar-day.past .day-slot.open { background: #f3eeeb; color: #b8a8a1; opacity: 1; }
+.availability-page .day-slot .pet-initial,
+.availability-page .calendar-grid .calendar-day.past .day-slot .pet-initial { flex: 0 0 18px; width: 18px; height: 18px; color: #7a1f45; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; }
+.availability-page .day-slot.completed .pet-initial { color: #1f4e79; }
+.day-off { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 6px; color: #c9b5ac; font-size: 13px; font-weight: 600; line-height: 20.15px; }
+
+.availability-page .calendar-grid.month-view { gap: 6px; }
+.availability-page .calendar-grid.month-view .weekday { padding: 0; color: #8a6f64; font-size: 12px; font-weight: 700; line-height: 18.6px; letter-spacing: .72px; }
+.availability-page .calendar-grid.month-view .calendar-day { align-items: center; gap: 4px; min-height: 64px; padding: 6px 4px; border-radius: 16px; }
+.availability-page .calendar-grid.month-view .calendar-day:hover,
+.availability-page .calendar-grid.month-view .calendar-day.selected { background: #faf5f2; }
+.availability-page .calendar-grid.month-view .calendar-day .day-number,
+.availability-page .calendar-grid.month-view .calendar-day:hover .day-number {
+  width: 36px; height: 34px; border: 0; border-radius: 10px; background: transparent; box-shadow: none; transform: none;
+  color: #6a5a54; font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: 0;
+}
+.availability-page .calendar-grid.month-view .calendar-day.past .day-number { background: transparent; color: #b8a8a1; }
+.availability-page .calendar-grid.month-view .calendar-day.has-open .day-number { background: #cdefdc; color: #14532d; }
+.availability-page .calendar-grid.month-view .calendar-day.today .day-number { background: #f2b94b; color: #1c1a1a; }
+.availability-page .month-paw { min-height: 17px; margin: 0; }
+.availability-page .month-paw img { display: block; }
+
+.availability-page .availability-legend { margin-top: 18px; color: #6a5a54; font-size: 14px; font-weight: 600; line-height: 21.7px; }
+.availability-page .legend-item { gap: 8px; }
+.availability-page .legend-color { width: 18px; height: 18px; border-radius: 6px; }
+.availability-page .legend-open { background: #cdefdc; }
+.availability-page .legend-booked { background: #ffc8d9; }
+.availability-page .legend-completed { background: #efe9e6; }
+.availability-page .calendar-save-status,
+.availability-page .calendar-save-status.has-unsaved-changes { min-height: 0; margin-top: 18px; padding: 14px 16px; border-radius: 20px; }
+.availability-page .calendar-save-status { background: #faf5f2; }
+.availability-page .calendar-save-status.has-unsaved-changes { background: #fff0bf; }
+.availability-page #save-status-text { color: #3d322e; font-size: 16px; font-weight: 600; line-height: 24.8px; }
+.availability-page .save-status-actions { gap: 8px; }
+.availability-page #save-changes,
+.availability-page #discard-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #discard-changes { min-height: 44px; padding: 0 20px; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.availability-page #save-changes,
+.availability-page .calendar-save-status.has-unsaved-changes #save-changes { background: #1c1a1a; box-shadow: 0 4px 0 #f4a27a; }
+.availability-page #save-changes:disabled { background: #1c1a1a; opacity: .45; }
+
+.availability-sidebar { gap: 14px; }
+.availability-page .sidebar-card { display: flex; flex-direction: column; gap: 8px; padding: 24px; }
+.availability-page .selected-date-header { gap: 14px; margin-bottom: 0; padding-bottom: 8px; }
+.availability-page .selected-date-badge { flex: 0 0 54px; height: 52px; border-radius: 50px; background: #faf5f2; font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.availability-page .selected-date-text > span { color: #8a6f64; font-size: 14px; font-weight: 700; line-height: 21.7px; }
+.availability-page .selected-date-text h2 { margin: 0; font-size: 24px; font-weight: 600; line-height: 27.6px; letter-spacing: -.12px; }
+.availability-page .selected-slot-list { gap: 8px; }
+.availability-page .selected-slot-list > p { margin: 0; color: #6a5a54; font-size: 14px; }
+.availability-page .sidebar-card .slot-row { gap: 10px; min-height: 50px; padding: 10px 12px; border-radius: 16px; background: #cdefdc; color: #14532d; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.availability-page .sidebar-card .slot-row > .slot-time { flex: 0 1 auto; font-size: 16px; }
+.availability-page .sidebar-card .slot-row.booked { background: #ffc8d9; color: #7a1f45; }
+.availability-page .sidebar-card .slot-row.completed { background: #efe9e6; color: #8a6f64; }
+.availability-page .sidebar-card .slot-lock { flex: 0 0 15px; display: block; }
+.availability-page .sidebar-card .slot-row .booking-pet { font-size: 14px; font-weight: 600; line-height: 21.7px; opacity: .85; }
+.availability-page .sidebar-card .slot-remove-button { width: 30px; height: 30px; padding: 0; border-radius: 15px; background: rgba(20, 83, 45, .12); }
+.availability-page .sidebar-card .add-time-button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin-top: 4px; padding: 0 6px; border: 2px dashed #d9b3a3; border-radius: 16px; color: #5c3d2e; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.availability-page .inline-time-editor { margin-top: 4px; padding: 14px; background: #faf5f2; border-radius: 18px; }
+.availability-page .compact-slot-form { gap: 10px; }
+.availability-page .inline-time-row { grid-template-columns: 40px minmax(0, 1fr); }
+.availability-page .inline-time-row label { color: #6a5a54; font-size: 14px; font-weight: 700; line-height: 21.7px; }
+.availability-page .inline-time-row select {
+  appearance: none; -webkit-appearance: none; height: 44px; padding: 0 32px 0 14px;
+  border: 2px solid #ead3c9; border-radius: 12px; color: #1c1a1a; font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  background: #fff url("{% static 'images/availability/select-chevron.svg' %}") no-repeat right 12px center;
+}
+.availability-page .inline-time-actions { gap: 8px; }
+.availability-page .inline-time-actions button { min-height: 44px; padding: 0 12px; font-size: 15px; font-weight: 700; }
+.availability-page .inline-add-button { background: #1c1a1a; border-color: #1c1a1a; box-shadow: 0 4px 0 #f4a27a; }
+.availability-page .repeat-placeholder { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 0; color: #1c1a1a; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+@media (max-width: 960px) {
+  .availability-layout, .availability-layout.month-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .page-availability { padding-left: 16px; padding-right: 16px; }
+  .availability-title-row { flex-wrap: wrap; }
+  .availability-page .day-slot .pet-initial, .availability-page .calendar-grid .calendar-day.past .day-slot .pet-initial { display: none; }
+  .availability-heading h1 { font-size: 34px; line-height: 38px; }
+  .availability-card { padding: 16px; }
+  .availability-page .calendar-grid.week-view,
+  .availability-page .calendar-grid.month-view { gap: 2px; column-gap: 2px; }
+  .availability-page .calendar-grid.week-view .calendar-day { padding: 6px 1px 8px; }
+  .availability-page .calendar-grid.week-view .calendar-day .day-number { width: 32px; height: 32px; font-size: 16px; }
+  .availability-page .day-label { font-size: 10px; letter-spacing: 0; }
+  .availability-page .calendar-controls strong { min-width: 0; font-size: 16px; }
+}
 </style>
 
 <section class="availability-page">
   <div class="availability-heading">
-    <h1>My Availability</h1>
-    <p>Choose when you're available to care for pets.</p>
-  </div>
-
-  <div class="availability-topbar">
-    <div class="view-toggle" role="group" aria-label="Calendar view">
-      <button type="button" id="week-button" class="active" aria-pressed="true">Week</button>
-      <button type="button" id="month-button" aria-pressed="false">Month</button>
+    <div class="availability-title-row">
+      <h1>Availability</h1>
+      <div class="view-toggle" role="group" aria-label="Calendar view">
+        <button type="button" id="week-button" class="active" aria-pressed="true">Week</button>
+        <button type="button" id="month-button" aria-pressed="false">Month</button>
+      </div>
     </div>
+    <p>Tap a day to add the times you're free. Booked times are locked.</p>
   </div>
 
   <div class="availability-layout">
     <section class="availability-card">
       <div class="calendar-toolbar">
         <div class="calendar-controls">
-          <button type="button" id="prev-period" aria-label="Previous period">‹</button>
+          <button type="button" id="prev-period" aria-label="Previous period"><img src="{% static 'images/availability/chevron-left.svg' %}" alt="" width="18" height="18"></button>
           <strong id="calendar-title"></strong>
-          <button type="button" id="next-period" aria-label="Next period">›</button>
+          <button type="button" id="next-period" aria-label="Next period"><img src="{% static 'images/availability/chevron-right.svg' %}" alt="" width="18" height="18"></button>
         </div>
       </div>
 
@@ -472,7 +555,7 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
         aria-expanded="false"
         aria-controls="add-time-form"
     >
-        + Add time
+        <img src="{% static 'images/availability/plus.svg' %}" alt="" width="16" height="16"> Add time
     </button>
 
     <div id="add-time-form" class="inline-time-editor" hidden>
@@ -507,7 +590,7 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
     </div>
     </section>
     <button type="button" class="repeat-placeholder" id="repeat-next-week" title="Copy this week's open availability to next week">
-      <span aria-hidden="true">↻</span> Repeat next week
+      <img src="{% static 'images/availability/repeat.svg' %}" alt="" width="17" height="17"> Repeat next week
     </button>
     </div>
   </div>
@@ -516,6 +599,21 @@ button.repeat-placeholder:focus-visible { outline: 3px solid #d99f89; outline-of
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   // A working copy of server data; edits remain local until Save.
+  const icons = {
+    remove: "{% static 'images/availability/remove.svg' %}",
+    lock: "{% static 'images/availability/lock.svg' %}",
+    off: "{% static 'images/availability/paw-off.svg' %}",
+    pawPast: "{% static 'images/availability/paw-past.svg' %}",
+    pawBooked: "{% static 'images/availability/paw-booked.svg' %}",
+  };
+  const iconImage = (src, size) => {
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = "";
+    image.width = size;
+    image.height = size;
+    return image;
+  };
   const savedSlots = JSON.parse("{{ calendar_slots|escapejs }}");
   let slots = savedSlots.map(slot => ({...slot}));
   let pendingChanges = [];
@@ -526,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const createForm = document.getElementById("availability-create-form");
   const startInput = document.getElementById("id_start_time");
   const endInput = document.getElementById("id_end_time");
-  let editingId = null;
+  let editingPiece = null;
   const normalizeTime = value => (value || "").slice(0, 5);
   const refreshPending = () => {
     const original = new Map(savedSlots.map(s => [String(s.id), s]));
@@ -550,20 +648,23 @@ document.addEventListener("DOMContentLoaded", () => {
     saveButton.disabled = !dirty;
     discardButton.hidden = !dirty;
   };
-  const openEditor = slot => {
-    editingId = slot ? slot.id : null;
-    if (slot) {
-      selectedDate = new Date(`${slot.date}T12:00:00`);
-      if (startInput) startInput.value = normalizeTime(slot.start);
-      if (endInput) endInput.value = normalizeTime(slot.end);
-    } else {
-      if (startInput) startInput.value = "";
-      if (endInput) endInput.value = "";
+  // Dropdowns list half hours; a saved time between them gets its own option.
+  const setTimeSelect = (select, value) => {
+    if (!select) return;
+    if (value && ![...select.options].some(option => option.value === value)) {
+      select.add(new Option(formatTime(value), value));
     }
+    select.value = value;
+  };
+  const openEditor = piece => {
+    editingPiece = piece || null;
+    if (piece) selectedDate = new Date(`${piece.slot.date}T12:00:00`);
+    setTimeSelect(startInput, piece ? piece.start : "");
+    setTimeSelect(endInput, piece ? piece.end : "");
     addTimeForm.hidden = false;
     addTimeButton.hidden = true;
     addTimeButton.setAttribute("aria-expanded", "true");
-    createForm.querySelector(".inline-add-button").textContent = slot ? "Update" : "Add";
+    createForm.querySelector(".inline-add-button").textContent = piece ? "Update" : "Add";
     renderCalendar();
     renderSlots();
     if (startInput) startInput.focus();
@@ -618,10 +719,49 @@ document.addEventListener("DOMContentLoaded", () => {
       ? `${first.slice(0, -3)}–${last}`
       : `${first}–${last}`;
   };
-  const overlapsBooking = slot => bookings.some(b =>
-    b.date === slot.date && normalizeTime(slot.start) < normalizeTime(b.end) &&
-    normalizeTime(slot.end) > normalizeTime(b.start)
-  );
+  // A slot's open time is whatever isn't booked, so a slot of 9–12 with a
+  // 10–11 booking shows as 9–10 and 11–12.
+  const openPieces = slot => {
+    let pieces = [{start: normalizeTime(slot.start), end: normalizeTime(slot.end)}];
+    bookings.filter(b => b.date === slot.date).forEach(b => {
+      const bookedStart = normalizeTime(b.start);
+      const bookedEnd = normalizeTime(b.end);
+      pieces = pieces.flatMap(piece => {
+        if (bookedEnd <= piece.start || bookedStart >= piece.end) return [piece];
+        return [
+          ...(piece.start < bookedStart ? [{start: piece.start, end: bookedStart}] : []),
+          ...(bookedEnd < piece.end ? [{start: bookedEnd, end: piece.end}] : []),
+        ];
+      });
+    });
+    return pieces.map(piece => ({...piece, slot}));
+  };
+  const dayEntries = key => [
+    ...slots.filter(slot => slot.date === key).flatMap(openPieces).map(piece => ({...piece, kind: "open"})),
+    ...bookings.filter(b => b.date === key).map(b => ({
+      ...b,
+      start: normalizeTime(b.start),
+      end: normalizeTime(b.end),
+      kind: b.status === "completed" ? "completed" : "booked",
+    })),
+  ].sort((a, b) => a.start.localeCompare(b.start));
+  // The slots left after taking one open piece out of its slot.
+  const withoutPiece = piece => {
+    const {slot} = piece;
+    const slotStart = normalizeTime(slot.start);
+    const slotEnd = normalizeTime(slot.end);
+    const kept = [
+      ...(slotStart < piece.start ? [[slotStart, piece.start]] : []),
+      ...(piece.end < slotEnd ? [[piece.end, slotEnd]] : []),
+    ];
+    if (!kept.length) return slots.filter(s => s !== slot);
+    const [first, second] = kept;
+    const remaining = slots.map(s => s === slot ? {...s, start: first[0], end: first[1]} : s);
+    if (second) {
+      remaining.push({id: `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`, date: slot.date, start: second[0], end: second[1]});
+    }
+    return remaining;
+  };
 
   function renderSlots() {
     const key = dateKey(selectedDate);
@@ -630,75 +770,60 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedHeading.textContent = selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
     if (dateInput) dateInput.value = key;
 
-    const matching = slots.filter(slot => slot.date === key);
-    const dayBookings = bookings.filter(booking => booking.date === key);
+    const entries = dayEntries(key);
     selectedSlots.replaceChildren();
 
-    if (!matching.length && !dayBookings.length) {
+    if (!entries.length) {
       const empty = document.createElement("p");
       empty.textContent = "No availability added for this day.";
       selectedSlots.appendChild(empty);
       return;
     }
 
-    // Booked time is shown in its own pink row; don't show the exact same
-    // fully-covered availability interval as an additional green row.
-    const entries = [
-      ...matching.filter(slot => !dayBookings.some(b =>
-        normalizeTime(b.start) <= normalizeTime(slot.start) &&
-        normalizeTime(b.end) >= normalizeTime(slot.end)
-      )).map(slot => ({ kind: "open", data: slot })),
-      ...dayBookings.map(booking => ({ kind: booking.status === "completed" ? "completed" : "booked", data: booking }))
-    ].sort((a, b) => normalizeTime(a.data.start).localeCompare(normalizeTime(b.data.start)));
-
-    entries.forEach(({kind, data}) => {
+    entries.forEach(entry => {
       const row = document.createElement("div");
-      row.className = `slot-row ${kind}`;
+      row.className = `slot-row ${entry.kind}`;
+      if (entry.kind === "booked") row.appendChild(iconImage(icons.lock, 15)).className = "slot-lock";
       const time = document.createElement("span");
       time.className = "slot-time";
-      time.textContent = compactRange(data.start, data.end);
-      time.title = `${formatTime(data.start)} – ${formatTime(data.end)}`;
+      time.textContent = compactRange(entry.start, entry.end);
+      time.title = `${formatTime(entry.start)} – ${formatTime(entry.end)}`;
       row.appendChild(time);
 
-      if (kind !== "open") {
+      if (entry.kind !== "open") {
         const pet = document.createElement("span");
         pet.className = "booking-pet";
-        pet.textContent = `${kind === "completed" ? "✓" : "🔒"} ${data.pet || "Booked"}`;
+        pet.textContent = `${entry.kind === "completed" ? "✓ " : ""}${entry.pet || "Booked"}`;
         row.appendChild(pet);
       } else {
-        const protectedByBooking = overlapsBooking(data);
-        if (!protectedByBooking) {
-          // Clicking the pill opens the same existing editor; no Edit button.
-          row.classList.add("editable");
-          row.tabIndex = 0;
-          row.setAttribute("role", "button");
-          row.setAttribute("aria-label", `Edit availability ${formatTime(data.start)} to ${formatTime(data.end)}`);
-          row.addEventListener("click", () => openEditor(data));
-          row.addEventListener("keydown", event => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              openEditor(data);
-            }
-          });
-          const actions = document.createElement("div");
-          actions.className = "slot-actions";
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.textContent = "×";
-          remove.className = "slot-remove-button";
-          remove.setAttribute("aria-label", `Remove availability ${formatTime(data.start)} to ${formatTime(data.end)}`);
-          remove.addEventListener("click", event => {
-            event.stopPropagation();
-            slots = slots.filter(s => s !== data);
-            refreshPending();
-            renderCalendar();
-            renderSlots();
-          });
-          actions.appendChild(remove);
-          row.appendChild(actions);
-        } else {
-          row.title = "This availability overlaps a booking and cannot be edited or removed";
-        }
+        // Clicking the pill opens the same existing editor; no Edit button.
+        row.classList.add("editable");
+        row.tabIndex = 0;
+        row.setAttribute("role", "button");
+        row.setAttribute("aria-label", `Edit availability ${formatTime(entry.start)} to ${formatTime(entry.end)}`);
+        row.addEventListener("click", () => openEditor(entry));
+        row.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openEditor(entry);
+          }
+        });
+        const actions = document.createElement("div");
+        actions.className = "slot-actions";
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.appendChild(iconImage(icons.remove, 14));
+        remove.className = "slot-remove-button";
+        remove.setAttribute("aria-label", `Remove availability ${formatTime(entry.start)} to ${formatTime(entry.end)}`);
+        remove.addEventListener("click", event => {
+          event.stopPropagation();
+          slots = withoutPiece(entry);
+          refreshPending();
+          renderCalendar();
+          renderSlots();
+        });
+        actions.appendChild(remove);
+        row.appendChild(actions);
       }
       selectedSlots.appendChild(row);
     });
@@ -708,11 +833,11 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.querySelectorAll(".day-slot").forEach(pill => {
       const label = pill.querySelector(".time-label");
       if (!label) return;
-      label.style.fontSize = "10px";
+      label.style.fontSize = "12px";
       const badge = pill.querySelector(".pet-initial");
       const available = pill.clientWidth - (badge ? badge.offsetWidth + 4 : 0) - 4;
-      let size = 10;
-      while (size > 6 && label.scrollWidth > available) {
+      let size = 12;
+      while (size > 8 && label.scrollWidth > available) {
         size -= 0.5;
         label.style.fontSize = `${size}px`;
       }
@@ -724,23 +849,18 @@ function renderCalendar() {
 
     grid.classList.toggle("week-view", viewMode === "week");
     grid.classList.toggle("month-view", viewMode === "month");
+    document.querySelector(".availability-layout").classList.toggle("month-layout", viewMode === "month");
 
     // Monday is the first day of the week.
     const startOfMondayWeek = date =>
         addDays(date, (date.getDay() + 6) % 7 * -1);
 
-    const start = viewMode === "week"
-        ? startOfMondayWeek(selectedDate)
-        : startOfMondayWeek(
-            new Date(
-                selectedDate.getFullYear(),
-                selectedDate.getMonth(),
-                1,
-                12
-            )
-        );
+    const firstOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
+    const start = viewMode === "week" ? startOfMondayWeek(selectedDate) : firstOfMonth;
 
-    const count = viewMode === "week" ? 7 : 42;
+    const count = viewMode === "week"
+        ? 7
+        : new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
 
     title.textContent = viewMode === "week"
         ? `${start.toLocaleDateString("en-US", {
@@ -748,20 +868,26 @@ function renderCalendar() {
             day: "numeric"
           })} – ${addDays(start, 6).toLocaleDateString("en-US", {
             month: "short",
-            day: "numeric",
-            year: "numeric"
+            day: "numeric"
           })}`
         : selectedDate.toLocaleDateString("en-US", {
             month: "long",
             year: "numeric"
           });
 
-    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(day => {
-        const heading = document.createElement("div");
-        heading.className = "weekday";
-        heading.textContent = day;
-        grid.appendChild(heading);
-    });
+    const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    if (viewMode === "month") {
+        weekdays.forEach(day => {
+            const heading = document.createElement("div");
+            heading.className = "weekday";
+            heading.textContent = day;
+            grid.appendChild(heading);
+        });
+        // Blank cells line the 1st up under its weekday.
+        for (let i = 0; i < (start.getDay() + 6) % 7; i++) {
+            grid.appendChild(document.createElement("div"));
+        }
+    }
 
     for (let i = 0; i < count; i++) {
         const date = addDays(start, i);
@@ -771,60 +897,44 @@ function renderCalendar() {
         button.type = "button";
         button.className = "calendar-day";
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const isPast = dayStart < today;
+        const isToday = key === dateKey(today);
+        if (isPast) button.classList.add("past");
+        if (isToday) button.classList.add("today");
+        if (key === dateKey(selectedDate)) button.classList.add("selected");
+
+        if (viewMode === "week") {
+            const label = document.createElement("span");
+            label.className = "day-label";
+            label.textContent = isToday ? "Today" : weekdays[(date.getDay() + 6) % 7];
+            button.appendChild(label);
+        }
+
         const number = document.createElement("span");
         number.className = "day-number";
         number.textContent = date.getDate();
         button.appendChild(number);
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const dayStart = new Date(date);
-        dayStart.setHours(0, 0, 0, 0);
-        if (dayStart < today) {
-            button.classList.add("past");
-        }
+        const entries = dayEntries(key);
+        const shortTime = value => {
+            const [hour, minute] = value.split(":").map(Number);
+            const period = hour >= 12 ? "p" : "a";
+            const displayHour = hour % 12 || 12;
 
-        if (dateKey(date) === dateKey(today)) {
-            button.classList.add("today");
-        }
+            return `${displayHour}${minute ? ":" + String(minute).padStart(2, "0") : ""}${period}`;
+        };
 
-        if (key === dateKey(selectedDate)) {
-            button.classList.add("selected");
-        }
+        if (viewMode === "week" && entries.length) {
+            const slotContainer = document.createElement("div");
+            slotContainer.className = "day-slots";
 
-        if (
-            viewMode === "month" &&
-            date.getMonth() !== selectedDate.getMonth()
-        ) {
-            button.classList.add("outside");
-        }
-
-        const dayAvailability = slots
-            .filter(slot => slot.date === key)
-            .sort((a, b) => a.start.localeCompare(b.start));
-
-        const dayBookings = bookings.filter(booking => booking.date === key);
-        if (dayAvailability.length || dayBookings.length) {
-            button.classList.add("has-slots");
-
-            if (viewMode === "week") {
-                const slotContainer = document.createElement("div");
-                slotContainer.className = "day-slots";
-
-                const dayEntries = [
-                    ...dayAvailability.map(slot => ({ ...slot, kind: "open" })),
-                    ...dayBookings.map(booking => ({ ...booking, kind: booking.status === "completed" ? "completed" : "booked" }))
-                ].sort((a, b) => a.start.localeCompare(b.start));
-                dayEntries.forEach(slot => {
-                    const pill = document.createElement("span");
-                    pill.className = `day-slot ${slot.kind}`;
-                    const shortTime = value => {
-                    const [hour, minute] = value.split(":").map(Number);
-                    const period = hour >= 12 ? "p" : "a";
-                    const displayHour = hour % 12 || 12;
-
-                    return `${displayHour}${minute ? ":" + String(minute).padStart(2, "0") : ""}${period}`;
-                };
+            entries.forEach(slot => {
+                const pill = document.createElement("span");
+                pill.className = `day-slot ${slot.kind}`;
 
                 if (slot.kind !== "open" && slot.pet) {
                     const initial = document.createElement("span");
@@ -839,27 +949,25 @@ function renderCalendar() {
                 pill.title = `${formatTime(slot.start)} – ${formatTime(slot.end)}` +
                     (slot.kind === "open" ? " · Available" : ` · ${slot.pet || "Pet"} (${slot.kind})`);
                 slotContainer.appendChild(pill);
-                });
+            });
 
-                button.appendChild(slotContainer);
-            } else {
-                const paw = document.createElement("span");
+            button.appendChild(slotContainer);
+        } else if (viewMode === "week" && !isPast) {
+            const off = document.createElement("span");
+            off.className = "day-off";
+            off.appendChild(iconImage(icons.off, 20));
+            off.append("Off");
+            button.appendChild(off);
+        } else if (viewMode === "month") {
+            const hasOpen = entries.some(entry => entry.kind === "open");
+            if (hasOpen && !isPast) button.classList.add("has-open");
 
-                paw.className = `month-paw ${dayBookings.length ? "booked" : "available"}`;
-                paw.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="17" height="17"
-                        fill="currentColor" aria-hidden="true">
-                        <circle cx="6" cy="8" r="2"/>
-                        <circle cx="11" cy="5" r="2"/>
-                        <circle cx="16" cy="7" r="2"/>
-                        <circle cx="20" cy="11" r="1.8"/>
-                        <path d="M12 11 C9 11 8 14 6.5 16.5 C5 19 7 21 9.5 20 C11 19.5 13 19.5 14.5 20 C17 21 19 19 17.5 16.5 C16 14 15 11 12 11 Z"/>
-                    </svg>
-                `;
-                paw.setAttribute("aria-hidden", "true");
-
-                button.appendChild(paw);
-            }
+            const paw = document.createElement("span");
+            paw.className = "month-paw";
+            paw.setAttribute("aria-hidden", "true");
+            if (isPast && entries.length) paw.appendChild(iconImage(icons.pawPast, 17));
+            else if (entries.some(entry => entry.kind === "booked")) paw.appendChild(iconImage(icons.pawBooked, 17));
+            button.appendChild(paw);
         }
 
         button.addEventListener("click", () => {
@@ -967,8 +1075,6 @@ function renderCalendar() {
     if (added) {
       selectedDate = addDays(selectedDate, 7);
       viewMode = "week";
-      weekButton.classList.add("active");
-      monthButton.classList.remove("active");
       refreshPending();
       renderCalendar();
       renderSlots();
@@ -994,7 +1100,7 @@ function renderCalendar() {
   cancelAddTime.addEventListener("click", () => {
     addTimeForm.hidden = true;
     addTimeButton.hidden = false;
-    editingId = null;
+    editingPiece = null;
     addTimeButton.setAttribute("aria-expanded", "false");
   });
 
@@ -1008,7 +1114,8 @@ function renderCalendar() {
       statusText.textContent = "Choose a date and an end time after the start time.";
       return;
     }
-    if (slots.some(s => s.id !== editingId && s.date === date && start < normalizeTime(s.end) && end > normalizeTime(s.start))) {
+    const others = editingPiece ? withoutPiece(editingPiece) : slots;
+    if (others.some(s => s.date === date && start < normalizeTime(s.end) && end > normalizeTime(s.start))) {
       statusText.textContent = "That time overlaps an existing availability slot.";
       return;
     }
@@ -1016,13 +1123,15 @@ function renderCalendar() {
       statusText.textContent = "That time overlaps a booked or completed care request.";
       return;
     }
-    if (editingId !== null) {
-      const target = slots.find(s => s.id === editingId);
-      if (target) Object.assign(target, {date, start, end});
-    } else {
-      slots.push({id:`draft-${Date.now()}-${Math.random().toString(36).slice(2)}`, date, start, end});
-    }
-    editingId = null;
+    // Editing a whole slot keeps it; a piece beside a booking becomes a new slot.
+    const wholeSlot = editingPiece
+      && editingPiece.start === normalizeTime(editingPiece.slot.start)
+      && editingPiece.end === normalizeTime(editingPiece.slot.end);
+    const id = wholeSlot
+      ? editingPiece.slot.id
+      : `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    slots = [...others, {id, date, start, end}];
+    editingPiece = null;
     addTimeForm.hidden = true;
     addTimeButton.hidden = false;
     addTimeButton.setAttribute("aria-expanded", "false");
@@ -1034,7 +1143,7 @@ function renderCalendar() {
   discardButton.addEventListener("click", () => {
     slots = savedSlots.map(s => ({...s}));
     pendingChanges = [];
-    editingId = null;
+    editingPiece = null;
     addTimeForm.hidden = true;
     addTimeButton.hidden = false;
     refreshPending();
