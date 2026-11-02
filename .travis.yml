@@ -11,6 +11,8 @@ branches:
   only:
     - develop
     - main
+    # Release tags (v1.0.0, v1.1, ...) so a GitHub Release can deploy.
+    - /^v\d+(\.\d+)*$/
 
 cache: pip
 
@@ -37,6 +39,24 @@ after_success:
   # Needs COVERALLS_REPO_TOKEN in the Travis repository settings. Pull
   # requests from forks don't get the token, so they skip the upload.
   - if [ -n "$COVERALLS_REPO_TOKEN" ]; then coveralls; fi
+
+# Deploy to AWS Elastic Beanstalk (pawpal-env) when a GitHub Release is
+# published, i.e. a v* tag is pushed. Travis deploys only after every step
+# in script passes, so a release with failing checks is never deployed.
+# Needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (an IAM user that can
+# deploy to Elastic Beanstalk) in the Travis repository settings.
+deploy:
+  provider: elasticbeanstalk
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  region: us-east-2
+  app: PawPal
+  env: pawpal-env
+  bucket_name: elasticbeanstalk-us-east-2-219040782046
+  wait_until_deployed: true
+  on:
+    tags: true
+    condition: $TRAVIS_TAG =~ ^v[0-9]
 
 notifications:
   email:

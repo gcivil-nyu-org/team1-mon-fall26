@@ -171,6 +171,16 @@ coverage report --fail-under=90                      # coverage (CI fails below 
 
 Coverage from `develop` and `main` builds is uploaded to [Coveralls](https://coveralls.io/github/gcivil-nyu-org/team1-mon-fall26).
 
+### Deployment
+
+The live site runs on AWS Elastic Beanstalk (`pawpal-env`). To release:
+
+1. Merge `develop` into `main` with a pull request.
+2. On GitHub, open **Releases → Draft a new release**, create a tag such as `v1.2.0` on `main`, and publish it.
+3. Travis runs every check on the tag. If they all pass, it deploys that tag to Elastic Beanstalk; if any fails, nothing is deployed.
+
+The deploy uses `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` from the Travis repository settings. Never put AWS keys in the repository.
+
 ## Development Notes
 
 - Use a local virtual environment for Python dependencies.
