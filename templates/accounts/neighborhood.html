@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Your neighborhood · PawPal{% endblock %}
+
+{% block main_class %}page page-medium{% endblock %}
+
+{% block content %}
+  <article class="card neighborhood-card">
+    <h1>Your neighborhood</h1>
+    <p class="muted">Caregivers you message see this next to your name. Your address stays private.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field{% if form.neighborhood.errors %} has-error{% endif %}">
+        <label for="{{ form.neighborhood.id_for_label }}">Neighborhood</label>
+        {{ form.neighborhood }}
+        {% for error in form.neighborhood.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-dark">Save</button>
+      </div>
+    </form>
+  </article>
+{% endblock %}

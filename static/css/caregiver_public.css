@@ -9,10 +9,13 @@
 }
 
 .caregiver-back {
-  display: inline-block;
-  margin-bottom: 22px;
-  color: #332a26;
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: 16px;
+  color: #5c3d2e;
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
 }

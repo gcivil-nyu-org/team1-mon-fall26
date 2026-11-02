@@ -8,7 +8,7 @@
 {% block messages %}{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=10">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}?v=13">
 <link rel="stylesheet" href="{% static 'css/delete_account.css' %}">
 
 <section class="auth-screen" aria-labelledby="login-title">
@@ -51,9 +51,7 @@
             {% endif %}
 
             <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
-                <label for="{{ form.username.id_for_label }}">
-                    Username <span class="required">*</span>
-                </label>
+                <label for="{{ form.username.id_for_label }}">Username</label>
                 {{ form.username }}
 
                 {% for error in form.username.errors %}
@@ -62,17 +60,16 @@
             </div>
 
             <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
-                <label for="{{ form.password.id_for_label }}">
-                    Password <span class="required">*</span>
-                </label>
+                <div class="auth-label-row">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    <a class="auth-forgot" href="{% url 'password_reset' %}">Forgot password?</a>
+                </div>
                 {{ form.password }}
 
                 {% for error in form.password.errors %}
                     <p class="auth-field-error" role="alert">{{ error }}</p>
                 {% endfor %}
             </div>
-
-            <p class="auth-forgot"><a href="{% url 'password_reset' %}">Forgot password?</a></p>
 
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}">

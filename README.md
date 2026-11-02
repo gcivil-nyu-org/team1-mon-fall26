@@ -173,11 +173,14 @@ Coverage from `develop` and `main` builds is uploaded to [Coveralls](https://cov
 
 ### Deployment
 
-The live site runs on AWS Elastic Beanstalk (`pawpal-env`). To release:
+Travis deploys to AWS Elastic Beanstalk after a build on `develop` or `main` passes every check:
 
-1. Merge `develop` into `main` with a pull request.
-2. On GitHub, open **Releases → Draft a new release**, create a tag such as `v1.2.0` on `main`, and publish it.
-3. Travis runs every check on the tag. If they all pass, it deploys that tag to Elastic Beanstalk; if any fails, nothing is deployed.
+| Branch | Environment | URL |
+|---|---|---|
+| `develop` | `pawpal-integration` (integration) | see the Elastic Beanstalk console |
+| `main` | `pawpal-env` (live site) | http://pawpal-env.eba-x2trrt2m.us-east-2.elasticbeanstalk.com |
+
+Merging a pull request into `develop` updates the integration environment; releasing `develop` into `main` updates the live site. Pull requests and other branches are only checked, never deployed, and a failing build never deploys.
 
 The deploy uses `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` from the Travis repository settings. Never put AWS keys in the repository.
 

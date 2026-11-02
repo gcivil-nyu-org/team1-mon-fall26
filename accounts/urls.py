@@ -15,6 +15,7 @@ urlpatterns = [
         name="login",
     ),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("neighborhood/", views.neighborhood_view, name="neighborhood"),
     # Story #48: delete your own account.
     path("delete/", views.delete_account_view, name="delete_account"),
     path("signup/success/", views.signup_success_view, name="signup_success"),
@@ -29,7 +30,7 @@ urlpatterns = [
     # Story #46: reset a forgotten password with a link sent by email.
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
+        views.ResetRequestView.as_view(
             template_name="accounts/password_reset_form.html",
             form_class=ResetRequestForm,
             email_template_name="accounts/emails/password_reset_email.txt",
@@ -40,9 +41,7 @@ urlpatterns = [
     ),
     path(
         "password-reset/sent/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="accounts/password_reset_done.html"
-        ),
+        views.ResetSentView.as_view(template_name="accounts/password_reset_done.html"),
         name="password_reset_done",
     ),
     path(

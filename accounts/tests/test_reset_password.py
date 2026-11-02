@@ -34,9 +34,10 @@ class ResetPasswordTests(TestCase):
 
     def test_user_can_request_a_reset(self):
         response = self.client.get(RESET_URL)
-        self.assertContains(response, "Forgot your password?")
+        self.assertContains(response, "Forgot password?")
         response = self.request_reset()
         self.assertContains(response, "Check your email")
+        self.assertContains(response, "kat@example.com")
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["kat@example.com"])
         self.assertEqual(mail.outbox[0].subject, "Reset your PawPal password")
@@ -48,13 +49,18 @@ class ResetPasswordTests(TestCase):
         self.assertIn("(kat)", body)
         link = self.reset_link()
         response = self.client.get(link, follow=True)
-        self.assertContains(response, "Choose a new password")
+        self.assertContains(response, "Create a new password")
         self.assertContains(response, "<strong>kat</strong>")
 
     def test_unknown_email_gives_the_same_answer_but_sends_nothing(self):
         response = self.request_reset("nobody@example.com")
         self.assertContains(response, "Check your email")
+        self.assertContains(response, "nobody@example.com")
         self.assertEqual(mail.outbox, [])
+
+    def test_sent_page_without_a_request_says_your_email(self):
+        response = self.client.get(reverse("password_reset_done"))
+        self.assertContains(response, "We sent a reset link to your email.")
 
     def test_email_is_required_and_must_be_valid(self):
         self.assertContains(
@@ -62,7 +68,7 @@ class ResetPasswordTests(TestCase):
         )
         self.assertContains(
             self.client.post(RESET_URL, {"email": "not-an-email"}),
-            "Enter a valid email address.",
+            "Enter a valid email.",
         )
 
     def test_user_can_set_a_new_password_and_log_in_with_it(self):
@@ -95,7 +101,7 @@ class ResetPasswordTests(TestCase):
             form_url,
             {"new_password1": "brand-new-pass-456!", "new_password2": "different-789!"},
         )
-        self.assertContains(response, "Passwords don&#x27;t match.")
+        self.assertContains(response, "Passwords don’t match.")
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("old-pass-123!"))
 

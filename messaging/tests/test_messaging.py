@@ -147,7 +147,14 @@ class InboxHelperTests(MessagingTestData):
         self.assertEqual(as_caregiver["name"], "Kat W.")
         self.assertEqual(as_caregiver["first_name"], "Kat")
         self.assertEqual(as_caregiver["role"], "Pet owner")
+        self.assertEqual(as_caregiver["place"], "")
         self.assertEqual(as_caregiver["initials"], "KW")
+
+    def test_caregiver_sees_the_owners_neighborhood(self):
+        AccountProfile.objects.create(user=self.owner, neighborhood="Park Slope")
+        self.client.force_login(self.sitter)
+        response = self.client.get(conversation_url(self.general()))
+        self.assertContains(response, "Pet owner · Park Slope")
 
     def test_day_labels(self):
         now = timezone.now()

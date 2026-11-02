@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="{% static 'css/style.css' %}?v=11" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=13" rel="stylesheet">
   <link href="{% static 'css/bookings.css' %}?v=17" rel="stylesheet">
 </head>
 <body>
@@ -36,7 +36,9 @@
         {% else %}
           <a href="{% url 'create_caregiver_profile' %}" class="{% if request.resolver_match.url_name == 'create_caregiver_profile' %}active{% endif %}">My profile</a>
         {% endif %}
-        <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        {% if request.resolver_match.url_name != 'manage_availability' %}
+          <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        {% endif %}
       {% else %}
         <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
         <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Find caregivers</a>
@@ -54,6 +56,9 @@
           </summary>
           <div class="account-dropdown">
             <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
+            {% if not user.caregiver_profile and user.account_profile.role != "caregiver" %}
+              <a class="account-link" href="{% url 'neighborhood' %}">Your neighborhood</a>
+            {% endif %}
             <a class="delete-account-link" href="{% url 'delete_account' %}">Delete account</a>
             <form method="post" action="{% url 'logout' %}">
               {% csrf_token %}

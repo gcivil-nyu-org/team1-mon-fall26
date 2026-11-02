@@ -14,7 +14,7 @@ from .verification import mark_verified, needs_verification
 class SignUpForm(UserCreationForm):
     error_messages = {
         **UserCreationForm.error_messages,
-        "password_mismatch": "Passwords don't match.",
+        "password_mismatch": "Passwords don’t match.",
     }
 
     account_type = forms.ChoiceField(
@@ -121,6 +121,17 @@ class LoginForm(AuthenticationForm):
             )
 
 
+class NeighborhoodForm(forms.ModelForm):
+    """A pet owner's neighborhood, for the Messages header caregivers see."""
+
+    class Meta:
+        model = AccountProfile
+        fields = ["neighborhood"]
+        widgets = {
+            "neighborhood": forms.TextInput(attrs={"placeholder": "e.g. Park Slope"}),
+        }
+
+
 class ResendVerificationForm(forms.Form):
     """Ask for a new email verification link."""
 
@@ -141,7 +152,7 @@ class ResetRequestForm(PasswordResetForm):
         field = self.fields["email"]
         field.widget.attrs["placeholder"] = "you@example.com"
         field.error_messages["required"] = "Enter your email."
-        field.error_messages["invalid"] = "Enter a valid email address."
+        field.error_messages["invalid"] = "Enter a valid email."
 
 
 class NewPasswordForm(SetPasswordForm):
@@ -149,7 +160,7 @@ class NewPasswordForm(SetPasswordForm):
 
     error_messages = {
         **SetPasswordForm.error_messages,
-        "password_mismatch": "Passwords don't match.",
+        "password_mismatch": "Passwords don’t match.",
     }
 
     def __init__(self, *args, **kwargs):

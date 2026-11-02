@@ -11,6 +11,8 @@ from django.utils import timezone
 
 from bookings.models import Booking
 
+from .models import AccountProfile
+
 
 @transaction.atomic
 def delete_account(user):
@@ -35,6 +37,9 @@ def delete_account(user):
         )
         profile.accepting_new_bookings = False
         profile.save(update_fields=["accepting_new_bookings"])
+
+    # Caregivers they messaged shouldn't keep seeing where they live.
+    AccountProfile.objects.filter(user=user).update(neighborhood="")
 
     # Free the email so it can be used for a new account, and lock the login.
     user.is_active = False

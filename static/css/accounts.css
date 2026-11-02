@@ -31,7 +31,7 @@
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 90px);
-  padding: 32px 20px;
+  padding: 52px 40px 48px;
   background: #faf5f2;
   overflow: hidden;
   isolation: isolate;
@@ -40,7 +40,7 @@
 .auth-circle {
   position: absolute;
   display: block;
-  border-radius: 50%;
+  border-radius: 100px;
   pointer-events: none;
   z-index: -1;
 }
@@ -385,7 +385,7 @@
     height: 72px;
     border-radius: 50%;
     background: #cdefdc;
-    color: #175c3d;
+    color: #14532d;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -490,12 +490,17 @@
     margin-bottom: 8px;
 }
 
+.auth-form-panel .required {
+    color: #c2281b;
+}
+
 .auth-form-panel .auth-form-field input:not([type="radio"]) {
     min-height: 52px;
     padding: 12px 16px;
     border: 2px solid #ead3c9;
     border-radius: 16px;
     background: #fffcfa;
+    color: var(--ink);
     font-size: 16px;
 }
 
@@ -515,6 +520,10 @@
     font-size: 14px;
     font-weight: 600;
     line-height: 1.55;
+}
+
+.auth-form-panel .auth-role-field .auth-field-error {
+    margin-top: 10px;
 }
 
 .auth-form-panel .auth-field-error a {
@@ -659,5 +668,37 @@
 }
 .auth-note a { color: var(--ink); font-weight: 700; }
 .auth-submit-link { text-align: center; text-decoration: none; }
-.auth-forgot { display: block; margin: -4px 0 16px; text-align: right; font-size: 12px; }
-.auth-forgot a { color: var(--purple); font-weight: 700; }
+.auth-label-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.auth-label-row label { font-size: 16px; font-weight: 700; line-height: 1.55; }
+.auth-forgot { color: #5c3d2e; font-size: 14px; font-weight: 700; line-height: 1.55; text-decoration: underline; }
+
+/* Icon, heading and subtitle stacked at the top of a reset page (Figma) */
+.auth-status-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.auth-status-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f8e6df;
+}
+
+.auth-status-icon--success { background: #cdefdc; }
+
+.auth-form-panel .auth-status-header h1 {
+  min-height: 42px;
+  margin: 0;
+  padding-top: 4px;
+  font-size: 34px;
+  letter-spacing: -0.17px;
+}
+
+.auth-form-panel .auth-status-header .auth-subtitle { margin: 0; }
+.auth-sent-to { color: var(--ink); }
