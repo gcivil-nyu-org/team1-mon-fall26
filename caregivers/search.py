@@ -132,6 +132,9 @@ def searchable_caregivers(viewer, available_only=True):
     # Only caregivers with an active account (deleted accounts are deactivated, #48).
     caregivers = CaregiverProfile.objects.filter(
         user__isnull=False, user__is_active=True
+    ).exclude(
+        # Nor restricted ones (#92).
+        user__account_profile__restricted_at__isnull=False
     )
     if available_only:
         caregivers = caregivers.filter(accepting_new_bookings=True)

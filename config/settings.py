@@ -76,6 +76,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    # Logs restricted accounts out (#92); needs the user and messages above.
+    "accounts.middleware.RestrictedAccountMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 

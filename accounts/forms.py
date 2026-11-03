@@ -8,6 +8,7 @@ from django.contrib.auth.forms import (
 )
 
 from .models import AccountProfile
+from .restriction import RESTRICTED_MESSAGE, is_restricted
 from .verification import mark_verified, needs_verification
 
 
@@ -103,16 +104,24 @@ class LoginForm(AuthenticationForm):
     error_messages = {
         **AuthenticationForm.error_messages,
         "unverified": "Confirm your email before you log in.",
+        "restricted": RESTRICTED_MESSAGE,
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unverified_user = None
+        self.restricted = False
         self.fields["username"].widget.attrs["placeholder"] = "Your username"
         self.fields["password"].widget.attrs["placeholder"] = "Your password"
 
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
+        # #92: an admin restricted this account.
+        if is_restricted(user):
+            self.restricted = True
+            raise forms.ValidationError(
+                self.error_messages["restricted"], code="restricted"
+            )
         # The password was right, but the sign-up email isn't confirmed yet.
         if needs_verification(user):
             self.unverified_user = user

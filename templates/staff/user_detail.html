@@ -26,10 +26,43 @@
       <div><dt>Email</dt><dd>{{ account.email|default:"—" }}</dd></div>
       <div><dt>Joined</dt><dd>{{ account.date_joined|date:"M j, Y" }}</dd></div>
       <div><dt>Last log in</dt><dd>{{ account.last_login|date:"M j, Y, g:i A"|default:"Never" }}</dd></div>
+      {% if account.status_key == "restricted" %}
+        <div><dt>Restricted</dt><dd>{{ account.account_profile.restricted_at|date:"M j, Y, g:i A" }}</dd></div>
+        {% if account.account_profile.restriction_reason %}
+          <div class="staff-fact-wide"><dt>Reason</dt><dd>{{ account.account_profile.restriction_reason }}</dd></div>
+        {% endif %}
+      {% endif %}
       {% if account.account_profile.neighborhood %}
         <div><dt>Neighborhood</dt><dd>{{ account.account_profile.neighborhood }}</dd></div>
       {% endif %}
     </dl>
+
+    {% if can_restrict %}
+      {# #92 Restrict or Reinstate #}
+      <div class="staff-access">
+        {% if account.status_key == "restricted" %}
+          <div>
+            <h2>Reinstate account</h2>
+            <p class="muted">{{ account.first_name|default:account.username }} will be able to log in and use PawPal again.</p>
+          </div>
+          <form method="post" action="{% url 'staff:reinstate_user' account.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-dark">Reinstate account</button>
+          </form>
+        {% else %}
+          <div>
+            <h2>Restrict account</h2>
+            <p class="muted">{{ account.first_name|default:account.username }} won't be able to log in until you reinstate the account. They're logged out right away{% if caregiver %}, and their profile is hidden from search{% endif %}. Nothing is deleted.</p>
+          </div>
+          <form method="post" action="{% url 'staff:restrict_user' account.pk %}" class="staff-restrict-form">
+            {% csrf_token %}
+            <label class="visually-hidden" for="{{ restrict_form.reason.id_for_label }}">Reason</label>
+            {{ restrict_form.reason }}
+            <button type="submit" class="btn btn-outline-danger">Restrict account</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
   </section>
 
   {% if caregiver %}

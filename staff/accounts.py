@@ -3,6 +3,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
+from accounts.restriction import is_restricted
 from bookings.models import Booking
 from caregivers.search import listed_services
 from pets.models import Pet
@@ -24,11 +25,14 @@ def account_type(user):
 def account_status(user):
     """(key, label) for the status pill.
 
-    Deleted accounts are deactivated (#48); new sign-ups haven't confirmed
-    their email yet until they click the link (#197).
+    Deleted accounts are deactivated (#48); admins can restrict an account
+    (#92); new sign-ups haven't confirmed their email until they click the
+    link (#197).
     """
     if not user.is_active:
         return "deleted", "Deleted"
+    if is_restricted(user):
+        return "restricted", "Restricted"
     profile = getattr(user, "account_profile", None)
     if profile is not None and not profile.email_verified:
         return "unverified", "Email not confirmed"
@@ -95,3 +99,9 @@ def details(user):
         "bookings": bookings[:RECENT_BOOKINGS],
         "booking_count": bookings.count(),
     }
+
+
+def can_restrict(admin, account):
+    """#92: admins can restrict (or reinstate) pet owners and caregivers, but
+    not other admins, themselves or deleted accounts."""
+    return account.is_active and not account.is_staff and account != admin
