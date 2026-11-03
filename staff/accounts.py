@@ -1,6 +1,7 @@
 """How the admin pages describe an account: its type and its status."""
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 PER_PAGE = 25
 
@@ -43,3 +44,18 @@ def all_accounts():
         .objects.select_related("account_profile", "caregiver_profile")
         .order_by("-date_joined", "-pk")
     )
+
+
+def search(accounts, query):
+    """#90: accounts whose name, username or email contains every word typed.
+
+    Case doesn't matter, so "kat w" finds Kat Wongsri.
+    """
+    for word in query.split():
+        accounts = accounts.filter(
+            Q(username__icontains=word)
+            | Q(email__icontains=word)
+            | Q(first_name__icontains=word)
+            | Q(last_name__icontains=word)
+        )
+    return accounts
