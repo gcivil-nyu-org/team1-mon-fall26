@@ -26,6 +26,75 @@
       <div><dt>Email</dt><dd>{{ account.email|default:"—" }}</dd></div>
       <div><dt>Joined</dt><dd>{{ account.date_joined|date:"M j, Y" }}</dd></div>
       <div><dt>Last log in</dt><dd>{{ account.last_login|date:"M j, Y, g:i A"|default:"Never" }}</dd></div>
+      {% if account.account_profile.neighborhood %}
+        <div><dt>Neighborhood</dt><dd>{{ account.account_profile.neighborhood }}</dd></div>
+      {% endif %}
     </dl>
+  </section>
+
+  {% if caregiver %}
+    <section class="card staff-section">
+      <div class="staff-section-header">
+        <h2>Caregiver profile</h2>
+        <a class="text-link" href="{% url 'caregiver' caregiver.pk %}">View public profile <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <dl class="staff-facts">
+        <div><dt>Name on profile</dt><dd>{{ caregiver.name }}</dd></div>
+        <div><dt>Area</dt><dd>{{ caregiver.neighborhood|default:caregiver.service_area }}</dd></div>
+        <div><dt>Experience</dt><dd>{{ caregiver.years_of_experience }} year{{ caregiver.years_of_experience|pluralize }}</dd></div>
+        <div><dt>New bookings</dt><dd>{% if caregiver.accepting_new_bookings %}Accepting{% else %}Not accepting{% endif %}</dd></div>
+      </dl>
+      <h3>Services</h3>
+      {% if services %}
+        <ul class="tags staff-services">
+          {% for offer in services %}<li class="tag">{{ offer.service_type.name }}{% if offer.price is not None %} · ${{ offer.price }} {{ offer.get_price_unit_display|lower }}{% endif %}</li>{% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No services listed.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if pets or account.type_label == "Pet owner" %}
+    <section class="card staff-section">
+      <h2>Pets</h2>
+      {% if pets %}
+        <ul class="staff-items">
+          {% for pet in pets %}
+            <li class="staff-item{% if pet.deleted_at %} is-deleted{% endif %}">
+              {% include "bookings/partials/pet_avatar.html" with classes="booking-avatar" %}
+              <span>
+                <strong>{{ pet.name }}</strong>
+                <span class="muted">{{ pet.pet_type.name }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.age_display %} · {{ pet.age_display }}{% endif %}</span>
+              </span>
+              {% if pet.deleted_at %}<span class="tag">Deleted {{ pet.deleted_at|date:"M j, Y" }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No pet profiles.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <section class="card staff-section">
+    <h2>Bookings</h2>
+    {% if bookings %}
+      {% if booking_count > bookings|length %}<p class="muted">The {{ bookings|length }} most recent of {{ booking_count }}.</p>{% endif %}
+      <ul class="staff-items">
+        {% for booking in bookings %}
+          <li class="staff-item">
+            {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
+            <span>
+              <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+              <span class="muted">{% if booking.owner_id == account.pk %}Caregiver: {{ booking.caregiver.name }}{% else %}Owner: {{ booking.owner.get_full_name|default:booking.owner.username }}{% endif %} · {{ booking.start_time|date:"D, M j, Y, g:i A" }}</span>
+            </span>
+            {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No bookings yet.</p>
+    {% endif %}
   </section>
 {% endblock %}

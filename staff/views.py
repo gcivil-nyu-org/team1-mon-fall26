@@ -1,4 +1,5 @@
-"""Admin pages for PawPal accounts (#89 View User Accounts, #90 Search)."""
+"""Admin pages for PawPal accounts (#89 View User Accounts, #90 Search,
+#91 View User Account Details)."""
 
 from functools import wraps
 
@@ -7,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 
-from .accounts import PER_PAGE, all_accounts, describe, search
+from .accounts import PER_PAGE, all_accounts, describe, details, search
 
 
 def staff_required(view):
@@ -36,4 +37,8 @@ def user_list(request):
 @staff_required
 def user_detail(request, pk):
     account = describe(get_object_or_404(all_accounts(), pk=pk))
-    return render(request, "staff/user_detail.html", {"account": account})
+    return render(
+        request,
+        "staff/user_detail.html",
+        {"account": account, **details(account)},
+    )

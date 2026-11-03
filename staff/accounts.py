@@ -3,7 +3,12 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
+from bookings.models import Booking
+from caregivers.search import listed_services
+from pets.models import Pet
+
 PER_PAGE = 25
+RECENT_BOOKINGS = 10
 
 
 def account_type(user):
@@ -59,3 +64,34 @@ def search(accounts, query):
             | Q(last_name__icontains=word)
         )
     return accounts
+
+
+def details(user):
+    """#91: what the account page shows besides the basics.
+
+    Pets (a deleted pet is listed but marked), the caregiver profile and its
+    services, and the latest bookings the account took part in, either as
+    the pet owner or as the caregiver.
+    """
+    caregiver = getattr(user, "caregiver_profile", None)
+    bookings = (
+        Booking.objects.filter(Q(owner=user) | Q(caregiver__user=user))
+        .select_related("owner", "pet", "caregiver", "service_type")
+        .order_by("-start_time", "-pk")
+    )
+    return {
+        "pets": Pet.objects.filter(owner=user)
+        .select_related("pet_type")
+        .order_by("deleted_at", "name"),
+        "caregiver": caregiver,
+        "services": (
+            listed_services()
+            .filter(caregiver=caregiver)
+            .select_related("service_type")
+            .order_by("service_type__name")
+            if caregiver
+            else []
+        ),
+        "bookings": bookings[:RECENT_BOOKINGS],
+        "booking_count": bookings.count(),
+    }
