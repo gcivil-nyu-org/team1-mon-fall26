@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Users · PawPal admin{% endblock %}
+
+{% block main_class %}page page-staff{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}">
+
+  <div class="staff-header">
+    <div>
+      <h1>Users</h1>
+      <p class="muted">{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} on PawPal</p>
+    </div>
+  </div>
+
+  {% if page.object_list %}
+    <div class="card staff-list">
+      <div class="staff-row staff-row-head" aria-hidden="true">
+        <span>Account</span>
+        <span>Email</span>
+        <span>Type</span>
+        <span>Status</span>
+        <span>Joined</span>
+      </div>
+      <ul class="staff-rows">
+        {% for account in page %}
+          <li>
+            <a class="staff-row" href="{% url 'staff:user_detail' account.pk %}">
+              <span class="staff-row-account">
+                {% include "staff/partials/account_avatar.html" %}
+                <span>
+                  <strong>{{ account.get_full_name|default:account.username }}</strong>
+                  <span class="muted">@{{ account.username }}</span>
+                </span>
+              </span>
+              <span class="staff-row-email">{{ account.email|default:"—" }}</span>
+              <span><span class="tag">{{ account.type_label }}</span></span>
+              <span>{% include "staff/partials/account_status.html" %}</span>
+              <span class="muted">{{ account.date_joined|date:"M j, Y" }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if page.has_other_pages %}
+      <nav class="staff-pages" aria-label="Pages">
+        {% if page.has_previous %}<a class="btn btn-outline btn-small" href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="btn btn-outline btn-small" href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="card empty-state">
+      <h2>No accounts yet</h2>
+      <p class="muted">Accounts appear here once people sign up.</p>
+    </div>
+  {% endif %}
+{% endblock %}

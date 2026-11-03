@@ -1,0 +1,1 @@
+<span class="staff-avatar staff-avatar-{{ account.type_label|slugify }}{% if large %} staff-avatar-large{% endif %}" aria-hidden="true">{% if account.first_name %}{{ account.first_name|first|upper }}{{ account.last_name|first|upper }}{% else %}{{ account.username|slice:":2"|upper }}{% endif %}</span>

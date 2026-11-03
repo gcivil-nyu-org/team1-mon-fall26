@@ -1,0 +1,94 @@
+/* Admin pages (/manage/): Users list and account details.
+   No Figma design yet, so these reuse the site's cards, tags and status pills. */
+
+.page-staff { max-width: 1080px; }
+
+.staff-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.staff-header h1 { font-size: 36px; line-height: 1.1; margin-bottom: 4px; }
+
+/* ---------- List ---------- */
+
+.staff-list { padding: 8px; }
+.staff-rows { list-style: none; margin: 0; padding: 0; }
+
+.staff-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 2fr) 110px 170px 110px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+a.staff-row:hover { background: #fdf3ee; }
+
+.staff-row-head { padding-top: 8px; padding-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.staff-row-account { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.staff-row-account > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.staff-row-account strong,
+.staff-row-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staff-row-account .muted { font-size: 13px; }
+
+.staff-pages { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; font-size: 14px; }
+
+/* ---------- Avatar ---------- */
+
+.staff-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: #7a3b12;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.staff-avatar-caregiver { background: var(--blue-soft); color: #1f4e79; }
+.staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
+.staff-avatar-large { width: 64px; height: 64px; font-size: 22px; }
+
+/* ---------- Status ---------- */
+
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.account-status-active { background: var(--success-bg); color: var(--success-ink); }
+.account-status-unverified { background: #ffe9b8; color: #6b4500; }
+.account-status-deleted { background: #efe9e6; color: #5a4038; }
+
+/* ---------- Account details ---------- */
+
+.staff-account { padding: 26px; }
+.staff-account-header { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+.staff-account-header h1 { font-size: 30px; line-height: 1.15; }
+.staff-account-header .account-status { margin-left: auto; }
+
+.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 0; }
+.staff-facts > div { padding: 12px 14px; border-radius: 18px; background: #fbf4f0; }
+.staff-facts dt { color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.staff-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .staff-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .staff-row-head { display: none; }
+  .staff-row > span:nth-child(2),
+  .staff-row > span:nth-child(3),
+  .staff-row > span:nth-child(5) { display: none; }
+  .staff-account-header { flex-wrap: wrap; }
+  .staff-account-header .account-status { margin-left: 0; }
+}
