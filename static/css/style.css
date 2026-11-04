@@ -3542,3 +3542,58 @@ img.pet-initial-large {
   line-height: 1;
   vertical-align: 1px;
 }
+
+
+/* My requests: Bookings / Care posts */
+
+.requests-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.requests-page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.requests-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+    margin-bottom: 22px;
+    background: #f3e8e3;
+    border-radius: 999px;
+}
+
+.requests-toggle-link {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: #3c3330;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.15s ease;
+}
+
+.requests-toggle-link:hover {
+    background: #fff8f5;
+}
+
+.requests-toggle-link.active {
+    background: #ffffff;
+    color: #211e1e;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 600px) {
+    .requests-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

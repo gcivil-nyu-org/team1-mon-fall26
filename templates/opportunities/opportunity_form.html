@@ -1,485 +1,1008 @@
 
+
 {% extends "base.html" %}
 
+
+
 {% block title %}New care post · PawPal{% endblock %}
+
 {% block main_class %}page page-my-requests{% endblock %}
 
+
+
 {% block content %}
+
 <style>
+
   .post-form-page {
+
     max-width: 650px;
+
     margin: 0 auto;
+
   }
+
+
 
   .post-form-back {
+
     display: inline-block;
+
     margin-bottom: 14px;
+
     color: #55423a;
+
     font-size: 12px;
+
     text-decoration: none;
+
   }
+
+
 
   .post-form-page h1 {
+
     margin: 0 0 14px;
+
     font-size: 29px;
+
     line-height: 1.2;
+
   }
+
+
 
   .post-form-card {
+
     padding: 26px;
+
     background: white;
+
     border: 1px solid #f0dcd2;
+
     border-radius: 20px;
+
     box-shadow: 0 3px 0 #f0dcd2;
+
   }
+
+
 
   .post-form-field {
+
     margin-bottom: 22px;
+
   }
+
+
 
   .post-form-label {
+
     display: block;
+
     margin-bottom: 10px;
+
     font-size: 12px;
+
     font-weight: 700;
+
   }
+
+
 
   .post-form-required {
+
     color: #d92d20;
+
   }
+
+
 
   .post-form-pets {
+
     display: grid;
+
     grid-template-columns: repeat(3, minmax(0, 1fr));
+
     gap: 9px;
+
   }
+
+
 
   .post-form-choice {
+
     position: relative;
+
     cursor: pointer;
+
     min-width: 0;
+
   }
+
+
 
   .post-form-choice input {
+
     position: absolute;
+
     opacity: 0;
+
     width: 1px;
+
     height: 1px;
+
   }
+
+
 
   .post-form-pet-card {
+
     display: flex;
+
     align-items: center;
+
     gap: 9px;
+
     padding: 10px;
+
     min-height: 54px;
+
     border: 1px solid #e9cbbd;
+
     border-radius: 12px;
+
     background: white;
+
     transition: border-color 0.15s, background 0.15s;
+
   }
+
+
 
   .post-form-choice input:checked + .post-form-pet-card {
+
     border: 2px solid #211e1e;
+
     background: #faf4f1;
+
   }
 
+
+
   .post-form-choice input:focus-visible + .post-form-pet-card,
+
   .post-form-choice input:focus-visible + .post-form-service-pill {
+
     outline: 3px solid #e9a98d;
+
     outline-offset: 3px;
+
   }
+
+
 
   .post-form-avatar {
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
+
     width: 35px;
+
     height: 35px;
+
     flex-shrink: 0;
+
     border-radius: 50%;
+
     background: #fac9dc;
+
     color: #923b5c;
+
     font-size: 14px;
+
     font-weight: 700;
+
   }
+
+
 
   .post-form-avatar.bubble-mint {
+
     background: #bdebd6;
+
     color: #246b50;
+
   }
+
+
 
   .post-form-avatar.bubble-yellow {
+
     background: #ffe3a1;
+
     color: #835a0d;
+
   }
+
+
 
   .post-form-avatar.bubble-blue {
+
     background: #d8eafa;
+
     color: #285b85;
+
   }
+
+
 
   .post-form-avatar.bubble-peach {
+
     background: #ffd8bd;
+
     color: #95532d;
+
   }
+
+
 
   .post-form-avatar.bubble-lavender {
+
     background: #e5d7fa;
+
     color: #62458b;
+
   }
+
+
 
   .post-form-avatar.bubble-pink {
+
     background: #fac9dc;
+
     color: #923b5c;
+
   }
+
+
 
   .post-form-pet-info {
+
     min-width: 0;
+
   }
+
+
 
   .post-form-pet-info strong {
+
     display: block;
+
     font-size: 12px;
+
   }
+
+
 
   .post-form-pet-info small {
+
     display: block;
+
     margin-top: 3px;
+
     font-size: 10px;
+
     color: #847a76;
+
   }
+
+
 
   .post-form-services {
+
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 8px;
+
   }
+
+
 
   .post-form-service-pill {
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
+
     padding: 9px 13px;
+
     border: 1px solid #e9cbbd;
+
     border-radius: 999px;
+
     background: white;
+
     font-size: 12px;
+
     transition: background 0.15s;
+
   }
 
+
+
   .post-form-choice input:checked + .post-form-service-pill {
+
     background: #211e1e;
+
     color: white;
+
     border-color: #211e1e;
+
   }
+
+
 
   .post-form-datetime-grid {
+
     display: grid;
+
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
     gap: 14px;
+
   }
+
+
 
   .post-form-input {
+
     width: 100%;
+
     box-sizing: border-box;
+
     padding: 12px;
+
     border: 1px solid #e9cbbd;
+
     border-radius: 10px;
+
     background: #fffdfb;
+
     color: #211e1e;
+
     font: inherit;
+
     font-size: 12px;
+
   }
+
+
 
   .post-form-input:focus {
+
     outline: 2px solid #e9a98d;
+
     outline-offset: 1px;
+
   }
+
+
 
   textarea.post-form-input {
+
     min-height: 95px;
+
     resize: vertical;
+
   }
+
+
 
   .post-form-optional {
+
     float: right;
+
     padding: 3px 8px;
+
     border-radius: 999px;
+
     background: #f3e8e3;
+
     color: #847a76;
+
     font-size: 10px;
+
     font-weight: 400;
+
   }
+
+
 
   .post-form-error-banner {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
+
     padding: 14px;
+
     margin-bottom: 12px;
+
     border-radius: 12px;
+
     background: #ffe4e1;
+
     color: #b42318;
+
     font-size: 12px;
+
     font-weight: 600;
+
   }
+
+
 
   .post-form-error {
+
     margin-top: 6px;
+
     color: #d92d20;
+
     font-size: 11px;
+
   }
+
+
 
   .post-form-field.has-error .post-form-input,
+
   .post-form-field.has-error .post-form-pet-card,
+
   .post-form-field.has-error .post-form-service-pill {
+
     border-color: #d92d20;
+
   }
+
+
 
   .post-form-actions {
+
     display: flex;
+
     justify-content: flex-end;
+
     align-items: center;
+
     gap: 10px;
+
     margin-top: 6px;
+
   }
+
+
 
   .post-form-cancel {
+
     display: inline-block;
+
     padding: 11px 19px;
+
     border: 1px solid #e9cbbd;
+
     border-radius: 999px;
+
     text-decoration: none;
+
     color: #211e1e;
+
     font-size: 12px;
+
   }
+
+
 
   @media (max-width: 600px) {
+
     .post-form-card {
+
       padding: 18px;
+
     }
+
+
 
     .post-form-pets {
+
       grid-template-columns: 1fr;
+
     }
+
+
 
     .post-form-datetime-grid {
+
       grid-template-columns: 1fr;
+
     }
+
   }
 
+
+
   /* PawPal Figma finishing details — create form */
+
   .post-form-choice input:checked + .post-form-pet-card {
+
     background: #fbf0eb;
+
     border: 2px solid #211e1e;
+
     box-shadow: 0 3px 0 #211e1e;
+
     transform: translateY(-1px);
+
   }
+
   .post-form-choice input:checked + .post-form-service-pill {
+
     background: #211e1e;
+
     color: #fff;
+
     border-color: #211e1e;
+
     box-shadow: 0 3px 0 #f2a17e;
+
     transform: translateY(-1px);
+
   }
+
   .post-form-pet-card, .post-form-service-pill {
+
     transition: background-color .15s ease, border-color .15s ease,
+
                 box-shadow .15s ease, transform .15s ease;
+
   }
+
   .post-form-choice:hover input:not(:checked) + .post-form-pet-card,
+
   .post-form-choice:hover input:not(:checked) + .post-form-service-pill {
+
     border-color: #d7a995;
+
     background: #fffaf7;
+
   }
+
   .post-form-choice input:focus-visible + .post-form-pet-card,
+
   .post-form-choice input:focus-visible + .post-form-service-pill {
+
     outline: 3px solid #e9a98d;
+
     outline-offset: 3px;
+
   }
+
   .post-form-choice:active .post-form-pet-card,
+
   .post-form-choice:active .post-form-service-pill {
+
     transform: translateY(1px);
+
     box-shadow: none;
+
   }
+
   .post-form-card { box-shadow: 0 4px 0 #f0dcd2; }
+
   .post-form-cancel { background: #fff; box-shadow: 0 2px 0 #f0dcd2; }
+
   .post-form-cancel:hover { background: #faf6f3; }
+
   .post-form-actions .btn-dark { box-shadow: 0 3px 0 #f2a17e; }
+
   .post-form-input { transition: border-color .15s ease, box-shadow .15s ease; }
+
   .post-form-input:focus { border-color: #d7a995; box-shadow: 0 0 0 2px #f9e9e0; }
+
   @media (prefers-reduced-motion: reduce) {
+
     .post-form-pet-card, .post-form-service-pill, .post-form-input { transition: none; }
+
   }
+
+
+/* Page-specific sizing: match the Find Pets marketplace */
+main.page-my-requests:has(.care-posts-page),
+main.page-my-requests:has(.post-form-page) {
+  width: 100%; max-width: 1240px; box-sizing: border-box;
+  padding-left: 28px; padding-right: 28px;
+}
+
+.post-form-page { max-width: 880px; margin: 24px auto 70px; }
+.post-form-back { font-size: 15px; margin-bottom: 18px; }
+.post-form-page h1 { font-size: 40px; margin-bottom: 22px; letter-spacing: -.7px; }
+.post-form-card { padding: 34px 38px; border-radius: 24px; }
+.post-form-field { margin-bottom: 26px; }
+.post-form-label { font-size: 15px; margin-bottom: 12px; }
+.post-form-pets { gap: 12px; }
+.post-form-pet-card { padding: 14px; min-height: 72px; gap: 12px; border-radius: 15px; }
+.post-form-avatar { width: 46px; height: 46px; font-size: 18px; }
+.post-form-pet-info strong { font-size: 15px; }
+.post-form-pet-info small { font-size: 13px; }
+.post-form-services { gap: 10px; }
+.post-form-service-pill { padding: 12px 17px; font-size: 14px; }
+.post-form-datetime-grid { gap: 18px; }
+.post-form-input { padding: 15px; font-size: 15px; border-radius: 12px; }
+textarea.post-form-input { min-height: 120px; }
+.post-form-optional { font-size: 12px; }
+.post-form-error-banner { font-size: 14px; }
+.post-form-error { font-size: 13px; }
+.post-form-actions { margin-top: 12px; gap: 14px; }
+.post-form-cancel, .post-form-actions .btn { padding: 13px 24px; font-size: 15px; }
+@media (max-width: 700px) {
+  main.page-my-requests:has(.post-form-page) { padding-left: 16px; padding-right: 16px; }
+  .post-form-page { margin-top: 15px; }
+  .post-form-page h1 { font-size: 32px; }
+  .post-form-card { padding: 22px; }
+  .post-form-pets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .post-form-pets, .post-form-datetime-grid { grid-template-columns: 1fr; }
+}
 </style>
+
+
 
 <div class="post-form-page">
 
+
+
   <a class="post-form-back"
+
      href="{% url 'opportunities:list' %}">
+
     ‹ My requests
+
   </a>
+
+
 
   <h1>New care post</h1>
 
+
+
   {% if form.errors %}
+
     <div class="post-form-error-banner" role="alert">
+
       <span aria-hidden="true">!</span>
+
       <span>
+
         Almost there. Please check the highlighted fields.
+
       </span>
+
     </div>
+
   {% endif %}
 
+
+
   <form method="post" class="post-form-card" novalidate>
+
     {% csrf_token %}
 
+
+
     {% if form.non_field_errors %}
+
       <div class="post-form-error-banner" role="alert">
+
         {{ form.non_field_errors }}
+
       </div>
+
     {% endif %}
 
+
+
     <div class="post-form-field {% if form.pet.errors %}has-error{% endif %}">
+
       <label class="post-form-label">
+
         Pet <span class="post-form-required">*</span>
+
       </label>
+
+
 
       <div class="post-form-pets">
+
         {% for pet in form.fields.pet.queryset %}
+
           <label class="post-form-choice">
+
             <input type="radio"
+
                    name="pet"
+
                    value="{{ pet.pk }}"
+
                    {% if form.pet.value|stringformat:"s" == pet.pk|stringformat:"s" %}checked{% endif %}
+
                    required>
+
+
 
             <span class="post-form-pet-card">
+
               <span class="post-form-avatar bubble-{{ pet.theme }}">
+
                 {{ pet.name|slice:":1" }}
+
               </span>
+
+
 
               <span class="post-form-pet-info">
+
                 <strong>{{ pet.name }}</strong>
+
                 <small>{{ pet.pet_type.name }}</small>
+
               </span>
+
             </span>
+
           </label>
+
         {% endfor %}
+
       </div>
+
+
 
       {% for error in form.pet.errors %}
+
         <div class="post-form-error">{{ error }}</div>
+
       {% endfor %}
+
     </div>
+
+
 
     <div class="post-form-field {% if form.service_type.errors %}has-error{% endif %}">
+
       <label class="post-form-label">
+
         Service <span class="post-form-required">*</span>
+
       </label>
 
+
+
       <div class="post-form-services">
+
         {% for service in form.fields.service_type.queryset %}
+
           <label class="post-form-choice">
+
             <input type="radio"
+
                    name="service_type"
+
                    value="{{ service.pk }}"
+
                    {% if form.service_type.value|stringformat:"s" == service.pk|stringformat:"s" %}checked{% endif %}
+
                    required>
 
+
+
             <span class="post-form-service-pill">
+
               {{ service.name }}
+
             </span>
+
           </label>
+
         {% endfor %}
+
       </div>
 
+
+
       {% for error in form.service_type.errors %}
+
         <div class="post-form-error">{{ error }}</div>
+
       {% endfor %}
+
     </div>
+
+
 
     <div class="post-form-datetime-grid">
 
+
+
       <div class="post-form-field {% if form.start_date.errors %}has-error{% endif %}">
+
         <label class="post-form-label" for="{{ form.start_date.id_for_label }}">
+
           Start date <span class="post-form-required">*</span>
+
         </label>
+
         {{ form.start_date }}
+
         {% for error in form.start_date.errors %}
+
           <div class="post-form-error">{{ error }}</div>
+
         {% endfor %}
+
       </div>
+
+
 
       <div class="post-form-field {% if form.start_clock.errors %}has-error{% endif %}">
+
         <label class="post-form-label" for="{{ form.start_clock.id_for_label }}">
+
           Start time <span class="post-form-required">*</span>
+
         </label>
+
         {{ form.start_clock }}
+
         {% for error in form.start_clock.errors %}
+
           <div class="post-form-error">{{ error }}</div>
+
         {% endfor %}
+
       </div>
+
+
 
       <div class="post-form-field {% if form.end_date.errors %}has-error{% endif %}">
+
         <label class="post-form-label" for="{{ form.end_date.id_for_label }}">
+
           End date <span class="post-form-required">*</span>
+
         </label>
+
         {{ form.end_date }}
+
         {% for error in form.end_date.errors %}
+
           <div class="post-form-error">{{ error }}</div>
+
         {% endfor %}
+
       </div>
 
+
+
       <div class="post-form-field {% if form.end_clock.errors %}has-error{% endif %}">
+
         <label class="post-form-label" for="{{ form.end_clock.id_for_label }}">
+
           End time <span class="post-form-required">*</span>
+
         </label>
+
         {{ form.end_clock }}
+
         {% for error in form.end_clock.errors %}
+
           <div class="post-form-error">{{ error }}</div>
+
         {% endfor %}
+
       </div>
+
+
 
     </div>
 
+
+
     <div class="post-form-field {% if form.location.errors %}has-error{% endif %}">
+
       <label class="post-form-label" for="{{ form.location.id_for_label }}">
+
         Location <span class="post-form-required">*</span>
+
       </label>
+
+
 
       {{ form.location }}
 
+
+
       {% for error in form.location.errors %}
+
         <div class="post-form-error">{{ error }}</div>
+
       {% endfor %}
+
     </div>
 
+
+
     <div class="post-form-field {% if form.notes.errors %}has-error{% endif %}">
+
       <label class="post-form-label" for="{{ form.notes.id_for_label }}">
+
         Care notes
+
         <span class="post-form-optional">Optional</span>
+
       </label>
+
+
 
       {{ form.notes }}
 
+
+
       {% for error in form.notes.errors %}
+
         <div class="post-form-error">{{ error }}</div>
+
       {% endfor %}
+
     </div>
+
+
 
     <div class="post-form-actions">
+
       <a class="post-form-cancel"
+
          href="{% url 'opportunities:list' %}">
+
         Cancel
+
       </a>
 
+
+
       <button type="submit" class="btn btn-dark">
+
         Post
+
       </button>
+
     </div>
 
+
+
   </form>
+
 </div>
+
+
 
 {% endblock %}

@@ -53,3 +53,32 @@ class CareOpportunity(models.Model):
 
     def __str__(self):
         return f"Care Opportunity #{self.pk} ({self.get_status_display()})"
+
+
+class CareOpportunityInterest(models.Model):
+    """One caregiver's current or previously withdrawn interest in a care post."""
+
+    opportunity = models.ForeignKey(
+        CareOpportunity, on_delete=models.CASCADE, related_name="interests"
+    )
+    caregiver = models.ForeignKey(
+        "caregivers.CaregiverProfile",
+        on_delete=models.CASCADE,
+        related_name="opportunity_interests",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["opportunity", "caregiver"],
+                name="unique_caregiver_opportunity_interest",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.caregiver_id} interested in {self.opportunity_id}: {self.is_active}"
+        )
