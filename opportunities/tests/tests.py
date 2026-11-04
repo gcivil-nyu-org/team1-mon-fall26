@@ -1,5 +1,3 @@
-"""Tests for the pet-owner Care Opportunities workflow."""
-
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -11,7 +9,7 @@ from caregivers.models import CaregiverProfile, ServiceType
 from pets.models import Pet, PetType
 
 from opportunities.forms import CareOpportunityForm
-from opportunities.models import CareOpportunity
+from opportunities.models import CareOpportunity, CareOpportunityInterest
 
 
 class CareOpportunityTests(TestCase):
@@ -316,3 +314,301 @@ class CareOpportunityTests(TestCase):
         self.assertEqual(self.client.post(reopen_url).status_code, 302)
         self.opportunity.refresh_from_db()
         self.assertEqual(self.opportunity.status, CareOpportunity.Status.OPEN)
+
+
+class CareOpportunityBrowseTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+
+        cls.owner = User.objects.create_user(
+            username="browse_owner", password="test-pass-123"
+        )
+        cls.caregiver_user = User.objects.create_user(
+            username="browse_caregiver", password="test-pass-123"
+        )
+        cls.pet_type = PetType.objects.get_or_create(name="Rabbit")[0]
+        cls.service = ServiceType.objects.get_or_create(name="Feeding")[0]
+        cls.pet = Pet.objects.create(
+            owner=cls.owner, name="Pepper", pet_type=cls.pet_type
+        )
+        cls.caregiver_profile = CaregiverProfile.objects.create(
+            user=cls.caregiver_user,
+            name="Caregiver Test",
+            service_area="Brooklyn",
+        )
+        start = timezone.now() + timedelta(days=5)
+        cls.opportunity = CareOpportunity.objects.create(
+            owner=cls.owner,
+            pet=cls.pet,
+            service_type=cls.service,
+            start_time=start,
+            end_time=start + timedelta(hours=2),
+            location="Park Slope",
+        )
+
+    def test_caregiver_can_browse_open_opportunities(self):
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.opportunity, response.context["posts"])
+        self.assertEqual(response.context["selected"], self.opportunity)
+
+    def test_filter_opportunities_by_service(self):
+        other_service, _ = ServiceType.objects.get_or_create(name="Walking")
+        other_post = CareOpportunity.objects.create(
+            owner=self.owner,
+            pet=self.pet,
+            service_type=other_service,
+            start_time=self.opportunity.start_time,
+            end_time=self.opportunity.end_time,
+            location="Queens",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:browse"), {"service": self.service.pk}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["posts"], [self.opportunity])
+        self.assertNotIn(other_post, response.context["posts"])
+
+    def test_filter_opportunities_by_pet_type(self):
+        other_type, _ = PetType.objects.get_or_create(name="Dog")
+        other_pet = Pet.objects.create(
+            owner=self.owner, name="Buddy", pet_type=other_type
+        )
+        other_post = CareOpportunity.objects.create(
+            owner=self.owner,
+            pet=other_pet,
+            service_type=self.service,
+            start_time=self.opportunity.start_time,
+            end_time=self.opportunity.end_time,
+            location="Queens",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:browse"), {"pet_type": self.pet_type.pk}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["posts"], [self.opportunity])
+        self.assertNotIn(other_post, response.context["posts"])
+
+    def test_combined_filters_and_selected_post(self):
+        second = CareOpportunity.objects.create(
+            owner=self.owner,
+            pet=self.pet,
+            service_type=self.service,
+            start_time=self.opportunity.start_time + timedelta(days=1),
+            end_time=self.opportunity.end_time + timedelta(days=1),
+            location="Queens",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:browse"),
+            {
+                "service": str(self.service.pk),
+                "pet_type": str(self.pet_type.pk),
+                "post": str(second.pk),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["posts"]), 2)
+        self.assertEqual(response.context["selected"], second)
+        self.assertEqual(response.context["selected_service"], str(self.service.pk))
+        self.assertEqual(response.context["selected_pet_type"], str(self.pet_type.pk))
+
+    def test_invalid_filters_are_ignored_and_unknown_selection_falls_back(self):
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:browse"),
+            {
+                "service": "not-a-number",
+                "pet_type": "nope",
+                "post": "999999",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["posts"], [self.opportunity])
+        self.assertEqual(response.context["selected"], self.opportunity)
+
+    def test_browse_hides_closed_and_deleted_pet_posts(self):
+        closed = CareOpportunity.objects.create(
+            owner=self.owner,
+            pet=self.pet,
+            service_type=self.service,
+            start_time=self.opportunity.start_time,
+            end_time=self.opportunity.end_time,
+            location="Closed",
+            status=CareOpportunity.Status.CLOSED,
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertNotIn(closed, response.context["posts"])
+        self.pet.deleted_at = timezone.now()
+        self.pet.save(update_fields=["deleted_at"])
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["posts"], [])
+        self.assertIsNone(response.context["selected"])
+
+    def test_browse_excludes_own_posts(self):
+        own_pet = Pet.objects.create(
+            owner=self.caregiver_user,
+            name="My Pet",
+            pet_type=self.pet_type,
+        )
+        own_post = CareOpportunity.objects.create(
+            owner=self.caregiver_user,
+            pet=own_pet,
+            service_type=self.service,
+            start_time=self.opportunity.start_time,
+            end_time=self.opportunity.end_time,
+            location="Home",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertNotIn(own_post, response.context["posts"])
+        self.assertIn(self.opportunity, response.context["posts"])
+
+    def test_browse_requires_login_and_caregiver_profile(self):
+        url = reverse("opportunities:browse")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("next=", response.url)
+        self.client.force_login(self.owner)
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse("opportunities:list"))
+
+    def test_interest_requires_post_and_login(self):
+        url = reverse("opportunities:interest", args=[self.opportunity.pk])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("next=", response.url)
+        self.client.force_login(self.caregiver_user)
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_caregiver_can_express_interest(self):
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("interest=added", response.url)
+        interest = CareOpportunityInterest.objects.get(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+        )
+        self.assertTrue(interest.is_active)
+        browse = self.client.get(reverse("opportunities:browse"))
+        self.assertTrue(browse.context["posts"][0].caregiver_interested)
+
+    def test_repeated_interest_does_not_duplicate_record(self):
+        self.client.force_login(self.caregiver_user)
+        url = reverse("opportunities:interest", args=[self.opportunity.pk])
+        self.client.post(url)
+        self.client.post(url)
+        self.assertEqual(CareOpportunityInterest.objects.count(), 1)
+        self.assertTrue(CareOpportunityInterest.objects.get().is_active)
+
+    def test_withdraw_interest_preserves_record(self):
+        interest = CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=True,
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:withdraw_interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("interest=withdrawn", response.url)
+        interest.refresh_from_db()
+        self.assertFalse(interest.is_active)
+        self.assertEqual(CareOpportunityInterest.objects.count(), 1)
+        browse = self.client.get(reverse("opportunities:browse"))
+        self.assertFalse(browse.context["posts"][0].caregiver_interested)
+
+    def test_reactivate_interest_reuses_record(self):
+        interest = CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=False,
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        interest.refresh_from_db()
+        self.assertTrue(interest.is_active)
+        self.assertEqual(CareOpportunityInterest.objects.count(), 1)
+
+    def test_withdraw_without_existing_interest_is_safe(self):
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:withdraw_interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_interest_actions_require_caregiver_profile(self):
+        self.client.force_login(self.owner)
+        for name in ("interest", "withdraw_interest"):
+            with self.subTest(name=name):
+                response = self.client.post(
+                    reverse(f"opportunities:{name}", args=[self.opportunity.pk])
+                )
+                self.assertRedirects(
+                    response,
+                    reverse("opportunities:browse"),
+                    fetch_redirect_response=False,
+                )
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_cannot_express_interest_in_closed_post(self):
+        self.opportunity.status = CareOpportunity.Status.CLOSED
+        self.opportunity.save(update_fields=["status"])
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_cannot_express_interest_in_deleted_pet_post(self):
+        self.pet.deleted_at = timezone.now()
+        self.pet.save(update_fields=["deleted_at"])
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:interest", args=[self.opportunity.pk])
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_cannot_express_interest_in_own_post(self):
+        own_pet = Pet.objects.create(
+            owner=self.caregiver_user,
+            name="Own Pet",
+            pet_type=self.pet_type,
+        )
+        own_post = CareOpportunity.objects.create(
+            owner=self.caregiver_user,
+            pet=own_pet,
+            service_type=self.service,
+            start_time=self.opportunity.start_time,
+            end_time=self.opportunity.end_time,
+            location="Home",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.post(
+            reverse("opportunities:interest", args=[own_post.pk])
+        )
+        self.assertRedirects(response, reverse("opportunities:browse"))
+        self.assertFalse(CareOpportunityInterest.objects.exists())
+
+    def test_withdraw_is_post_only_and_login_required(self):
+        url = reverse("opportunities:withdraw_interest", args=[self.opportunity.pk])
+        self.assertEqual(self.client.post(url).status_code, 302)
+        self.client.force_login(self.caregiver_user)
+        self.assertEqual(self.client.get(url).status_code, 405)
