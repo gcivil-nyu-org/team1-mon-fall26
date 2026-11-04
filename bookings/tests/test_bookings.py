@@ -421,7 +421,8 @@ class IncomingRequestsViewTests(CaregiverTestData):
         self.client.force_login(self.sitter)
         response = self.client.get(self.url)
         self.assertContains(response, ">Requests</a>")
-        self.assertContains(response, ">My profile</a>")
+        self.assertContains(response, 'class="account-link"')
+        self.assertContains(response, "My profile</a>")
         self.assertContains(response, "Caregiver")
         self.assertNotContains(response, ">My pets</a>")
 
