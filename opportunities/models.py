@@ -41,7 +41,7 @@ class CareOpportunity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ["-created_at"]
         constraints = [
@@ -50,5 +50,6 @@ class CareOpportunity(models.Model):
                 name="opportunity_end_after_start",
             )
         ]
+
     def __str__(self):
         return f"Care Opportunity #{self.pk} ({self.get_status_display()})"

@@ -1,4 +1,3 @@
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,35 +8,49 @@ from .models import CareOpportunity
 from django.urls import reverse
 
 
-def _render_opportunity_list(request, *, selected_id=None, edit_form=None, editing=False):
+def _render_opportunity_list(
+    request, *, selected_id=None, edit_form=None, editing=False
+):
     """Render the owner dashboard, including its optional inline edit form."""
     opportunities = list(
         CareOpportunity.objects.filter(owner=request.user)
         .select_related("pet", "pet__pet_type", "service_type")
         .order_by("-created_at")
     )
-    open_posts = [post for post in opportunities if post.status == CareOpportunity.Status.OPEN]
-    closed_posts = [post for post in opportunities if post.status == CareOpportunity.Status.CLOSED]
+    open_posts = [
+        post for post in opportunities if post.status == CareOpportunity.Status.OPEN
+    ]
+    closed_posts = [
+        post for post in opportunities if post.status == CareOpportunity.Status.CLOSED
+    ]
 
     if selected_id is None:
         selected_id = request.GET.get("post")
-    selected = next((post for post in opportunities if str(post.pk) == str(selected_id)), None)
+    selected = next(
+        (post for post in opportunities if str(post.pk) == str(selected_id)), None
+    )
     if selected is None and opportunities:
         selected = opportunities[0]
 
     if selected and editing and edit_form is None:
-        edit_form = CareOpportunityForm(instance=selected, owner=request.user, lock_pet=True)
+        edit_form = CareOpportunityForm(
+            instance=selected, owner=request.user, lock_pet=True
+        )
 
-    return render(request, "opportunities/opportunity_list.html", {
-        "open_posts": open_posts,
-        "closed_posts": closed_posts,
-        "selected": selected,
-        "editing": bool(selected and editing),
-        "just_closed": request.GET.get("closed") == "1",
-        "just_reopened": request.GET.get("reopened") == "1",
-        "edit_form": edit_form,
-        "active_requests_tab": "care_posts",
-    })
+    return render(
+        request,
+        "opportunities/opportunity_list.html",
+        {
+            "open_posts": open_posts,
+            "closed_posts": closed_posts,
+            "selected": selected,
+            "editing": bool(selected and editing),
+            "just_closed": request.GET.get("closed") == "1",
+            "just_reopened": request.GET.get("reopened") == "1",
+            "edit_form": edit_form,
+            "active_requests_tab": "care_posts",
+        },
+    )
 
 
 @login_required
@@ -108,6 +121,7 @@ def opportunity_created(request, pk):
         },
     )
 
+
 @login_required
 def opportunity_edit(request, pk):
     """Save inline edits, or show the prefilled form in the dashboard."""
@@ -146,10 +160,7 @@ def opportunity_close(request, pk):
             "Your care post has been closed.",
         )
 
-    return redirect(
-        f"{reverse('opportunities:list')}?post={opportunity.pk}&closed=1"
-    )
-
+    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}&closed=1")
 
 
 @login_required

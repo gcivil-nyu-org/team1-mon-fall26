@@ -1,4 +1,3 @@
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -10,30 +9,26 @@ from .models import CareOpportunity
 
 
 class CareOpportunityForm(forms.ModelForm):
-    start_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"})
-    )
-    start_clock = forms.TimeField(
-        widget=forms.TimeInput(attrs={"type": "time"})
-    )
-    end_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"})
-    )
-    end_clock = forms.TimeField(
-        widget=forms.TimeInput(attrs={"type": "time"})
-    )
+    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    start_clock = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
+    end_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    end_clock = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
 
     class Meta:
         model = CareOpportunity
         fields = ["pet", "service_type", "location", "notes"]
         widgets = {
-            "notes": forms.Textarea(attrs={
-                "rows": 4,
-                "placeholder": "Anything your caregiver should know?",
-            }),
-            "location": forms.TextInput(attrs={
-                "placeholder": "Neighborhood, city, or address",
-            }),
+            "notes": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "placeholder": "Anything your caregiver should know?",
+                }
+            ),
+            "location": forms.TextInput(
+                attrs={
+                    "placeholder": "Neighborhood, city, or address",
+                }
+            ),
         }
 
     def __init__(self, *args, owner=None, lock_pet=False, **kwargs):
@@ -46,11 +41,13 @@ class CareOpportunityForm(forms.ModelForm):
         )
         if lock_pet and self.instance.pk:
             # Preserve the original pet even if it is no longer active.
-            self.fields["pet"].queryset = Pet.objects.filter(pk=self.instance.pet_id, owner=owner)
+            self.fields["pet"].queryset = Pet.objects.filter(
+                pk=self.instance.pet_id, owner=owner
+            )
             self.fields["pet"].disabled = True
 
-        self.fields["service_type"].queryset = (
-            ServiceType.objects.all().order_by("name")
+        self.fields["service_type"].queryset = ServiceType.objects.all().order_by(
+            "name"
         )
 
         if self.instance.pk:
@@ -61,8 +58,8 @@ class CareOpportunityForm(forms.ModelForm):
                 if value:
                     local_value = timezone.localtime(value)
                     self.initial[f"{prefix}_date"] = local_value.date()
-                    self.initial[f"{prefix}_clock"] = (
-                        local_value.time().replace(tzinfo=None)
+                    self.initial[f"{prefix}_clock"] = local_value.time().replace(
+                        tzinfo=None
                     )
         for field_name in (
             "location",
@@ -95,14 +92,10 @@ class CareOpportunityForm(forms.ModelForm):
         )
 
         if end <= start:
-            raise ValidationError(
-                "End date and time must be after the start."
-            )
+            raise ValidationError("End date and time must be after the start.")
 
         if start <= timezone.now():
-            raise ValidationError(
-                "The start date and time must be in the future."
-            )
+            raise ValidationError("The start date and time must be in the future.")
 
         cleaned["start_time"] = start
         cleaned["end_time"] = end
