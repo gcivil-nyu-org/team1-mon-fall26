@@ -1,0 +1,107 @@
+"""How the admin pages describe an account: its type and its status."""
+
+from django.contrib.auth import get_user_model
+from django.db.models import Q
+
+from accounts.restriction import is_restricted
+from bookings.models import Booking
+from caregivers.search import listed_services
+from pets.models import Pet
+
+PER_PAGE = 25
+RECENT_BOOKINGS = 10
+
+
+def account_type(user):
+    """Admin, Caregiver or Pet owner (the same rule the site header uses)."""
+    if user.is_staff:
+        return "Admin"
+    profile = getattr(user, "account_profile", None)
+    if hasattr(user, "caregiver_profile") or (profile and profile.role == "caregiver"):
+        return "Caregiver"
+    return "Pet owner"
+
+
+def account_status(user):
+    """(key, label) for the status pill.
+
+    Deleted accounts are deactivated (#48); admins can restrict an account
+    (#92); new sign-ups haven't confirmed their email until they click the
+    link (#197).
+    """
+    if not user.is_active:
+        return "deleted", "Deleted"
+    if is_restricted(user):
+        return "restricted", "Restricted"
+    profile = getattr(user, "account_profile", None)
+    if profile is not None and not profile.email_verified:
+        return "unverified", "Email not confirmed"
+    return "active", "Active"
+
+
+def describe(user):
+    """Attach what the admin pages show to a user."""
+    user.type_label = account_type(user)
+    user.status_key, user.status_label = account_status(user)
+    return user
+
+
+def all_accounts():
+    """Every account, newest first, with what the list needs in one query."""
+    return (
+        get_user_model()
+        .objects.select_related("account_profile", "caregiver_profile")
+        .order_by("-date_joined", "-pk")
+    )
+
+
+def search(accounts, query):
+    """#90: accounts whose name, username or email contains every word typed.
+
+    Case doesn't matter, so "kat w" finds Kat Wongsri.
+    """
+    for word in query.split():
+        accounts = accounts.filter(
+            Q(username__icontains=word)
+            | Q(email__icontains=word)
+            | Q(first_name__icontains=word)
+            | Q(last_name__icontains=word)
+        )
+    return accounts
+
+
+def details(user):
+    """#91: what the account page shows besides the basics.
+
+    Pets (a deleted pet is listed but marked), the caregiver profile and its
+    services, and the latest bookings the account took part in, either as
+    the pet owner or as the caregiver.
+    """
+    caregiver = getattr(user, "caregiver_profile", None)
+    bookings = (
+        Booking.objects.filter(Q(owner=user) | Q(caregiver__user=user))
+        .select_related("owner", "pet", "caregiver", "service_type")
+        .order_by("-start_time", "-pk")
+    )
+    return {
+        "pets": Pet.objects.filter(owner=user)
+        .select_related("pet_type")
+        .order_by("deleted_at", "name"),
+        "caregiver": caregiver,
+        "services": (
+            listed_services()
+            .filter(caregiver=caregiver)
+            .select_related("service_type")
+            .order_by("service_type__name")
+            if caregiver
+            else []
+        ),
+        "bookings": bookings[:RECENT_BOOKINGS],
+        "booking_count": bookings.count(),
+    }
+
+
+def can_restrict(admin, account):
+    """#92: admins can restrict (or reinstate) pet owners and caregivers, but
+    not other admins, themselves or deleted accounts."""
+    return account.is_active and not account.is_staff and account != admin

@@ -24,8 +24,12 @@
     </a>
 
     <nav class="main-nav" aria-label="Main">
+      {% if user.is_staff %}
+        {# Admins manage accounts (#89-#92). #}
+        <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
-      {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
+        {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
+        {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
         <a href="{% url 'bookings:caregiver_requests' %}" class="{% if section == 'bookings' %}active{% endif %}">Requests</a>
         <a href="{% url 'opportunities:browse' %}" class="{% if section == 'opportunities' and request.resolver_match.url_name == 'browse' %}active{% endif %}">Find pets</a>
         {% if user.caregiver_profile %}
@@ -44,20 +48,20 @@
       {% if user.is_authenticated %}
         <details class="account-menu">
           <summary>
-            <span class="account-role">{% if user.caregiver_profile or user.account_profile.role == "caregiver" %}Caregiver{% else %}Pet owner{% endif %}</span>
+            <span class="account-role">{% if user.is_staff %}Admin{% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}Caregiver{% else %}Pet owner{% endif %}</span>
             <span class="avatar{% if user.caregiver_profile or user.account_profile.role == "caregiver" %} avatar-caregiver{% endif %}">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
           </summary>
           <div class="account-dropdown">
-            {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
-              {% if user.caregiver_profile %}
-                <a class="account-link" href="{% url 'caregiver' user.caregiver_profile.pk %}">♙ &nbsp; My profile</a>
-              {% else %}
-                <a class="account-link" href="{% url 'create_caregiver_profile' %}">♙ &nbsp; My profile</a>
-              {% endif %}
-            {% else %}
-              <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
-            {% endif %}
-            {% if not user.caregiver_profile and user.account_profile.role != "caregiver" %}
+                 {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
+                   {% if user.caregiver_profile %}
+                     <a class="account-link" href="{% url 'caregiver' user.caregiver_profile.pk %}">♙ &nbsp; My profile</a>
+                   {% else %}
+                     <a class="account-link" href="{% url 'create_caregiver_profile' %}">♙ &nbsp; My profile</a>
+                   {% endif %}
+                 {% else %}
+                   <span class="account-name">{{ user.get_full_name|default:user.username }}</span>
+                 {% endif %}
+                 {% if not user.is_staff and not user.caregiver_profile and user.account_profile.role != "caregiver" %}
               <a class="account-link" href="{% url 'neighborhood' %}">Your neighborhood</a>
             {% endif %}
             <a class="delete-account-link" href="{% url 'delete_account' %}">Delete account</a>
