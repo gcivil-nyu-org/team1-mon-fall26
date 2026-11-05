@@ -23,6 +23,7 @@ urlpatterns = [
     path("reviews/", include("reviews.urls")),
     path("accounts/", include("accounts.urls")),
     path("messages/", include("messaging.urls")),
+    path("opportunities/", include("opportunities.urls")),
     # Admin pages for PawPal accounts (#89-#92); Django's own admin stays at /admin/.
     path("manage/", include("staff.urls")),
 ]
