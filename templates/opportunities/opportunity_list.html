@@ -1032,6 +1032,18 @@ main.page-my-requests:has(.post-form-page) {
   .care-posts-facts { grid-template-columns: 1fr; }
   .care-posts-edit-grid { grid-template-columns: 1fr; }
 }
+
+  /* Interested caregiver cards */
+  .care-posts-interest-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #ffe7b6; color: #75501b; font-size: 11px; margin-left: 5px; }
+  .care-posts-interested-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 13px; background: #faf6f3; margin-bottom: 7px; }
+  .care-posts-interested-avatar { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #ffcaa8; color: #8b4929; font-size: 12px; font-weight: 700; }
+  .care-posts-interested-info { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 2px; }
+  .care-posts-interested-info strong { font-size: 12px; }
+  .care-posts-interested-info small { font-size: 10px; color: #847a76; }
+  .care-posts-interested-profile { white-space: nowrap; border: 1px solid #efcfc2; border-radius: 999px; padding: 8px 11px; background: #fff; color: #2b2523; text-decoration: none; font-size: 11px; }
+  .care-posts-interested-profile:hover { background: #fff6f1; }
+  @media (max-width: 480px) { .care-posts-interested-row { flex-wrap: wrap; } .care-posts-interested-profile { margin-left: auto; } }
+
 </style>
 
 
@@ -1418,9 +1430,20 @@ main.page-my-requests:has(.post-form-page) {
 
           <div class="care-posts-notes">{{ selected.notes|default:"No additional care notes." }}</div>
 
-          <h3 class="care-posts-subheading">Interested caregivers</h3>
+          <h3 class="care-posts-subheading">Interested caregivers{% if interested_caregivers %} <span class="care-posts-interest-count">{{ interested_caregivers|length }}</span>{% endif %}</h3>
 
-          <div class="care-posts-empty-interest">No one interested yet.</div>
+          {% for interest in interested_caregivers %}
+            <div class="care-posts-interested-row">
+              <span class="care-posts-interested-avatar">{{ interest.caregiver.name|slice:":1"|upper }}</span>
+              <div class="care-posts-interested-info">
+                <strong>{{ interest.caregiver.name }}</strong>
+                <small>{{ interest.caregiver.service_area }}</small>
+              </div>
+              <a class="care-posts-interested-profile" href="{% url 'caregiver' interest.caregiver.pk %}">View profile</a>
+            </div>
+          {% empty %}
+            <div class="care-posts-empty-interest">No one interested yet.</div>
+          {% endfor %}
 
           <div class="care-posts-actions">
 
