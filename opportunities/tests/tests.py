@@ -700,3 +700,16 @@ class CareOpportunityBrowseTests(TestCase):
         self.assertEqual(self.client.post(url).status_code, 302)
         self.client.force_login(self.caregiver_user)
         self.assertEqual(self.client.get(url).status_code, 405)
+
+    def test_interest_string_representation(self):
+        interest = CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=True,
+        )
+
+        expected = (
+            f"{self.caregiver_profile.pk} interested in " f"{self.opportunity.pk}: True"
+        )
+
+        self.assertEqual(str(interest), expected)
