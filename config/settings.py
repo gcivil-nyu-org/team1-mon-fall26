@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "reviews",
     "messaging",
     "staff",
+    "reports",
 ]
 
 MIDDLEWARE = [

@@ -20,8 +20,18 @@ def booking_review_box(context, booking):
     }
 
 
-@register.inclusion_tag("reviews/partials/review_list.html")
-def caregiver_reviews(caregiver):
+def _viewer(context):
+    """Who's looking, and the page to come back to after reporting a review (#117)."""
+    request = context.get("request")
+    user = getattr(request, "user", None)
+    return {
+        "viewer": user if user is not None and user.is_authenticated else None,
+        "back": request.get_full_path() if request is not None else "",
+    }
+
+
+@register.inclusion_tag("reviews/partials/review_list.html", takes_context=True)
+def caregiver_reviews(context, caregiver):
     """Owners' ratings and reviews of this caregiver (#62, #63)."""
     reviews = Review.objects.filter(
         booking__caregiver=caregiver, role=Review.Role.OWNER
@@ -32,11 +42,12 @@ def caregiver_reviews(caregiver):
         "title": "Reviews",
         "empty": f"{caregiver.name} has no reviews yet.",
         "show": "pet",
+        **_viewer(context),
     }
 
 
-@register.inclusion_tag("reviews/partials/review_list.html")
-def pet_reviews(pet):
+@register.inclusion_tag("reviews/partials/review_list.html", takes_context=True)
+def pet_reviews(context, pet):
     """Caregivers' ratings and reviews of this owner and pet (#66)."""
     reviews = Review.objects.filter(
         booking__pet=pet, role=Review.Role.CAREGIVER
@@ -47,6 +58,7 @@ def pet_reviews(pet):
         "title": "Notes from caregivers",
         "empty": f"No caregiver has reviewed {pet.name} yet.",
         "show": "caregiver",
+        **_viewer(context),
     }
 
 

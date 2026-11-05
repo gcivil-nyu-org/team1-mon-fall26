@@ -10,4 +10,7 @@
     {% paws review.rating %}
   </header>
   {% if review.comment %}<p>{{ review.comment|linebreaksbr }}</p>{% endif %}
+  {% if viewer and viewer.pk != review.author_id %}
+    <a class="report-link" href="{% url 'reports:review' review.pk %}?next={{ back|urlencode }}">Report</a>
+  {% endif %}
 </article>
