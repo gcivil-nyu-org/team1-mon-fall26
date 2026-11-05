@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import CareOpportunityForm
-from .models import CareOpportunity
+from .models import CareOpportunity, CareOpportunityInterest
 from django.urls import reverse
 
 
@@ -37,6 +37,16 @@ def _render_opportunity_list(
             instance=selected, owner=request.user, lock_pet=True
         )
 
+    # Show only active caregiver interest on the selected owner's care post.
+    # The owner filter above ensures no other user's posts are exposed.
+    interested_caregivers = (
+        CareOpportunityInterest.objects.filter(opportunity=selected, is_active=True)
+        .select_related("caregiver", "caregiver__user")
+        .order_by("pk")
+        if selected
+        else CareOpportunityInterest.objects.none()
+    )
+
     return render(
         request,
         "opportunities/opportunity_list.html",
@@ -45,10 +55,9 @@ def _render_opportunity_list(
             "closed_posts": closed_posts,
             "selected": selected,
             "editing": bool(selected and editing),
-            "just_closed": request.GET.get("closed") == "1",
-            "just_reopened": request.GET.get("reopened") == "1",
             "edit_form": edit_form,
             "active_requests_tab": "care_posts",
+            "interested_caregivers": interested_caregivers,
         },
     )
 
@@ -160,27 +169,26 @@ def opportunity_close(request, pk):
             "Your care post has been closed.",
         )
 
-    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}&closed=1")
+    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
 
 
 @login_required
 @require_POST
 def opportunity_reopen(request, pk):
-    """Reopen an owner's closed post."""
+    """Reopen an owner's closed care post."""
     opportunity = get_object_or_404(CareOpportunity, pk=pk, owner=request.user)
     if opportunity.status == CareOpportunity.Status.CLOSED:
         opportunity.status = CareOpportunity.Status.OPEN
         opportunity.save(update_fields=["status"])
         messages.success(request, "Your care post has been reopened.")
-    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}&reopened=1")
+    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
 
 
 @login_required
 def opportunity_browse(request):
-    """Browse open care posts and filter by service or pet type."""
+    """Caregiver marketplace, with service and pet type filters."""
     from caregivers.models import CaregiverProfile, ServiceType
     from pets.models import PetType
-    from .models import CareOpportunityInterest
 
     caregiver = CaregiverProfile.objects.filter(user=request.user).first()
     if caregiver is None:
@@ -198,7 +206,6 @@ def opportunity_browse(request):
         .select_related("owner", "pet", "pet__pet_type", "service_type")
         .order_by("start_time", "pk")
     )
-
     service = request.GET.get("service", "")
     pet_type = request.GET.get("pet_type", "")
     if service.isdecimal():
@@ -216,7 +223,7 @@ def opportunity_browse(request):
         CareOpportunityInterest.objects.filter(
             caregiver=caregiver,
             is_active=True,
-            opportunity_id__in=[p.pk for p in posts],
+            opportunity_id__in=[post.pk for post in posts],
         ).values_list("opportunity_id", flat=True)
     )
     for post in posts:
@@ -248,9 +255,6 @@ def _caregiver_for_interest(request):
 @login_required
 @require_POST
 def opportunity_interest(request, pk):
-    """Express or renew interest in an open care post."""
-    from .models import CareOpportunityInterest
-
     caregiver = _caregiver_for_interest(request)
     if caregiver is None:
         messages.error(request, "A caregiver profile is required to express interest.")
@@ -267,21 +271,19 @@ def opportunity_interest(request, pk):
         return redirect("opportunities:browse")
 
     interest, created = CareOpportunityInterest.objects.get_or_create(
-        opportunity=opportunity, caregiver=caregiver, defaults={"is_active": True}
+        opportunity=opportunity,
+        caregiver=caregiver,
+        defaults={"is_active": True},
     )
     if not created and not interest.is_active:
         interest.is_active = True
         interest.save(update_fields=["is_active", "updated_at"])
-
     return redirect(f"{reverse('opportunities:browse')}?post={pk}&interest=added")
 
 
 @login_required
 @require_POST
 def opportunity_withdraw_interest(request, pk):
-    """Withdraw interest without deleting its history."""
-    from .models import CareOpportunityInterest
-
     caregiver = _caregiver_for_interest(request)
     if caregiver is None:
         messages.error(request, "A caregiver profile is required.")

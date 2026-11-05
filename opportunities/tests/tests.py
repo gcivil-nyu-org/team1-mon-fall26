@@ -315,6 +315,94 @@ class CareOpportunityTests(TestCase):
         self.opportunity.refresh_from_db()
         self.assertEqual(self.opportunity.status, CareOpportunity.Status.OPEN)
 
+    def test_owner_sees_active_interested_caregiver(self):
+        interest = CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=True,
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context["interested_caregivers"]), [interest])
+        self.assertContains(response, self.caregiver_profile.name)
+        self.assertContains(response, "View profile")
+
+    def test_owner_sees_correct_number_of_interested_caregivers(self):
+        User = get_user_model()
+        second_user = User.objects.create_user(
+            username="second_interested_caregiver", password="test-pass-123"
+        )
+        second_caregiver = CaregiverProfile.objects.create(
+            user=second_user, name="Second Caregiver", service_area="Queens"
+        )
+        for caregiver in (self.caregiver_profile, second_caregiver):
+            CareOpportunityInterest.objects.create(
+                caregiver=caregiver, opportunity=self.opportunity, is_active=True
+            )
+
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+
+        self.assertEqual(len(response.context["interested_caregivers"]), 2)
+        self.assertContains(response, self.caregiver_profile.name)
+        self.assertContains(response, second_caregiver.name)
+
+    def test_owner_does_not_see_withdrawn_interest(self):
+        CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=False,
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+
+        self.assertEqual(list(response.context["interested_caregivers"]), [])
+        self.assertNotContains(response, self.caregiver_profile.name)
+        self.assertContains(response, "No one interested yet.")
+
+    def test_owner_only_sees_interest_for_selected_own_post(self):
+        second_post = CareOpportunity.objects.create(
+            owner=self.owner,
+            pet=self.pet,
+            service_type=self.service,
+            start_time=self.start + timedelta(days=1),
+            end_time=self.end + timedelta(days=1),
+            location="Queens",
+        )
+        CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=True,
+        )
+        self.client.force_login(self.owner)
+        url = reverse("opportunities:list")
+
+        response = self.client.get(url, {"post": second_post.pk})
+        self.assertEqual(response.context["selected"], second_post)
+        self.assertEqual(list(response.context["interested_caregivers"]), [])
+        self.assertNotContains(response, self.caregiver_profile.name)
+
+        response = self.client.get(url, {"post": self.opportunity.pk})
+        self.assertEqual(len(response.context["interested_caregivers"]), 1)
+        self.assertContains(response, self.caregiver_profile.name)
+
+        other_post = CareOpportunity.objects.create(
+            owner=self.other_user,
+            pet=self.other_pet,
+            service_type=self.service,
+            start_time=self.start,
+            end_time=self.end,
+            location="Other owner's location",
+        )
+        response = self.client.get(url, {"post": other_post.pk})
+        self.assertNotEqual(response.context["selected"], other_post)
+        self.assertNotIn(
+            other_post,
+            response.context["open_posts"],
+        )
+
 
 class CareOpportunityBrowseTests(TestCase):
     @classmethod
@@ -612,3 +700,16 @@ class CareOpportunityBrowseTests(TestCase):
         self.assertEqual(self.client.post(url).status_code, 302)
         self.client.force_login(self.caregiver_user)
         self.assertEqual(self.client.get(url).status_code, 405)
+
+    def test_interest_string_representation(self):
+        interest = CareOpportunityInterest.objects.create(
+            caregiver=self.caregiver_profile,
+            opportunity=self.opportunity,
+            is_active=True,
+        )
+
+        expected = (
+            f"{self.caregiver_profile.pk} interested in " f"{self.opportunity.pk}: True"
+        )
+
+        self.assertEqual(str(interest), expected)
