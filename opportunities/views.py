@@ -1,4 +1,3 @@
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,24 +8,34 @@ from .models import CareOpportunity, CareOpportunityInterest
 from django.urls import reverse
 
 
-def _render_opportunity_list(request, *, selected_id=None, edit_form=None, editing=False):
+def _render_opportunity_list(
+    request, *, selected_id=None, edit_form=None, editing=False
+):
     """Render the owner dashboard, including its optional inline edit form."""
     opportunities = list(
         CareOpportunity.objects.filter(owner=request.user)
         .select_related("pet", "pet__pet_type", "service_type")
         .order_by("-created_at")
     )
-    open_posts = [post for post in opportunities if post.status == CareOpportunity.Status.OPEN]
-    closed_posts = [post for post in opportunities if post.status == CareOpportunity.Status.CLOSED]
+    open_posts = [
+        post for post in opportunities if post.status == CareOpportunity.Status.OPEN
+    ]
+    closed_posts = [
+        post for post in opportunities if post.status == CareOpportunity.Status.CLOSED
+    ]
 
     if selected_id is None:
         selected_id = request.GET.get("post")
-    selected = next((post for post in opportunities if str(post.pk) == str(selected_id)), None)
+    selected = next(
+        (post for post in opportunities if str(post.pk) == str(selected_id)), None
+    )
     if selected is None and opportunities:
         selected = opportunities[0]
 
     if selected and editing and edit_form is None:
-        edit_form = CareOpportunityForm(instance=selected, owner=request.user, lock_pet=True)
+        edit_form = CareOpportunityForm(
+            instance=selected, owner=request.user, lock_pet=True
+        )
 
     # Show only active caregiver interest on the selected owner's care post.
     # The owner filter above ensures no other user's posts are exposed.
@@ -34,18 +43,23 @@ def _render_opportunity_list(request, *, selected_id=None, edit_form=None, editi
         CareOpportunityInterest.objects.filter(opportunity=selected, is_active=True)
         .select_related("caregiver", "caregiver__user")
         .order_by("pk")
-        if selected else CareOpportunityInterest.objects.none()
+        if selected
+        else CareOpportunityInterest.objects.none()
     )
 
-    return render(request, "opportunities/opportunity_list.html", {
-        "open_posts": open_posts,
-        "closed_posts": closed_posts,
-        "selected": selected,
-        "editing": bool(selected and editing),
-        "edit_form": edit_form,
-        "active_requests_tab": "care_posts",
-        "interested_caregivers": interested_caregivers,
-    })
+    return render(
+        request,
+        "opportunities/opportunity_list.html",
+        {
+            "open_posts": open_posts,
+            "closed_posts": closed_posts,
+            "selected": selected,
+            "editing": bool(selected and editing),
+            "edit_form": edit_form,
+            "active_requests_tab": "care_posts",
+            "interested_caregivers": interested_caregivers,
+        },
+    )
 
 
 @login_required
@@ -116,6 +130,7 @@ def opportunity_created(request, pk):
         },
     )
 
+
 @login_required
 def opportunity_edit(request, pk):
     """Save inline edits, or show the prefilled form in the dashboard."""
@@ -154,10 +169,7 @@ def opportunity_close(request, pk):
             "Your care post has been closed.",
         )
 
-    return redirect(
-        f"{reverse('opportunities:list')}?post={opportunity.pk}"
-    )
-
+    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
 
 
 @login_required
@@ -180,7 +192,9 @@ def opportunity_browse(request):
 
     caregiver = CaregiverProfile.objects.filter(user=request.user).first()
     if caregiver is None:
-        messages.info(request, "Create a caregiver profile to browse care opportunities.")
+        messages.info(
+            request, "Create a caregiver profile to browse care opportunities."
+        )
         return redirect("opportunities:list")
 
     opportunities = (
@@ -215,21 +229,26 @@ def opportunity_browse(request):
     for post in posts:
         post.caregiver_interested = post.pk in interested_ids
 
-    return render(request, "opportunities/opportunity_browse.html", {
-        "posts": posts,
-        "selected": selected,
-        "services": ServiceType.objects.order_by("name"),
-        "pet_types": PetType.objects.order_by("name"),
-        "selected_service": service,
-        "selected_pet_type": pet_type,
-        "interest_added": request.GET.get("interest") == "added",
-        "interest_withdrawn": request.GET.get("interest") == "withdrawn",
-        "active_requests_tab": "find_pets",
-    })
+    return render(
+        request,
+        "opportunities/opportunity_browse.html",
+        {
+            "posts": posts,
+            "selected": selected,
+            "services": ServiceType.objects.order_by("name"),
+            "pet_types": PetType.objects.order_by("name"),
+            "selected_service": service,
+            "selected_pet_type": pet_type,
+            "interest_added": request.GET.get("interest") == "added",
+            "interest_withdrawn": request.GET.get("interest") == "withdrawn",
+            "active_requests_tab": "find_pets",
+        },
+    )
 
 
 def _caregiver_for_interest(request):
     from caregivers.models import CaregiverProfile
+
     return CaregiverProfile.objects.filter(user=request.user).first()
 
 
