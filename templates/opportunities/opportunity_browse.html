@@ -1,236 +1,521 @@
 {% extends 'base.html' %}
+
 {% block main_class %}page find-pets-page{% endblock %}
+
 {% block content %}
+
 <style>
-  .find-pets-page { width:100%; max-width:1100px; padding:8px 20px 80px; }
-  .find-pets { width:100%; margin:20px auto 60px; color:#211e1c; }
+
+  .find-pets-page { width:100%; max-width:1100px; margin:0 auto; padding:8px 20px 80px; box-sizing:border-box; }
+
+  .find-pets { width:100%; max-width:980px; margin:20px auto 60px; color:#211e1c; }
+
   .find-pets h1 { font-size:40px; letter-spacing:-1px; margin:0 0 4px; }
+
   .find-pets .sub { font-size:14px; color:#8d817c; margin:0 0 20px; }
+
   .find-pets-grid { display:grid; grid-template-columns:minmax(0, 405px) minmax(0, 1fr); gap:18px; align-items:start; }
+
   .find-panel { min-width:0; background:#fff; border:1px solid #f2d8cc; border-radius:23px; padding:20px; box-shadow:0 4px 0 #f0ded6; }
+
   .find-count { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.045em; color:#8c6352; margin-bottom:14px; }
+
   .find-filter { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+
   .find-filter select, .find-filter button { border:1px solid #efd8cf; border-radius:12px; padding:9px 11px; background:#fff; font:inherit; font-size:13px; max-width:100%; min-height:40px; }
+
   .find-filter select:first-child { flex:1 1 100%; }
+
   .find-filter button { cursor:pointer; }
+
   .find-entry { display:flex; gap:12px; align-items:center; text-decoration:none; color:inherit; background:#faf5f2; border:1.5px solid transparent; border-radius:16px; padding:13px 12px; margin-bottom:8px; }
+
   .find-entry.active { border-color:#222; background:#fff; }
+
   .find-avatar { flex-shrink:0; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:17px; font-weight:700; background:#fbc6d8; color:#823b60; }
+
   .find-avatar.mint { background:#d7f3e8; color:#326b5b; }
+
   .find-avatar.peach { background:#ffd4bb; color:#8d4928; }
+
   .find-avatar.yellow { background:#ffe99b; color:#725b0c; }
+
   .find-avatar.blue { background:#dbeafe; color:#375c9b; }
+
   .find-avatar.lavender { background:#ebe3ff; color:#62518b; }
+
   .find-entry-main { flex:1; min-width:0; }
+
   .find-entry strong { display:block; font-size:14px; line-height:1.4; }
+
   .find-entry small { display:block; color:#827873; font-size:12px; margin-top:4px; }
+
   .find-badge { flex-shrink:0; font-size:11px; background:#ffe8af; border-radius:20px; padding:5px 9px; color:#7b5b16; }
+
   .find-heading { display:flex; align-items:center; gap:13px; margin-bottom:17px; }
+
   .find-heading h2 { margin:0; font-size:29px; }
+
   .find-heading p { margin:2px 0; color:#887c76; font-size:13px; }
+
   .find-heading .find-avatar { width:62px; height:62px; font-size:24px; }
+
   .find-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin-bottom:13px; }
+
   .find-fact { padding:13px; border-radius:14px; background:#fbe8e0; font-size:13px; overflow-wrap:anywhere; }
+
   .find-fact:nth-child(2) { background:#fff1d0; }
+
   .find-fact:nth-child(3) { background:#e2f6ed; }
+
   .find-fact small { display:block; color:#7e706b; margin-bottom:5px; font-size:11px; }
+
   .find-fact strong { font-weight:700; }
+
   .find-section { border:1px solid #f2ded5; background:#fff9f6; border-radius:14px; padding:14px 16px; margin:8px 0; font-size:13px; }
+
   .find-section strong { display:block; margin-bottom:5px; }
+
   .find-section p { margin:0; color:#746761; white-space:pre-line; }
+
   .find-note { background:#faf5f2; border-radius:13px; padding:16px; margin:12px 0; font-size:13px; }
+
   .find-note p { margin:6px 0 0; color:#746761; white-space:pre-line; }
+
   .find-action { display:flex; gap:13px; align-items:center; margin-top:16px; flex-wrap:wrap; }
+
   .find-button { background:#201c1b; color:#fff; border:0; border-radius:30px; padding:13px 21px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; }
+
   .find-muted-button { background:#f2eae6; color:#76635d; }
+
   .find-link { border:0; background:none; color:#76544b; text-decoration:underline; font:inherit; font-size:13px; cursor:pointer; padding:8px 0; }
+
   .find-alert { background:#d2f3e2; color:#235d46; border-radius:10px; padding:12px; font-size:13px; margin-top:12px; }
+
   .find-alert.withdrawn { background:#fbe7df; color:#755041; }
+
   .find-confirm { display:none; background:#faf5f2; border-radius:13px; padding:15px; margin-top:12px; align-items:center; justify-content:space-between; gap:12px; }
+
   .find-confirm:target { display:flex; }
+
   .find-confirm strong { font-size:13px; }
+
   .find-confirm p { font-size:12px; color:#87736d; margin:4px 0 0; }
+
   .find-confirm-actions { display:flex; gap:8px; align-items:center; }
+
   .find-cancel { padding:10px 14px; border:1px solid #f0cfc0; border-radius:20px; text-decoration:none; color:#211e1c; background:#fff; font-size:12px; }
+
   .find-empty { color:#857773; font-size:14px; padding:20px 0; }
+
   @media(max-width:850px) { .find-pets-grid { grid-template-columns:1fr; } .find-pets-page { max-width:680px; } }
+
   @media(max-width:480px) { .find-pets-page { padding:8px 14px 50px; } .find-panel { padding:15px; } .find-facts { grid-template-columns:1fr; } .find-confirm { flex-direction:column; align-items:flex-start; } }
+
 /* PawPal 3D button styling */
 
 .find-button {
+
     background: #211e1e;
+
     color: white;
+
     border: 1px solid #211e1e;
+
     border-radius: 999px;
+
     padding: 13px 24px;
 
     box-shadow: 0 4px 0 #f2a17e;
+
     transform: translateY(0);
 
     transition:
+
         transform 0.15s ease,
+
         box-shadow 0.15s ease,
+
         background-color 0.15s ease;
+
 }
 
 .find-button:hover {
+
     background: #38302d;
+
     transform: translateY(-2px);
+
     box-shadow: 0 6px 0 #f2a17e;
+
 }
 
 .find-button:active {
+
     transform: translateY(3px);
+
     box-shadow: 0 1px 0 #f2a17e;
+
 }
 
 /* Filter button */
+
 .find-filter button {
+
     cursor: pointer;
+
     box-shadow: 0 3px 0 #f0dcd2;
+
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+
 }
 
 .find-filter button:hover {
+
     transform: translateY(-1px);
+
     box-shadow: 0 4px 0 #e9c4b5;
+
 }
 
 .find-filter button:active {
+
     transform: translateY(2px);
+
     box-shadow: 0 1px 0 #f0dcd2;
+
 }
 
 /* Withdraw confirmation buttons */
+
 .find-cancel {
+
     box-shadow: 0 3px 0 #f0dcd2;
+
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+
 }
 
 .find-cancel:hover {
+
     transform: translateY(-1px);
+
     box-shadow: 0 4px 0 #e9c4b5;
+
 }
 
 .find-cancel:active {
+
     transform: translateY(2px);
+
     box-shadow: 0 1px 0 #f0dcd2;
+
 }
 
 /* Interested state: raised but not clickable */
+
 .find-muted-button {
+
     background: #f2eae6;
+
     color: #76635d;
+
     border-color: #f2eae6;
+
     box-shadow: 0 3px 0 #e5d5cd;
+
     cursor: default;
+
 }
 
 .find-muted-button:hover,
+
 .find-muted-button:active {
+
     background: #f2eae6;
+
     transform: none;
+
     box-shadow: 0 3px 0 #e5d5cd;
+
 }
 
 /* Accessible keyboard focus */
+
 .find-button:focus-visible,
+
 .find-filter button:focus-visible,
+
 .find-cancel:focus-visible {
+
     outline: 3px solid #e9a98d;
+
     outline-offset: 4px;
+
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .find-button,
+
     .find-filter button,
+
     .find-cancel {
+
         transition: none;
+
     }
+
 }
+
+  /* Figma-inspired filters: independently selectable, combined through query parameters. */
+
+  .find-filter { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:0 0 14px; }
+
+  .find-dropdown { position:relative; }
+
+  .find-dropdown summary { list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:9px; min-height:38px; padding:9px 16px; border:1px solid #efd5c9; border-radius:999px; background:#fff; color:#60483f; font-family:inherit; font-size:14px; line-height:1.25; box-shadow:0 3px 0 #efd5c9; white-space:nowrap; box-sizing:border-box; }
+  .find-dropdown .filter-label { font-weight:400; }
+  .find-dropdown .filter-value { font-weight:700; color:#211e1e; }
+  .find-dropdown .filter-chevron { width:14px; height:14px; flex-shrink:0; margin-left:4px; color:currentColor; }
+  .find-dropdown.has-selection .filter-value { color:#fff; }
+
+  .find-dropdown summary::-webkit-details-marker { display:none; }
+
+  .find-dropdown.has-selection summary { background:#211e1e; color:#fff; border-color:#211e1e; box-shadow:0 3px 0 #efa17d; }
+
+  .find-dropdown[open] summary { outline:2px solid #efc8b7; outline-offset:2px; }
+
+  .find-dropdown-menu { position:absolute; top:calc(100% + 7px); left:0; z-index:20; width:max-content; min-width:176px; max-width:min(250px, 85vw); max-height:240px; overflow-y:auto; overscroll-behavior:contain; background:white; border:1px solid #f1d9cd; border-radius:15px; padding:7px; box-shadow:0 5px 0 #f1d9cd, 0 14px 25px rgba(38,25,19,.08); scrollbar-width:thin; }
+
+  .find-dropdown-menu a { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 10px; color:#211e1e; text-decoration:none; font-size:12px; line-height:1.35; border-radius:9px; }
+
+  .find-dropdown-menu a .find-option-check { margin-left:auto; min-width:12px; text-align:right; font-weight:700; }
+
+  .find-dropdown-menu a:hover, .find-dropdown-menu a:focus-visible, .find-dropdown-menu a[aria-current="true"] { background:#faf5f2; }
+
+  .find-dropdown-menu a[aria-current="true"] { font-weight:700; }
+
+  .find-filter-clear { font-size:12px; color:#76544b; text-decoration:underline; margin-left:3px; }
+
+  .find-no-match { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; text-align:center; padding:55px 20px; min-height:280px; justify-content:center; box-sizing:border-box; }
+
+  .find-no-match-icon { display:grid; place-items:center; width:52px; height:52px; border-radius:50%; background:#f9e8df; font-size:24px; margin-bottom:16px; }
+
+  .find-no-match h2 { font-size:21px; margin:0 0 8px; }
+
+  .find-no-match p { color:#887c76; font-size:13px; margin:0 0 20px; }
+
+  @media(max-width:480px) { .find-dropdown-menu { min-width:150px; max-width:min(250px, calc(100vw - 42px)); } .find-no-match { padding:38px 12px; } }
+
 </style>
+
 <div class="find-pets">
+
   <h1>Find pets</h1>
+
   <p class="sub">Pets who need care.</p>
-  <div class="find-pets-grid">
-    <section class="find-panel" aria-label="Open opportunities">
-      <div class="find-count">{{ posts|length }} open opportunities</div>
-      <form class="find-filter" method="get" action="{% url 'opportunities:browse' %}">
-        <select name="service" aria-label="Filter by service">
-          <option value="">All services</option>
-          {% for service in services %}
-            <option value="{{ service.pk }}" {% if selected_service == service.pk|stringformat:'s' %}selected{% endif %}>{{ service.name }}</option>
-          {% endfor %}
-        </select>
-        <select name="pet_type" aria-label="Filter by pet type">
-          <option value="">All pet types</option>
-          {% for pet_type in pet_types %}
-            <option value="{{ pet_type.pk }}" {% if selected_pet_type == pet_type.pk|stringformat:'s' %}selected{% endif %}>{{ pet_type.name }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit">Filter</button>
-      </form>
-      {% for post in posts %}
-        <a class="find-entry {% if selected.pk == post.pk %}active{% endif %}" href="?post={{ post.pk }}&amp;service={{ selected_service }}&amp;pet_type={{ selected_pet_type }}">
-          <span class="find-avatar {{ post.pet.theme }}">{{ post.pet.name|first|upper }}</span>
-          <span class="find-entry-main">
-            <strong>{{ post.pet.name }} · {{ post.service_type.name }}</strong>
-            <small>{{ post.start_time|date:'D, M j · g:i A' }}</small>
-            <small>{{ post.location }}</small>
-          </span>
-          {% if post.caregiver_interested %}<span class="find-badge">Interested</span>{% endif %}
-        </a>
-      {% empty %}
-        <p class="find-empty">No open opportunities match your filters yet.</p>
-      {% endfor %}
-    </section>
-    <section class="find-panel" aria-label="Opportunity details">
-      {% if selected %}
-        <div class="find-heading">
-          <span class="find-avatar {{ selected.pet.theme }}">{{ selected.pet.name|first|upper }}</span>
-          <div>
-            <h2>{{ selected.pet.name }}</h2>
-            <p>{{ selected.pet.pet_type.name }}{% if selected.pet.age_short %} · {{ selected.pet.age_short }}{% endif %} · Owner: {{ selected.owner.get_short_name|default:selected.owner.username }}</p>
-          </div>
-        </div>
-        <div class="find-facts">
-          <div class="find-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
-          <div class="find-fact"><small>When</small><strong>{{ selected.start_time|date:'D, M j · g:i A' }}</strong><br>to {{ selected.end_time|date:'D, M j · g:i A' }}</div>
-          <div class="find-fact"><small>Where</small><strong>{{ selected.location }}</strong></div>
-        </div>
-        {% if selected.pet.has_temperament_info %}
-          <div class="find-section"><strong>🌿 Temperament</strong><p>{% for trait in selected.pet.temperament_labels %}{{ trait }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if selected.pet.behavior_notes %}{% if selected.pet.temperament_labels %} · {% endif %}{{ selected.pet.behavior_notes }}{% endif %}</p></div>
-        {% endif %}
-        {% if selected.pet.has_feeding_info %}
-          <div class="find-section"><strong>🍲 Feeding</strong><p>{{ selected.pet.feeding_summary }} {% if selected.pet.feeding_instructions %}{{ selected.pet.feeding_instructions }}{% endif %}</p></div>
-        {% endif %}
-        {% if selected.pet.has_medication_info or selected.pet.special_care_instructions %}
-          <div class="find-section"><strong>💊 Medication &amp; special care</strong><p>{{ selected.pet.medication_summary }} {% if selected.pet.special_care_instructions %}{{ selected.pet.special_care_instructions }}{% endif %}</p></div>
-        {% endif %}
-        {% if selected.notes %}<div class="find-note"><strong>Note from owner</strong><p>{{ selected.notes }}</p></div>{% endif %}
-        {% if interest_added and selected.caregiver_interested %}<div class="find-alert">✓ The owner can now see you're interested.</div>{% endif %}
-        {% if interest_withdrawn and not selected.caregiver_interested %}<div class="find-alert withdrawn">✓ Interest withdrawn. You can send it again anytime.</div>{% endif %}
-        <div class="find-action">
-          {% if selected.caregiver_interested %}
-            <span class="find-button find-muted-button">✓ You're interested</span>
-            <a href="#withdraw-confirm" class="find-link">Not interested anymore</a>
-          {% else %}
-            <form method="post" action="{% url 'opportunities:interest' selected.pk %}">{% csrf_token %}<button class="find-button" type="submit">I'm interested</button></form>
-          {% endif %}
-        </div>
-        {% if selected.caregiver_interested %}
-          <div id="withdraw-confirm" class="find-confirm">
-            <div><strong>Withdraw your interest?</strong><p>The owner won't see you as interested anymore.</p></div>
-            <div class="find-confirm-actions">
-              <a class="find-cancel" href="#">Cancel</a>
-              <form method="post" action="{% url 'opportunities:withdraw_interest' selected.pk %}">{% csrf_token %}<button class="find-button" type="submit">Withdraw</button></form>
-            </div>
-          </div>
-        {% endif %}
-      {% else %}
-        <p class="find-empty">Choose a care opportunity to see its details.</p>
-      {% endif %}
-    </section>
+
+  <div class="find-filter" aria-label="Filter care opportunities">
+
+    <details class="find-dropdown {% if selected_pet_type %}has-selection{% endif %}">
+
+      <summary><span class="filter-label">Pet:</span><span class="filter-value">{% if selected_pet_type %}{% for pet_type in pet_types %}{% if selected_pet_type == pet_type.pk|stringformat:'s' %}{{ pet_type.name }}{% endif %}{% endfor %}{% else %}All{% endif %}</span><svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+
+      <nav class="find-dropdown-menu" aria-label="Pet type options">
+
+        <a href="{% url 'opportunities:browse' %}?service={{ selected_service|urlencode }}" {% if not selected_pet_type %}aria-current="true"{% endif %}><span>All pets</span><span class="find-option-check" aria-hidden="true">{% if not selected_pet_type %}✓{% endif %}</span></a>
+
+        {% for pet_type in pet_types %}
+
+          <a href="{% url 'opportunities:browse' %}?pet_type={{ pet_type.pk }}&amp;service={{ selected_service|urlencode }}" {% if selected_pet_type == pet_type.pk|stringformat:'s' %}aria-current="true"{% endif %}><span>{{ pet_type.name }}</span><span class="find-option-check" aria-hidden="true">{% if selected_pet_type == pet_type.pk|stringformat:'s' %}✓{% endif %}</span></a>
+
+        {% endfor %}
+
+      </nav>
+
+    </details>
+
+    <details class="find-dropdown {% if selected_service %}has-selection{% endif %}">
+
+      <summary><span class="filter-label">Service:</span><span class="filter-value">{% if selected_service %}{% for service in services %}{% if selected_service == service.pk|stringformat:'s' %}{{ service.name }}{% endif %}{% endfor %}{% else %}All{% endif %}</span><svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+
+      <nav class="find-dropdown-menu" aria-label="Service options">
+
+        <a href="{% url 'opportunities:browse' %}?pet_type={{ selected_pet_type|urlencode }}" {% if not selected_service %}aria-current="true"{% endif %}><span>All services</span><span class="find-option-check" aria-hidden="true">{% if not selected_service %}✓{% endif %}</span></a>
+
+        {% for service in services %}
+
+          <a href="{% url 'opportunities:browse' %}?service={{ service.pk }}&amp;pet_type={{ selected_pet_type|urlencode }}" {% if selected_service == service.pk|stringformat:'s' %}aria-current="true"{% endif %}><span>{{ service.name }}</span><span class="find-option-check" aria-hidden="true">{% if selected_service == service.pk|stringformat:'s' %}✓{% endif %}</span></a>
+
+        {% endfor %}
+
+      </nav>
+
+    </details>
+
+    <a class="find-filter-clear" href="{% url 'opportunities:browse' %}">Clear</a>
+
   </div>
+
+  {% if not posts %}
+
+    <section class="find-panel find-no-match" aria-label="No matching care opportunities">
+
+      <span class="find-no-match-icon" aria-hidden="true">🐾</span>
+
+      {% if selected_pet_type or selected_service %}
+
+        <h2>No pets match yet</h2>
+
+        <p>Try another pet or service.</p>
+
+        <a class="find-button" href="{% url 'opportunities:browse' %}" style="text-decoration:none;">Clear filters</a>
+
+      {% else %}
+
+        <h2>No care opportunities yet</h2>
+
+        <p>Check back soon for pets who need care.</p>
+
+      {% endif %}
+
+    </section>
+
+  {% else %}
+
+  <div class="find-pets-grid">
+
+    <section class="find-panel" aria-label="Open opportunities">
+
+      <div class="find-count">{{ posts|length }} open near you</div>
+
+      {% for post in posts %}
+
+        <a class="find-entry {% if selected.pk == post.pk %}active{% endif %}" href="?post={{ post.pk }}&amp;service={{ selected_service }}&amp;pet_type={{ selected_pet_type }}">
+
+          <span class="find-avatar {{ post.pet.theme }}">{{ post.pet.name|first|upper }}</span>
+
+          <span class="find-entry-main">
+
+            <strong>{{ post.pet.name }} · {{ post.service_type.name }}</strong>
+
+            <small>{{ post.start_time|date:'D, M j · g:i A' }}</small>
+
+            <small>{{ post.location }}</small>
+
+          </span>
+
+          {% if post.caregiver_interested %}<span class="find-badge">Interested</span>{% endif %}
+
+        </a>
+
+      {% empty %}
+
+        <p class="find-empty">No open opportunities match your filters yet.</p>
+
+      {% endfor %}
+
+    </section>
+
+    <section class="find-panel" aria-label="Opportunity details">
+
+      {% if selected %}
+
+        <div class="find-heading">
+
+          <span class="find-avatar {{ selected.pet.theme }}">{{ selected.pet.name|first|upper }}</span>
+
+          <div>
+
+            <h2>{{ selected.pet.name }}</h2>
+
+            <p>{{ selected.pet.pet_type.name }}{% if selected.pet.age_short %} · {{ selected.pet.age_short }}{% endif %} · Owner: {{ selected.owner.get_short_name|default:selected.owner.username }}</p>
+
+          </div>
+
+        </div>
+
+        <div class="find-facts">
+
+          <div class="find-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
+
+          <div class="find-fact"><small>When</small><strong>{{ selected.start_time|date:'D, M j · g:i A' }}</strong><br>to {{ selected.end_time|date:'D, M j · g:i A' }}</div>
+
+          <div class="find-fact"><small>Where</small><strong>{{ selected.location }}</strong></div>
+
+        </div>
+
+        {% if selected.pet.has_temperament_info %}
+
+          <div class="find-section"><strong>🌿 Temperament</strong><p>{% for trait in selected.pet.temperament_labels %}{{ trait }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if selected.pet.behavior_notes %}{% if selected.pet.temperament_labels %} · {% endif %}{{ selected.pet.behavior_notes }}{% endif %}</p></div>
+
+        {% endif %}
+
+        {% if selected.pet.has_feeding_info %}
+
+          <div class="find-section"><strong>🍲 Feeding</strong><p>{{ selected.pet.feeding_summary }} {% if selected.pet.feeding_instructions %}{{ selected.pet.feeding_instructions }}{% endif %}</p></div>
+
+        {% endif %}
+
+        {% if selected.pet.has_medication_info or selected.pet.special_care_instructions %}
+
+          <div class="find-section"><strong>💊 Medication &amp; special care</strong><p>{{ selected.pet.medication_summary }} {% if selected.pet.special_care_instructions %}{{ selected.pet.special_care_instructions }}{% endif %}</p></div>
+
+        {% endif %}
+
+        {% if selected.notes %}<div class="find-note"><strong>Note from owner</strong><p>{{ selected.notes }}</p></div>{% endif %}
+
+        {% if interest_added and selected.caregiver_interested %}<div class="find-alert">✓ The owner can now see you're interested.</div>{% endif %}
+
+        {% if interest_withdrawn and not selected.caregiver_interested %}<div class="find-alert withdrawn">✓ Interest withdrawn. You can send it again anytime.</div>{% endif %}
+
+        <div class="find-action">
+
+          {% if selected.caregiver_interested %}
+
+            <span class="find-button find-muted-button">✓ You're interested</span>
+
+            <a href="#withdraw-confirm" class="find-link">Not interested anymore</a>
+
+          {% else %}
+
+            <form method="post" action="{% url 'opportunities:interest' selected.pk %}">{% csrf_token %}<button class="find-button" type="submit">I'm interested</button></form>
+
+          {% endif %}
+
+        </div>
+
+        {% if selected.caregiver_interested %}
+
+          <div id="withdraw-confirm" class="find-confirm">
+
+            <div><strong>Withdraw your interest?</strong><p>The owner won't see you as interested anymore.</p></div>
+
+            <div class="find-confirm-actions">
+
+              <a class="find-cancel" href="#">Cancel</a>
+
+              <form method="post" action="{% url 'opportunities:withdraw_interest' selected.pk %}">{% csrf_token %}<button class="find-button" type="submit">Withdraw</button></form>
+
+            </div>
+
+          </div>
+
+        {% endif %}
+
+      {% else %}
+
+        <p class="find-empty">Choose a care opportunity to see its details.</p>
+
+      {% endif %}
+
+    </section>
+
+  </div>
+
+  {% endif %}
+
 </div>
+
 {% endblock %}
