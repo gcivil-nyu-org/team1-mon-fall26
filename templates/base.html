@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="{% static 'css/style.css' %}?v=15" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=16" rel="stylesheet">
   <link href="{% static 'css/bookings.css' %}?v=17" rel="stylesheet">
 </head>
 <body>
@@ -27,6 +27,7 @@
       {% if user.is_staff %}
         {# Admins manage accounts (#89-#92). #}
         <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
+        <a href="{% url 'reports:admin_list' %}" class="{% if section == 'reports' %}active{% endif %}">Reports</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Report · PawPal admin{% endblock %}
+
+{% block main_class %}page page-admin-reports{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'reports:admin_list' %}">{% include "partials/chevron_left_icon.html" %} Back to reported content</a>
+
+  <article class="card admin-report-detail">
+    <header class="admin-report-detail-head">
+      <span class="report-kind report-kind-{{ report.kind }}">{{ report.get_kind_display }}</span>
+      <h1>{{ report.get_reason_display }}</h1>
+      <span class="tag">{{ report.get_status_display }}</span>
+    </header>
+
+    <figure class="report-quote">
+      <figcaption>{{ report.get_kind_display }} by {{ report.reported_user.get_full_name|default:report.reported_user.username }} ({{ report.reported_user.username }})</figcaption>
+      <blockquote>{{ report.content_text|default:"(no written text)"|linebreaksbr }}</blockquote>
+      {% if not report.review and not report.message %}<p class="muted small">This {{ report.get_kind_display|lower }} has since been deleted.</p>{% endif %}
+    </figure>
+
+    <dl class="admin-report-facts">
+      <div><dt>Reported by</dt><dd>{{ report.reporter.get_full_name|default:report.reporter.username }} ({{ report.reporter.username }})</dd></div>
+      <div><dt>Reported on</dt><dd>{{ report.created_at|date:"D, M j, Y · g:i A" }}</dd></div>
+      <div><dt>Their note</dt><dd>{{ report.details|default:"No note added."|linebreaksbr }}</dd></div>
+      {% if where %}<div><dt>Shown on</dt><dd><a href="{{ where }}">The caregiver's profile</a></dd></div>{% endif %}
+    </dl>
+
+    {% if others %}
+      <section class="admin-report-others">
+        <h2>Also reported by</h2>
+        <ul>
+          {% for other in others %}
+            <li>{{ other.reporter.get_full_name|default:other.reporter.username }}: {{ other.get_reason_display }} · {{ other.created_at|date:"M j" }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  </article>
+{% endblock %}
