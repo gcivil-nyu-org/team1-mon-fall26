@@ -6,7 +6,7 @@
 {% block main_class %}page page-messages{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=4">
 
   <h1 class="messages-title">Messages</h1>
 
@@ -98,6 +98,7 @@
               <div class="bubble-row {% if message.sender_id == user.pk %}is-mine{% else %}is-theirs{% endif %}"{% if forloop.last and forloop.parentloop.last %} id="latest"{% endif %}>
                 <p class="chat-bubble">{{ message.body|linebreaksbr }}</p>
                 <time class="bubble-time" datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>
+                {% if message.sender_id != user.pk %}<a class="report-link bubble-report" href="{% url 'reports:message' message.pk %}">Report</a>{% endif %}
               </div>
             {% endfor %}
           {% empty %}
