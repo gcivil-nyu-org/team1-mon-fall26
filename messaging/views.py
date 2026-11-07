@@ -44,7 +44,7 @@ def conversation_view(request, pk):
 
 
 def _show(request, conversations, selected):
-    history = list(selected.messages.select_related("sender"))
+    history = list(selected.messages.visible().select_related("sender"))
     # Opening a conversation is what counts as reading it.
     selected.mark_read(request.user)
     selected.unread = False
@@ -97,7 +97,7 @@ def send_message(request, pk):
 def latest_message(request, pk):
     """The newest message id, so an open conversation can refresh when one arrives."""
     conversation = get_object_or_404(conversations_for(request.user), pk=pk)
-    newest = conversation.messages.order_by("-created_at", "-pk").first()
+    newest = conversation.messages.visible().order_by("-created_at", "-pk").first()
     return JsonResponse({"latest_id": newest.pk if newest else 0})
 
 

@@ -4,6 +4,12 @@ from django.db import models
 from django.db.models import Avg, Count
 
 
+class ReviewQuerySet(models.QuerySet):
+    def visible(self):
+        """Reviews users can see: not removed by an admin (#97)."""
+        return self.filter(removed_at__isnull=True)
+
+
 class Review(models.Model):
     """
     A rating (1-5 stars) and optional written feedback after a completed booking.
@@ -30,6 +36,12 @@ class Review(models.Model):
     )
     comment = models.TextField("Written feedback", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Set when an admin removes the review after a report (#97). It stops
+    # showing on profiles and in ratings, but still counts as this person's
+    # review of the booking, so they can't post it again.
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ReviewQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at"]
