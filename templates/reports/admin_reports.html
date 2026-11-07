@@ -44,6 +44,10 @@
           {% include "reports/partials/status_pill.html" with report=selected %}
         </header>
 
+        {% if done %}
+          <p class="report-done" role="status">{% include "partials/check_icon.html" %} {{ done }}</p>
+        {% endif %}
+
         {% if selected.details %}
           <div class="report-note">
             <strong>Note from {{ selected.reporter|reviewer_name }}</strong>
@@ -73,7 +77,34 @@
             <p class="report-chat-meta">{% if message %}<time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>{% else %}Deleted{% endif %} <span class="report-tag">{% include "reports/partials/flag_icon.html" %} Reported</span></p>
           </div>
         {% endif %}
+
+        {% if selected.is_open %}
+          <div class="report-actions">
+            <a class="btn btn-outline" href="?confirm=dismiss">Dismiss report</a>
+          </div>
+        {% elif selected.handled_by %}
+          <p class="muted report-handled">{{ selected.get_status_display }} by {{ selected.handled_by|reviewer_name }} · {{ selected.handled_at|when_long }}</p>
+        {% endif %}
       </article>
     {% endif %}
   </div>
+
+  {% if confirm %}
+    <div class="modal-backdrop">
+      <form method="post" action="{{ confirm.url }}" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="confirm-title">{{ confirm.title }}</h2>
+        <p class="muted">{{ confirm.text }}</p>
+        <div class="modal-quote">
+          <span class="review-avatar tone-{{ selected.reported_user|avatar_tone }}" aria-hidden="true">{{ selected.reported_user|initials }}</span>
+          <span><strong>{{ selected.reported_user.get_full_name|default:selected.reported_user.username }}</strong><br>“{{ selected.content_text|truncatechars:90 }}”</span>
+        </div>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'reports:admin_detail' selected.pk %}">Cancel</a>
+          <button type="submit" class="btn {{ confirm.button_class }}" autofocus>{{ confirm.button }}</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
 {% endblock %}

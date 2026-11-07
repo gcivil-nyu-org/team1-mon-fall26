@@ -3965,3 +3965,101 @@ img.pet-initial-large {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Admin: dismiss / remove a report (#98, #97) ---------- */
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.report-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.report-done svg {
+  width: 16px;
+  height: 16px;
+}
+
+.report-handled {
+  margin: 0;
+  font-size: 13px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(28 26 26 / 0.45);
+}
+
+.modal-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(100%, 420px);
+  padding: 28px 24px 24px;
+  border-radius: 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.modal-card h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.modal-card p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.modal-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--error-bg);
+  color: var(--error);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.modal-quote {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--bg);
+  font-size: 13px;
+  text-align: left;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.modal-actions .btn {
+  justify-content: center;
+}
