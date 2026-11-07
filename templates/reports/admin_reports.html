@@ -69,12 +69,26 @@
             <p{% if review.removed_at %} class="is-removed"{% endif %}>{{ selected.content_text|default:"(Rating only, no written review)"|linebreaksbr }}</p>
             {% include "reports/partials/content_tag.html" with removed=review.removed_at %}
           </div>
+        {% elif conversation %}
+          <h3>Conversation</h3>
+          <ol class="report-conversation">
+            {% for m in conversation %}
+                <li class="report-line{% if m.sender_id == selected.reporter_id %} is-reporter{% endif %}{% if m.pk == message.pk %} is-reported{% endif %}">
+                  <p class="report-chat-name">{{ m.sender|reviewer_name }}</p>
+                  <p class="report-bubble{% if m.removed_at %} is-removed{% endif %}">{{ m.body|linebreaksbr }}</p>
+                  <p class="report-chat-meta">
+                    <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"g:i A" }}</time>
+                    {% if m.pk == message.pk %}{% include "reports/partials/content_tag.html" with removed=m.removed_at %}{% elif m.removed_at %}{% include "reports/partials/content_tag.html" with removed=True %}{% endif %}
+                  </p>
+                </li>
+            {% endfor %}
+          </ol>
         {% else %}
           <h3>Reported message</h3>
           <div class="report-chat">
             <p class="report-chat-name">{{ selected.reported_user.get_full_name|default:selected.reported_user.username }}</p>
-            <p class="report-bubble{% if message.removed_at %} is-removed{% endif %}">{{ selected.content_text|linebreaksbr }}</p>
-            <p class="report-chat-meta">{% if message %}<time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>{% else %}Deleted{% endif %} {% include "reports/partials/content_tag.html" with removed=message.removed_at %}</p>
+            <p class="report-bubble">{{ selected.content_text|linebreaksbr }}</p>
+            <p class="report-chat-meta">Deleted {% include "reports/partials/content_tag.html" %}</p>
           </div>
         {% endif %}
 
