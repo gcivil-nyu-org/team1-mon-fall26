@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.http import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -18,6 +19,7 @@ from .accounts import (
     can_restrict,
     describe,
     details,
+    restricted,
     search,
 )
 from .forms import RestrictForm
@@ -40,9 +42,15 @@ def staff_required(view):
 def user_list(request, pk=None):
     """The Users page, laid out like Kat's Figma: accounts on the left, the
     selected account on the right. Without a selection, the first account in
-    the list is shown."""
+    the list is shown.
+
+    Two tabs, All and Restricted (#92); the search (#90) works in both.
+    """
     query = request.GET.get("q", "").strip()
-    accounts = search(all_accounts(), query) if query else all_accounts()
+    tab = "restricted" if request.GET.get("tab") == "restricted" else "all"
+    accounts = restricted(all_accounts()) if tab == "restricted" else all_accounts()
+    if query:
+        accounts = search(accounts, query)
     page = Paginator(accounts, PER_PAGE).get_page(request.GET.get("page"))
     for user in page:
         describe(user)
@@ -50,12 +58,38 @@ def user_list(request, pk=None):
         selected = describe(get_object_or_404(all_accounts(), pk=pk))
     else:
         selected = page[0] if page.object_list else None
-    context = {"page": page, "query": query, "selected": selected}
+
+    # The search and tab, kept on every link in the list.
+    keep = QueryDict(mutable=True)
+    if query:
+        keep["q"] = query
+    if tab == "restricted":
+        keep["tab"] = tab
+    tabs = [
+        {"key": "all", "label": "All", "count": all_accounts().count()},
+        {
+            "key": "restricted",
+            "label": "Restricted",
+            "count": restricted(all_accounts()).count(),
+        },
+    ]
+    context = {
+        "page": page,
+        "query": query,
+        "tab": tab,
+        "tabs": tabs,
+        "keep": keep.urlencode(),
+        "selected": selected,
+    }
     if selected is not None:
         context.update(
             details(selected),
             can_restrict=can_restrict(request.user, selected),
             restrict_form=RestrictForm(),
+            # Restrict asks for confirmation in a popup first (?confirm=restrict).
+            confirm=request.GET.get("confirm") == "restrict"
+            and can_restrict(request.user, selected)
+            and selected.status_key != "restricted",
         )
     return render(request, "staff/user_list.html", context)
 

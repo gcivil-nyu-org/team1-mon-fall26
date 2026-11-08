@@ -8,6 +8,6 @@ class RestrictForm(forms.Form):
         required=False,
         max_length=300,
         widget=forms.Textarea(
-            attrs={"rows": 2, "placeholder": "Reason (optional, only admins see it)"}
+            attrs={"rows": 2, "placeholder": "e.g. Reported for harassing messages"}
         ),
     )

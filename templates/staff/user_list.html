@@ -10,6 +10,14 @@
 
   <h1 class="admin-title">Users</h1>
 
+  <nav class="admin-tabs" aria-label="Account status">
+    {% for t in tabs %}
+      <a class="admin-tab{% if t.key == tab %} is-active{% endif %}" href="{% url 'staff:user_list' %}?{% if query %}q={{ query|urlencode }}&amp;{% endif %}tab={{ t.key }}"{% if t.key == tab %} aria-current="page"{% endif %}>
+        {{ t.label }} <span class="admin-tab-count">{{ t.count }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
   <div class="staff-layout">
     {# Left: the accounts (#89). #}
     <section class="card staff-list" aria-label="Accounts">
@@ -18,16 +26,17 @@
         <svg class="staff-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <label class="visually-hidden" for="staff-search">Search by name, username or email</label>
         <input type="search" id="staff-search" name="q" value="{{ query }}" placeholder="Search name or email">
+        {% if tab == "restricted" %}<input type="hidden" name="tab" value="restricted">{% endif %}
         <button type="submit" class="visually-hidden">Search</button>
       </form>
       {% if query %}
-        <p class="muted staff-count">{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} found <a class="staff-clear" href="{% url 'staff:user_list' %}">Clear</a></p>
+        <p class="muted staff-count">{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} found <a class="staff-clear" href="{% url 'staff:user_list' %}{% if tab == 'restricted' %}?tab=restricted{% endif %}">Clear</a></p>
       {% endif %}
       {% if page.object_list %}
         <ul class="staff-rows">
           {% for account in page %}
               <li>
-                <a class="staff-row{% if account.pk == selected.pk %} is-selected{% endif %}" href="{% url 'staff:user_detail' account.pk %}{% if query %}?q={{ query|urlencode }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if account.pk == selected.pk %} aria-current="true"{% endif %}>
+                <a class="staff-row{% if account.pk == selected.pk %} is-selected{% endif %}" href="{% url 'staff:user_detail' account.pk %}{% if keep %}?{{ keep }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if account.pk == selected.pk %} aria-current="true"{% endif %}>
                   {% include "staff/partials/account_avatar.html" %}
                   <span class="staff-row-text">
                     <strong>{{ account.get_full_name|default:account.username }}</strong>
@@ -40,9 +49,9 @@
         </ul>
         {% if page.has_other_pages %}
           <nav class="staff-pages" aria-label="Pages">
-            {% if page.has_previous %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
+            {% if page.has_previous %}<a class="btn btn-outline btn-small" href="{% url 'staff:user_list' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
             <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-            {% if page.has_next %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
+            {% if page.has_next %}<a class="btn btn-outline btn-small" href="{% url 'staff:user_list' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
           </nav>
         {% endif %}
       {% else %}
@@ -50,6 +59,9 @@
           {% if query %}
             <strong>No accounts found</strong>
             <p class="muted">Nothing matches “{{ query }}”. Check the spelling or try their email.</p>
+          {% elif tab == "restricted" %}
+            <strong>No restricted accounts</strong>
+            <p class="muted">Accounts you restrict show up here.</p>
           {% else %}
             <strong>No accounts yet</strong>
           {% endif %}
@@ -139,12 +151,7 @@
                   <button type="submit" class="btn btn-dark">Reinstate account</button>
                 </form>
               {% else %}
-                <form method="post" action="{% url 'staff:restrict_user' account.pk %}" class="staff-restrict-form">
-                  {% csrf_token %}
-                  <label class="visually-hidden" for="{{ restrict_form.reason.id_for_label }}">Reason</label>
-                  {{ restrict_form.reason }}
-                  <button type="submit" class="btn btn-outline-danger">Restrict account</button>
-                </form>
+                <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=restrict">Restrict account</a>
               {% endif %}
             {% endif %}
           </div>
@@ -152,4 +159,26 @@
       {% endwith %}
     {% endif %}
   </div>
+
+  {% if confirm %}
+    {# #92: confirm before restricting, like the Reports page's popups. #}
+    <div class="modal-backdrop">
+      <form method="post" action="{% url 'staff:restrict_user' selected.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="confirm-title">Restrict {{ selected.first_name|default:selected.username }}’s account?</h2>
+        <p class="muted">They’ll be logged out and won’t be able to log in until you reinstate the account{% if caregiver %}. Their profile is hidden from search{% endif %}. Nothing is deleted.</p>
+        <div class="modal-quote">
+          {% include "staff/partials/account_avatar.html" with account=selected %}
+          <span><strong>{{ selected.get_full_name|default:selected.username }}</strong><br>{{ selected.type_label }}{% if selected.place %} · {{ selected.place }}{% endif %}</span>
+        </div>
+        <label class="staff-confirm-label" for="{{ restrict_form.reason.id_for_label }}">Reason <span class="muted">(optional, only admins see it)</span></label>
+        {{ restrict_form.reason }}
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+          <button type="submit" class="btn btn-danger" autofocus>Restrict</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
 {% endblock %}

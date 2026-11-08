@@ -120,10 +120,10 @@ class ListTests(StaffTestData):
         first = self.client.get(LIST_URL)
         self.assertEqual(len(first.context["page"]), 25)
         self.assertContains(first, "Page 1 of 2")
-        self.assertContains(first, 'href="?page=2"')
+        self.assertContains(first, f'href="{LIST_URL}?page=2"')
         second = self.client.get(LIST_URL, {"page": 2})
         self.assertEqual(len(second.context["page"]), 5)
-        self.assertContains(second, 'href="?page=1"')
+        self.assertContains(second, f'href="{LIST_URL}?page=1"')
 
     def test_type_and_status_rules(self):
         self.assertEqual(account_type(self.admin), "Admin")
