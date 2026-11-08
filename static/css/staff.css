@@ -1,12 +1,11 @@
-/* Admin pages (/manage/): Users list and account details.
-   No Figma design yet, so these reuse the site's cards, tags and status pills. */
+/* Admin Users page (/manage/users/), laid out like Kat's 11/7 Figma:
+   accounts on the left, the selected account on the right. It shares the
+   admin title, tabs and list rows' look with the Reports page. */
 
-.page-staff { max-width: 1080px; }
+.page-staff { max-width: 1040px; }
 
-.staff-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.staff-header h1 { font-size: 36px; line-height: 1.1; margin-bottom: 4px; }
-
-/* ---------- Search (#90) ---------- */
+.staff-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.staff-header .admin-title { margin: 0; }
 
 .staff-search { display: flex; align-items: center; gap: 10px; }
 .staff-search input {
@@ -21,34 +20,41 @@
   font-size: 14px;
 }
 
-/* ---------- List ---------- */
-
-.staff-list { padding: 8px; }
-.staff-rows { list-style: none; margin: 0; padding: 0; }
-
-.staff-row {
+.staff-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 2fr) 110px 170px 110px;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: var(--radius);
-  color: inherit;
-  text-decoration: none;
-  font-size: 14px;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  align-items: start;
+  gap: 18px;
 }
 
-a.staff-row:hover { background: #fdf3ee; }
+/* ---------- Accounts list ---------- */
 
-.staff-row-head { padding-top: 8px; padding-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.staff-list { padding: 14px; }
+.staff-count { margin: 0 0 10px; font-size: 12px; }
+.staff-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 
-.staff-row-account { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.staff-row-account > span:last-child { display: flex; flex-direction: column; min-width: 0; }
-.staff-row-account strong,
-.staff-row-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.staff-row-account .muted { font-size: 13px; }
+.staff-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--ink);
+  text-decoration: none;
+}
 
-.staff-pages { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; font-size: 14px; }
+.staff-row:hover { border-color: var(--line-strong); }
+.staff-row.is-selected { border-color: var(--ink); background: #fff; }
+
+.staff-row-text { display: grid; flex: 1; gap: 2px; min-width: 0; font-size: 12px; }
+.staff-row-text strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.staff-empty { padding: 18px 14px; border-radius: 16px; background: var(--bg); text-align: center; font-size: 14px; }
+.staff-empty p { margin: 4px 0 0; font-size: 13px; }
+
+.staff-pages { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; font-size: 13px; }
 
 /* ---------- Avatar ---------- */
 
@@ -56,28 +62,29 @@ a.staff-row:hover { background: #fdf3ee; }
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--peach);
   color: #7a3b12;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.staff-avatar-caregiver { background: var(--blue-soft); color: #1f4e79; }
+.staff-avatar-caregiver { background: var(--mint); color: var(--success-ink); }
 .staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
-.staff-avatar-large { width: 64px; height: 64px; font-size: 22px; }
+.staff-avatar-large { width: 52px; height: 52px; font-size: 18px; }
 
 /* ---------- Status ---------- */
 
 .account-status {
   display: inline-flex;
   align-items: center;
+  flex: none;
   gap: 6px;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -87,51 +94,39 @@ a.staff-row:hover { background: #fdf3ee; }
 .account-status-deleted { background: #efe9e6; color: #5a4038; }
 .account-status-restricted { background: #fdecea; color: var(--error); }
 
-/* ---------- Account details ---------- */
+/* ---------- Selected account ---------- */
 
-.staff-account { padding: 26px; }
-.staff-account-header { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
-.staff-account-header h1 { font-size: 30px; line-height: 1.15; }
+.staff-account { padding: 22px; }
+.staff-account-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.staff-account-header h2 { margin: 0; font-size: 24px; line-height: 1.15; }
+.staff-account-header p { margin: 2px 0 0; font-size: 13px; }
 .staff-account-header .account-status { margin-left: auto; }
 
-.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 0; }
-.staff-facts > div { padding: 12px 14px; border-radius: 18px; background: #fbf4f0; }
-.staff-facts dt { color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-.staff-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.staff-account h3 { margin: 20px 0 8px; font-size: 15px; }
 
-/* ---------- Pets, caregiver profile and bookings (#91) ---------- */
+.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0; }
+.staff-facts > div { padding: 10px 12px; border-radius: 14px; background: var(--bg); }
+.staff-facts dt { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+.staff-facts dd { margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.staff-fact-wide { grid-column: 1 / -1; }
 
-.staff-section { margin-top: 18px; padding: 22px 26px; }
-.staff-section h2 { font-size: 20px; margin-bottom: 12px; }
-.staff-section h3 { font-size: 15px; margin: 16px 0 8px; }
-.staff-section-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .staff-services { list-style: none; margin: 0; padding: 0; }
 .staff-services .tag { font-size: 12px; padding: 4px 10px; }
 
 .staff-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.staff-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius); background: #fbf4f0; }
-.staff-item > span:nth-child(2) { display: flex; flex-direction: column; min-width: 0; flex: 1; font-size: 14px; }
-.staff-item .muted { font-size: 13px; }
+.staff-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--bg); }
+.staff-item > span:first-child { display: grid; flex: 1; gap: 1px; min-width: 0; font-size: 13px; }
+.staff-item .muted { font-size: 12px; }
 .staff-item.is-deleted { opacity: 0.65; }
 
-/* ---------- Restrict or reinstate (#92) ---------- */
+.staff-none, .staff-more { margin: 0; font-size: 13px; }
+.staff-more { margin-top: 6px; }
 
-.staff-fact-wide { grid-column: 1 / -1; }
-
-.staff-access {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-}
-.staff-access h2 { font-size: 18px; margin-bottom: 4px; }
-.staff-access p { font-size: 13px; max-width: 460px; }
-.staff-restrict-form { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; width: min(360px, 100%); }
+.staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 20px; }
+.staff-restrict-form { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; flex: 1; }
 .staff-restrict-form textarea {
-  width: 100%;
+  flex: 1 1 220px;
+  min-height: 44px;
   padding: 10px 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -142,15 +137,9 @@ a.staff-row:hover { background: #fdf3ee; }
 }
 
 @media (max-width: 760px) {
-  .staff-access { flex-direction: column; }
-  .staff-restrict-form { align-items: stretch; width: 100%; }
   .staff-header { flex-direction: column; align-items: stretch; }
   .staff-search input { flex: 1; width: auto; }
-  .staff-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .staff-row-head { display: none; }
-  .staff-row > span:nth-child(2),
-  .staff-row > span:nth-child(3),
-  .staff-row > span:nth-child(5) { display: none; }
+  .staff-layout { grid-template-columns: 1fr; }
   .staff-account-header { flex-wrap: wrap; }
   .staff-account-header .account-status { margin-left: 0; }
 }

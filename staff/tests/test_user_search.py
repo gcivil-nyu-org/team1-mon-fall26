@@ -26,7 +26,7 @@ class SearchTests(StaffTestData):
     def test_results_say_how_many_and_open_the_account(self):
         response, _ = self.found("kat")
         self.assertContains(response, "1 account matching “kat”")
-        self.assertContains(response, f'href="{detail_url(self.owner)}"')
+        self.assertContains(response, f'href="{detail_url(self.owner)}?q=kat"')
         self.assertContains(response, 'value="kat"')
         self.assertContains(response, f'href="{LIST_URL}">Clear</a>')
 
@@ -34,12 +34,13 @@ class SearchTests(StaffTestData):
         response, accounts = self.found("nobody")
         self.assertEqual(accounts, [])
         self.assertContains(response, "No accounts match “nobody”")
-        self.assertContains(response, "Show all users")
+        self.assertContains(response, "Check the spelling")
+        self.assertIsNone(response.context["selected"])
 
     def test_blank_search_lists_everyone(self):
         response, accounts = self.found("   ")
         self.assertEqual(len(accounts), 5)
-        self.assertContains(response, "5 accounts on PawPal")
+        self.assertContains(response, "5 accounts")
         self.assertNotContains(response, ">Clear</a>")
 
     def test_pages_keep_the_search(self):

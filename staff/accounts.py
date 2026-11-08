@@ -9,7 +9,7 @@ from caregivers.search import listed_services
 from pets.models import Pet
 
 PER_PAGE = 25
-RECENT_BOOKINGS = 10
+RECENT_BOOKINGS = 5
 
 
 def account_type(user):
@@ -39,10 +39,21 @@ def account_status(user):
     return "active", "Active"
 
 
+def account_place(user):
+    """The neighborhood shown under the name: the caregiver's area, or the
+    pet owner's neighborhood. Empty when we don't know it."""
+    caregiver = getattr(user, "caregiver_profile", None)
+    if caregiver is not None:
+        return caregiver.neighborhood or caregiver.service_area
+    profile = getattr(user, "account_profile", None)
+    return profile.neighborhood if profile is not None else ""
+
+
 def describe(user):
     """Attach what the admin pages show to a user."""
     user.type_label = account_type(user)
     user.status_key, user.status_label = account_status(user)
+    user.place = account_place(user)
     return user
 
 

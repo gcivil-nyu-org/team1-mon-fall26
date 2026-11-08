@@ -81,11 +81,9 @@ class AccessTests(StaffTestData):
 class ListTests(StaffTestData):
     def test_lists_every_account_with_type_and_status(self):
         response = self.client.get(LIST_URL)
-        self.assertContains(response, "5 accounts on PawPal")
+        self.assertContains(response, "5 accounts")
         for text in (
             "Kat W",
-            "@kat",
-            "kat@example.com",
             "Chloe Shih",
             "Caregiver",
             "Pet owner",
@@ -95,6 +93,18 @@ class ListTests(StaffTestData):
             "Active",
         ):
             self.assertContains(response, text)
+
+    def test_first_account_is_shown_next_to_the_list(self):
+        response = self.client.get(LIST_URL)
+        self.assertEqual(response.context["selected"], self.gone)
+        self.assertContains(response, 'class="staff-row is-selected"')
+        self.assertContains(response, 'id="account-name">gone</h2>')
+
+    def test_opening_an_account_keeps_the_list(self):
+        response = self.client.get(detail_url(self.owner))
+        self.assertEqual(response.context["selected"], self.owner)
+        self.assertEqual(len(response.context["page"]), 5)
+        self.assertContains(response, 'aria-current="true"', count=1)
 
     def test_newest_first_and_each_row_opens_the_account(self):
         response = self.client.get(LIST_URL)
@@ -139,7 +149,6 @@ class DetailTests(StaffTestData):
             "Active",
             "Joined",
             "Never",
-            "Back to users",
         ):
             self.assertContains(response, text)
 

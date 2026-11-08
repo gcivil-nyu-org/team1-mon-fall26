@@ -37,28 +37,33 @@ def staff_required(view):
 
 
 @staff_required
-def user_list(request):
+def user_list(request, pk=None):
+    """The Users page, laid out like Kat's Figma: accounts on the left, the
+    selected account on the right. Without a selection, the first account in
+    the list is shown."""
     query = request.GET.get("q", "").strip()
     accounts = search(all_accounts(), query) if query else all_accounts()
     page = Paginator(accounts, PER_PAGE).get_page(request.GET.get("page"))
     for user in page:
         describe(user)
-    return render(request, "staff/user_list.html", {"page": page, "query": query})
+    if pk is not None:
+        selected = describe(get_object_or_404(all_accounts(), pk=pk))
+    else:
+        selected = page[0] if page.object_list else None
+    context = {"page": page, "query": query, "selected": selected}
+    if selected is not None:
+        context.update(
+            details(selected),
+            can_restrict=can_restrict(request.user, selected),
+            restrict_form=RestrictForm(),
+        )
+    return render(request, "staff/user_list.html", context)
 
 
 @staff_required
 def user_detail(request, pk):
-    account = describe(get_object_or_404(all_accounts(), pk=pk))
-    return render(
-        request,
-        "staff/user_detail.html",
-        {
-            "account": account,
-            **details(account),
-            "can_restrict": can_restrict(request.user, account),
-            "restrict_form": RestrictForm(),
-        },
-    )
+    """One account, selected on the Users page (#91)."""
+    return user_list(request, pk=pk)
 
 
 def _restrictable(request, pk):
