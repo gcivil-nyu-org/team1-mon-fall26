@@ -66,6 +66,11 @@ def all_accounts():
     )
 
 
+def restricted(accounts):
+    """#92: the Restricted tab. Deleted accounts aren't counted as restricted."""
+    return accounts.filter(is_active=True, account_profile__restricted_at__isnull=False)
+
+
 def search(accounts, query):
     """#90: accounts whose name, username or email contains every word typed.
 

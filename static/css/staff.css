@@ -122,10 +122,11 @@
 .staff-more { margin-top: 6px; }
 
 .staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 20px; }
-.staff-restrict-form { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; flex: 1; }
-.staff-restrict-form textarea {
-  flex: 1 1 220px;
-  min-height: 44px;
+/* #92: the restrict popup reuses the Reports page's modal styles. */
+.staff-confirm-label { justify-self: start; font-size: 13px; font-weight: 700; }
+.staff-confirm textarea {
+  width: 100%;
+  min-height: 64px;
   padding: 10px 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);

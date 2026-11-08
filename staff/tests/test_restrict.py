@@ -30,8 +30,18 @@ class RestrictTests(StaffTestData):
 
     def test_admin_can_restrict_with_a_reason(self):
         response = self.client.get(detail_url(self.owner))
-        self.assertContains(response, "Restrict account")
+        self.assertContains(
+            response,
+            f'href="{detail_url(self.owner)}?confirm=restrict">Restrict account',
+        )
+        self.assertNotContains(response, f'action="{restrict_url(self.owner)}"')
+
+        # The button opens a confirm popup with the reason box.
+        response = self.client.get(detail_url(self.owner), {"confirm": "restrict"})
+        self.assertContains(response, "Restrict Kat’s account?")
         self.assertContains(response, f'action="{restrict_url(self.owner)}"')
+        self.assertContains(response, 'name="reason"')
+        self.assertContains(response, f'href="{detail_url(self.owner)}">Cancel</a>')
 
         response = self.client.post(
             restrict_url(self.owner), {"reason": "Spam messages"}, follow=True
@@ -123,3 +133,41 @@ class RestrictTests(StaffTestData):
         self.client.force_login(self.sitter)
         self.assertEqual(self.client.post(restrict_url(self.owner)).status_code, 403)
         self.assertFalse(is_restricted(self.owner))
+
+
+class RestrictedTabTests(StaffTestData):
+    def test_tabs_count_all_and_restricted_accounts(self):
+        restrict(self.owner)
+        restrict(self.gone)  # deleted accounts don't count as restricted
+        response = self.client.get(LIST_URL)
+        tabs = {t["key"]: t["count"] for t in response.context["tabs"]}
+        self.assertEqual(tabs, {"all": 5, "restricted": 1})
+        self.assertContains(response, f'href="{LIST_URL}?tab=restricted"')
+
+    def test_restricted_tab_lists_only_restricted_accounts(self):
+        restrict(self.owner)
+        response = self.client.get(LIST_URL, {"tab": "restricted"})
+        self.assertEqual(list(response.context["page"]), [self.owner])
+        self.assertContains(response, f'href="{detail_url(self.owner)}?tab=restricted"')
+        self.assertContains(response, 'name="tab" value="restricted"')
+
+    def test_search_within_the_restricted_tab(self):
+        restrict(self.owner)
+        restrict(self.sitter)
+        response = self.client.get(LIST_URL, {"tab": "restricted", "q": "chloe"})
+        self.assertEqual(list(response.context["page"]), [self.sitter])
+        self.assertContains(
+            response, f'href="{detail_url(self.sitter)}?q=chloe&amp;tab=restricted"'
+        )
+
+    def test_empty_restricted_tab(self):
+        response = self.client.get(LIST_URL, {"tab": "restricted"})
+        self.assertContains(response, "No restricted accounts")
+        self.assertIsNone(response.context["selected"])
+
+    def test_no_popup_for_accounts_that_cant_be_restricted(self):
+        restrict(self.owner)
+        for account in (self.owner, self.admin, self.gone):
+            response = self.client.get(detail_url(account), {"confirm": "restrict"})
+            self.assertFalse(response.context["confirm"])
+            self.assertNotContains(response, "modal-backdrop")

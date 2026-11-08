@@ -50,7 +50,7 @@ class SearchTests(StaffTestData):
             self.make(f"walker{i:02}", "Walker", f"{i}", f"w{i}@example.com")
         response, accounts = self.found("walker")
         self.assertEqual(len(accounts), 25)
-        self.assertContains(response, 'href="?q=walker&amp;page=2"')
+        self.assertContains(response, f'href="{LIST_URL}?q=walker&amp;page=2"')
         second = self.client.get(LIST_URL, {"q": "walker", "page": 2})
         self.assertEqual(len(second.context["page"]), 5)
 
