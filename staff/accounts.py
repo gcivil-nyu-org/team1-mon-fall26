@@ -7,6 +7,7 @@ from accounts.restriction import is_restricted
 from bookings.models import Booking
 from caregivers.search import listed_services
 from pets.models import Pet
+from reports.models import Report
 
 PER_PAGE = 25
 RECENT_BOOKINGS = 5
@@ -90,10 +91,11 @@ def details(user):
     """#91: what the account page shows besides the basics.
 
     Pets (a deleted pet is listed but marked), the caregiver profile and its
-    services, and the latest bookings the account took part in, either as
-    the pet owner or as the caregiver.
+    services, the latest bookings the account took part in, either as the
+    pet owner or as the caregiver, and how often it has been reported.
     """
     caregiver = getattr(user, "caregiver_profile", None)
+    reports = Report.objects.filter(reported_user=user).order_by("-created_at", "-pk")
     bookings = (
         Booking.objects.filter(Q(owner=user) | Q(caregiver__user=user))
         .select_related("owner", "pet", "caregiver", "service_type")
@@ -114,6 +116,9 @@ def details(user):
         ),
         "bookings": bookings[:RECENT_BOOKINGS],
         "booking_count": bookings.count(),
+        # Reports other people made about this account (#95), newest first.
+        "report_count": reports.count(),
+        "latest_report": reports.first(),
     }
 
 
