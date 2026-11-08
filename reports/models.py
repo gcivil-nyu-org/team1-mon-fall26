@@ -65,6 +65,15 @@ class Report(models.Model):
         max_length=20, choices=Status.choices, default=Status.OPEN, db_index=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    # Filled in when an admin dismisses the report (#98) or removes the content (#97).
+    handled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reports_handled",
+    )
+    handled_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at", "-pk"]
@@ -81,6 +90,17 @@ class Report(models.Model):
                 name="one_report_per_message_per_user",
             ),
         ]
+
+    @property
+    def is_open(self):
+        return self.status == self.Status.OPEN
+
+    def same_content(self):
+        """Every report about the same review or message, this one included."""
+        target = self.review_id if self.kind == self.Kind.REVIEW else self.message_id
+        if target is None:
+            return Report.objects.filter(pk=self.pk)
+        return Report.objects.filter(**{f"{self.kind}_id": target})
 
     def __str__(self):
         return f"{self.get_kind_display()} reported by {self.reporter} ({self.get_status_display()})"
