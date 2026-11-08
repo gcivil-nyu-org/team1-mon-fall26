@@ -81,7 +81,7 @@ class AccessTests(StaffTestData):
 class ListTests(StaffTestData):
     def test_lists_every_account_with_type_and_status(self):
         response = self.client.get(LIST_URL)
-        self.assertContains(response, "5 accounts")
+        self.assertEqual(response.context["page"].paginator.count, 5)
         for text in (
             "Kat W",
             "Chloe Shih",

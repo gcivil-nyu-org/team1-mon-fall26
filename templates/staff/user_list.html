@@ -8,22 +8,21 @@
 {% block content %}
   <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=2">
 
-  <div class="staff-header">
-    <h1 class="admin-title">Users</h1>
-    <form method="get" action="{% url 'staff:user_list' %}" class="staff-search" role="search">
-      <label class="visually-hidden" for="staff-search">Search by name, username or email</label>
-      <input type="search" id="staff-search" name="q" value="{{ query }}" placeholder="Search name, username or email">
-      <button type="submit" class="btn btn-dark btn-small">Search</button>
-      {% if query %}<a class="text-link" href="{% url 'staff:user_list' %}">Clear</a>{% endif %}
-    </form>
-  </div>
+  <h1 class="admin-title">Users</h1>
 
   <div class="staff-layout">
     {# Left: the accounts (#89). #}
     <section class="card staff-list" aria-label="Accounts">
-      <p class="muted staff-count">
-        {% if query %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} matching “{{ query }}”{% else %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }}{% endif %}
-      </p>
+      {# #90: search inside the list, as in the Figma. #}
+      <form method="get" action="{% url 'staff:user_list' %}" class="staff-search" role="search">
+        <svg class="staff-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <label class="visually-hidden" for="staff-search">Search by name, username or email</label>
+        <input type="search" id="staff-search" name="q" value="{{ query }}" placeholder="Search name or email">
+        <button type="submit" class="visually-hidden">Search</button>
+      </form>
+      {% if query %}
+        <p class="muted staff-count">{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} found <a class="staff-clear" href="{% url 'staff:user_list' %}">Clear</a></p>
+      {% endif %}
       {% if page.object_list %}
         <ul class="staff-rows">
           {% for account in page %}
@@ -49,8 +48,8 @@
       {% else %}
         <div class="staff-empty">
           {% if query %}
-            <strong>No accounts match “{{ query }}”</strong>
-            <p class="muted">Check the spelling, or search by another name, username or email.</p>
+            <strong>No accounts found</strong>
+            <p class="muted">Nothing matches “{{ query }}”. Check the spelling or try their email.</p>
           {% else %}
             <strong>No accounts yet</strong>
           {% endif %}

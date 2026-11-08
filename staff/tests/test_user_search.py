@@ -25,7 +25,7 @@ class SearchTests(StaffTestData):
 
     def test_results_say_how_many_and_open_the_account(self):
         response, _ = self.found("kat")
-        self.assertContains(response, "1 account matching “kat”")
+        self.assertContains(response, "1 account found")
         self.assertContains(response, f'href="{detail_url(self.owner)}?q=kat"')
         self.assertContains(response, 'value="kat"')
         self.assertContains(response, f'href="{LIST_URL}">Clear</a>')
@@ -33,14 +33,16 @@ class SearchTests(StaffTestData):
     def test_message_when_nothing_matches(self):
         response, accounts = self.found("nobody")
         self.assertEqual(accounts, [])
-        self.assertContains(response, "No accounts match “nobody”")
-        self.assertContains(response, "Check the spelling")
+        self.assertContains(response, "No accounts found")
+        self.assertContains(
+            response, "Nothing matches “nobody”. Check the spelling or try their email."
+        )
         self.assertIsNone(response.context["selected"])
 
     def test_blank_search_lists_everyone(self):
         response, accounts = self.found("   ")
         self.assertEqual(len(accounts), 5)
-        self.assertContains(response, "5 accounts")
+        self.assertNotContains(response, "accounts found")
         self.assertNotContains(response, ">Clear</a>")
 
     def test_pages_keep_the_search(self):
@@ -55,4 +57,4 @@ class SearchTests(StaffTestData):
     def test_search_box_is_on_the_users_page(self):
         response = self.client.get(reverse("staff:user_list"))
         self.assertContains(response, 'role="search"')
-        self.assertContains(response, 'placeholder="Search name, username or email"')
+        self.assertContains(response, 'placeholder="Search name or email"')
