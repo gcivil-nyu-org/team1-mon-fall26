@@ -846,3 +846,33 @@ class CareOpportunityFigmaDetailsTests(CareOpportunityTests):
             f"{reverse('opportunities:browse')}?post={own_post.pk}",
             fetch_redirect_response=False,
         )
+
+    def test_removed_reviews_do_not_count_toward_ratings(self):
+        from bookings.models import Booking
+        from reviews.models import Review
+
+        CareOpportunityInterest.objects.create(
+            opportunity=self.opportunity, caregiver=self.caregiver_profile
+        )
+        past = timezone.now() - timedelta(days=3)
+        for rating, removed in ((5, None), (1, timezone.now())):
+            booking = Booking.objects.create(
+                owner=self.owner,
+                pet=self.pet,
+                caregiver=self.caregiver_profile,
+                service_type=self.service,
+                start_time=past,
+                end_time=past + timedelta(hours=1),
+                status=Booking.Status.COMPLETED,
+            )
+            Review.objects.create(
+                booking=booking,
+                author=self.owner,
+                role=Review.Role.OWNER,
+                rating=rating,
+                removed_at=removed,
+            )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+        rating = response.context["interested_caregivers"][0].rating
+        self.assertEqual((rating["average"], rating["count"]), (5, 1))

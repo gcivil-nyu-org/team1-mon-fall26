@@ -58,7 +58,7 @@ def _render_opportunity_list(
     interested_caregivers = list(interested_caregivers)
     for interest in interested_caregivers:
         interest.rating = rating_summary(
-            Review.objects.filter(
+            Review.objects.visible().filter(
                 booking__caregiver=interest.caregiver, role=Review.Role.OWNER
             )
         )
