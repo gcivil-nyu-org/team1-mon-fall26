@@ -250,7 +250,11 @@ class LocationViewTests(TestCase):
         self.assertEqual(caregiver.service_radius_miles, 4)
 
     def test_public_profile_never_shows_the_address(self):
-        response = self.post_profile()
+        self.post_profile()
+        caregiver = CaregiverProfile.objects.get(user=self.user)
+        # #47: only the caregiver sees it, in their private Personal info.
+        self.client.force_login(get_user_model().objects.create_user("owner"))
+        response = self.client.get(reverse("caregiver", args=[caregiver.pk]))
         self.assertNotContains(response, "70 Washington Square South")
 
     def test_outage_shows_a_warning(self):

@@ -1,0 +1,227 @@
+/* ==========================================================================
+   #47 Update Personal Information, from Kat's "Pet Owner Profile",
+   "Update Personal Information" and "Delete Account" Figma frames.
+   The owner's profile reuses the caregiver profile's header card
+   (caregiver_public.css) and form styles (caregiver_profile.css).
+   ========================================================================== */
+
+/* ---------- Pages ---------- */
+
+.page-owner-profile,
+.page-owner-form {
+  max-width: 860px;
+  padding: 16px 32px 64px;
+}
+
+.owner-profile {
+  display: grid;
+  gap: 22px;
+}
+
+/* Yellow cover and avatar, like the Figma's pet owner profile. */
+.caregiver-cover.owner-cover {
+  background: #f8ecc6;
+}
+
+.owner-cover .cover-cloud {
+  background: #f5df9c;
+}
+
+.owner-cover .cover-sun {
+  background: var(--orange);
+}
+
+.caregiver-avatar.owner-avatar {
+  background: var(--yellow);
+}
+
+/* ---------- Edit profile + "…" menu ---------- */
+
+.profile-actions {
+  position: absolute;
+  right: 32px;
+  top: 140px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-profile .caregiver-edit-button {
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 4px 0 #f0ddd5;
+}
+
+.profile-more {
+  position: relative;
+}
+
+.profile-more-button {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 4px 0 #f0ddd5;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.profile-more-button::-webkit-details-marker {
+  display: none;
+}
+
+.profile-more-button:focus-visible {
+  outline: 3px solid #8057ad;
+  outline-offset: 2px;
+}
+
+.profile-more-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 190px;
+  padding: 6px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 10px 24px rgba(60, 30, 20, 0.12);
+}
+
+.profile-more-delete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: #b42318;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.profile-more-delete:hover,
+.profile-more-delete:focus-visible {
+  background: #fdecea;
+}
+
+/* ---------- Personal info ---------- */
+
+.personal-info {
+  gap: 16px;
+}
+
+.info-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.info-tiles.is-stacked {
+  grid-template-columns: 1fr;
+}
+
+.info-tile {
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: #f8f1ee;
+}
+
+.info-tile dt {
+  color: #6a5a54;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.info-tile dd {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.private-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f3ebe7;
+  color: #5c3d2e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.private-pill .lock-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.caregiver-private {
+  display: grid;
+  gap: 22px;
+}
+
+/* ---------- Edit your profile ---------- */
+
+.page-owner-form .caregiver-section .field input[type="email"] {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 16px;
+  background: #f8f1ee;
+  color: #6a5a54;
+  font: inherit;
+  font-size: 16px;
+}
+
+.page-owner-form .caregiver-section h2 {
+  font-size: 22px;
+}
+
+.owner-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.owner-form-actions .btn {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+}
+
+/* ---------- Smaller screens ---------- */
+
+@media (max-width: 640px) {
+  .page-owner-profile,
+  .page-owner-form {
+    padding: 8px 16px 48px;
+  }
+
+  .profile-actions {
+    right: 16px;
+    top: 16px;
+  }
+
+  .profile-more-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .info-tiles,
+  .page-owner-form .caregiver-two-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .page-owner-form .label-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}

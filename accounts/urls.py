@@ -15,7 +15,9 @@ urlpatterns = [
         name="login",
     ),
     path("logout/", LogoutView.as_view(), name="logout"),
-    path("neighborhood/", views.neighborhood_view, name="neighborhood"),
+    # #47: a pet owner's profile and personal info.
+    path("profile/", views.my_profile_view, name="my_profile"),
+    path("profile/edit/", views.edit_profile_view, name="edit_profile"),
     # Story #48: delete your own account.
     path("delete/", views.delete_account_view, name="delete_account"),
     path("signup/success/", views.signup_success_view, name="signup_success"),

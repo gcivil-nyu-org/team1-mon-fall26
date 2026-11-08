@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My profile · PawPal{% endblock %}
+
+{% block main_class %}page page-owner-profile{% endblock %}
+
+{% block content %}
+  {# #47: a pet owner's profile, from Kat's "Pet Owner Profile" Figma. The header card reuses the caregiver profile's styles. #}
+  <link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=8">
+  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=1">
+
+  <div class="owner-profile">
+    <article class="caregiver-public-card caregiver-header-card">
+      <div class="caregiver-cover owner-cover" aria-hidden="true">
+        <span class="cover-cloud"></span>
+        <span class="cover-sun"></span>
+        <span class="cover-dot"></span>
+        {% include "partials/paw_icon.html" with class="cover-paw" %}
+      </div>
+      <div class="profile-actions">
+        <a href="{% url 'edit_profile' %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+        {% include "accounts/partials/profile_more_menu.html" %}
+      </div>
+      <div class="caregiver-avatar owner-avatar">
+        <span aria-hidden="true">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+      </div>
+      <div class="caregiver-header-info">
+        {# Others see a short name, like "Kat W.". #}
+        <h1>{% if user.first_name %}{{ user.first_name }}{% if user.last_name %} {{ user.last_name|first|upper }}.{% endif %}{% else %}{{ user.username }}{% endif %}</h1>
+        <div class="caregiver-badges">
+          {% if profile.neighborhood %}
+            <span class="caregiver-badge">{% include "partials/pin_icon.html" %}{{ profile.neighborhood }}</span>
+          {% endif %}
+          <span class="caregiver-badge">{% include "partials/paw_icon.html" %}{{ pet_count }} pet{{ pet_count|pluralize }}</span>
+        </div>
+      </div>
+    </article>
+
+    <section class="caregiver-public-card caregiver-card-body personal-info">
+      <h2>Personal info</h2>
+      <dl class="info-tiles">
+        <div class="info-tile"><dt>First name</dt><dd>{{ user.first_name|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Last name</dt><dd>{{ user.last_name|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Email</dt><dd>{{ user.email|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Address</dt><dd>{{ profile.address|default:"Not added yet" }}</dd></div>
+      </dl>
+    </section>
+  </div>
+{% endblock %}

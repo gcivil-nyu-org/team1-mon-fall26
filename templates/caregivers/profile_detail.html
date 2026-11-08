@@ -6,7 +6,8 @@
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=8">
+{% if is_own %}<link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=1">{% endif %}
 
 
 <style>
@@ -50,7 +51,7 @@
 
 {% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">{% include "partials/chevron_left_icon.html" %} Back to caregivers</a>{% endif %}
 
-{# On a caregiver's own profile there's no request card, so the profile sits in the middle. #}
+{# On a caregiver's own profile, their private Personal info takes the request card's place. #}
 <div class="caregiver-public-grid{% if is_own %} is-own-profile{% endif %}">
   <div class="caregiver-public-main">
     <article class="caregiver-public-card caregiver-header-card">
@@ -61,8 +62,11 @@
         {% include "partials/paw_icon.html" with class="cover-paw" %}
       </div>
       {% if is_own %}
-        {# Same white pencil button as the pet profile. #}
-        <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+        {# Same white pencil button as the pet profile, plus the "…" menu with Delete account (#47). #}
+        <div class="profile-actions">
+          <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+          {% include "accounts/partials/profile_more_menu.html" %}
+        </div>
       {% endif %}
       <div class="caregiver-avatar">
         {% if caregiver.profile_photo %}
@@ -177,6 +181,18 @@
     {% if caregiver.user.is_active and not user.caregiver_profile %}
       <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{ caregiver.first_name }}</a>
     {% endif %}
+  </aside>
+  {% else %}
+  {# #47: only the caregiver sees their email and address, as in Kat's Figma. #}
+  <aside class="caregiver-private">
+    <section class="caregiver-public-card caregiver-card-body personal-info">
+      <h2>Personal info</h2>
+      <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see this</span>
+      <dl class="info-tiles is-stacked">
+        <div class="info-tile"><dt>Email</dt><dd>{{ user.email|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Address</dt><dd>{{ caregiver.address|default:"Not added yet" }}</dd></div>
+      </dl>
+    </section>
   </aside>
   {% endif %}
 </div>

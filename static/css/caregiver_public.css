@@ -27,9 +27,9 @@
   align-items: start;
 }
 
+/* #47: on their own profile, the caregiver's Personal info sits on the right. */
 .caregiver-public-grid.is-own-profile {
-  grid-template-columns: minmax(0, 728px);
-  justify-content: center;
+  grid-template-columns: minmax(0, 1fr) 340px;
 }
 
 .caregiver-public-main {
@@ -206,12 +206,9 @@
   line-height: 1.55;
 }
 
-/* Owner's own profile: white pencil button, like the pet profile's "Edit profile". */
+/* Own profile: white pencil button, like the pet profile's "Edit profile".
+   It sits in .profile-actions with the "…" menu (my_profile.css). */
 .caregiver-edit-button {
-  position: absolute;
-  right: 32px;
-  top: 140px;
-  z-index: 1;
   min-height: 50px;
   padding: 0 26px;
   color: var(--ink);
@@ -415,7 +412,8 @@
 /* ---------- Smaller screens ---------- */
 
 @media (max-width: 960px) {
-  .caregiver-public-grid {
+  .caregiver-public-grid,
+  .caregiver-public-grid.is-own-profile {
     grid-template-columns: 1fr;
   }
 
@@ -452,8 +450,6 @@
   }
 
   .caregiver-edit-button {
-    right: 16px;
-    top: 16px;
     min-height: 42px;
     padding: 0 18px;
     font-size: 15px;

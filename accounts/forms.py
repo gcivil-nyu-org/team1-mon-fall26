@@ -7,6 +7,8 @@ from django.contrib.auth.forms import (
     UserCreationForm,
 )
 
+from caregivers.geocoding import GeocodingUnavailable, geocode
+
 from .models import AccountProfile
 from .restriction import RESTRICTED_MESSAGE, is_restricted
 from .verification import mark_verified, needs_verification
@@ -130,15 +132,82 @@ class LoginForm(AuthenticationForm):
             )
 
 
-class NeighborhoodForm(forms.ModelForm):
-    """A pet owner's neighborhood, for the Messages header caregivers see."""
+class PersonalInfoForm(forms.Form):
+    """#47: a pet owner's name and address, from Kat's "Edit your profile" Figma.
 
-    class Meta:
-        model = AccountProfile
-        fields = ["neighborhood"]
-        widgets = {
-            "neighborhood": forms.TextInput(attrs={"placeholder": "e.g. Park Slope"}),
-        }
+    The email is shown on the page but can't be changed here yet: a new email
+    has to be confirmed first, and that step is being added separately.
+    The address is looked up with NYC GeoSearch so caregivers can see the
+    neighborhood (e.g. "Park Slope, Brooklyn"), never the address itself.
+    """
+
+    first_name = forms.CharField(
+        max_length=150, error_messages={"required": "Enter your first name."}
+    )
+    last_name = forms.CharField(
+        max_length=150, error_messages={"required": "Enter your last name."}
+    )
+    address = forms.CharField(
+        max_length=255,
+        error_messages={"required": "Enter your address."},
+        widget=forms.TextInput(attrs={"placeholder": "e.g. 215 6th Ave, Brooklyn"}),
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        self.profile = user.account_profile
+        kwargs.setdefault(
+            "initial",
+            {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "address": self.profile.address,
+            },
+        )
+        super().__init__(*args, **kwargs)
+        self.location = None
+        # Set when GeoSearch can't be reached: the address still saves.
+        self.geocoding_unavailable = False
+
+    def clean_first_name(self):
+        return self.cleaned_data["first_name"].strip()
+
+    def clean_last_name(self):
+        return self.cleaned_data["last_name"].strip()
+
+    def clean_address(self):
+        address = self.cleaned_data["address"].strip()
+        if address == self.profile.address:
+            return address  # Unchanged, so the neighborhood is still right.
+        try:
+            self.location = geocode(address)
+        except GeocodingUnavailable:
+            self.geocoding_unavailable = True
+            return address
+        if self.location is None:
+            raise forms.ValidationError(
+                "We couldn't find this address in New York City. "
+                "Check the house number and street name."
+            )
+        return address
+
+    def save(self):
+        self.user.first_name = self.cleaned_data["first_name"]
+        self.user.last_name = self.cleaned_data["last_name"]
+        self.user.save(update_fields=["first_name", "last_name"])
+
+        self.profile.address = self.cleaned_data["address"]
+        if self.location is not None:
+            self.profile.neighborhood = ", ".join(
+                part
+                for part in (self.location.neighborhood, self.location.borough)
+                if part
+            )
+        elif self.geocoding_unavailable:
+            # Don't keep showing the old address's neighborhood.
+            self.profile.neighborhood = ""
+        self.profile.save(update_fields=["address", "neighborhood"])
+        return self.profile
 
 
 class ResendVerificationForm(forms.Form):

@@ -221,9 +221,7 @@ a {
   margin-bottom: 6px;
 }
 
-/* Delete account (#48), above Log out in the account menu. */
-.account-dropdown .account-link,
-.account-dropdown .delete-account-link {
+.account-dropdown .account-link {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
@@ -258,14 +256,6 @@ a {
 
 .page-wide {
   max-width: 1000px;
-}
-
-.neighborhood-card {
-  padding: 30px;
-}
-
-.neighborhood-card form {
-  margin-top: 16px;
 }
 
 .back-link {
