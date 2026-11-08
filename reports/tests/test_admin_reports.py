@@ -134,7 +134,7 @@ class AdminReportDetailTests(AdminReportsTestData):
     def test_message_report_shows_the_message(self):
         report = self.report(self.owner, self.their_message, reason="harassment")
         response = self.client.get(self.detail_url(report))
-        self.assertContains(response, "Reported message")
+        self.assertContains(response, "Conversation")
         self.assertContains(
             response, '<p class="report-bubble">Send me money first.</p>'
         )
@@ -153,6 +153,14 @@ class AdminReportDetailTests(AdminReportsTestData):
         self.assertContains(response, "Great visit!")
         self.assertContains(response, "Deleted")
         self.assertContains(response, "Reported review")
+
+    def test_deleted_message_shows_the_saved_text(self):
+        report = self.report(self.owner, self.their_message)
+        self.their_message.delete()
+        response = self.client.get(self.detail_url(report))
+        self.assertContains(response, "Reported message")
+        self.assertContains(response, "Send me money first.")
+        self.assertNotContains(response, "<h3>Conversation</h3>")
 
     def test_missing_report_is_404(self):
         self.assertEqual(

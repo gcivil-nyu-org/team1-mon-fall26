@@ -1,5 +1,7 @@
 """Admin Reports page (story #95, laid out like Kat's Figma).
 
+For a reported message, the page shows the whole conversation around it (#96).
+
 The list of reports sits on the left and the selected report on the right.
 Two tabs: Open, and Resolved (reports an admin dismissed or acted on).
 Dismissing a report (#98) and removing the content (#97) each ask for
@@ -12,6 +14,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from staff.views import staff_required
+
+from messaging.models import Message
 
 from .models import Report
 from .moderation import dismiss, remove_content
@@ -64,7 +68,17 @@ def _detail(report):
             "review": review,
             "where": review.booking.caregiver,
         }
-    return {"message": report.message}
+    message = report.message
+    if message is None:
+        return {"message": None}
+    # #96: the whole conversation, removed messages included, so admins can
+    # see what led up to the reported message.
+    conversation = (
+        Message.objects.filter(conversation_id=message.conversation_id)
+        .select_related("sender")
+        .order_by("created_at", "pk")
+    )
+    return {"message": message, "conversation": conversation}
 
 
 def _get(pk):

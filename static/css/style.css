@@ -4069,3 +4069,48 @@ img.pet-initial-large {
   color: var(--muted);
   text-decoration: line-through;
 }
+
+/* ---------- Admin: reported conversation (#96) ---------- */
+
+.report-conversation {
+  display: grid;
+  gap: 10px;
+  max-height: 460px;
+  margin: 0;
+  padding: 16px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--bg);
+  font-size: 14px;
+  list-style: none;
+}
+
+.report-line {
+  display: grid;
+  justify-items: start;
+}
+
+.report-line .report-bubble {
+  border-color: var(--line-strong);
+}
+
+.report-line.is-reporter {
+  justify-items: end;
+}
+
+.report-line.is-reporter .report-bubble {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.report-line.is-reported .report-bubble {
+  border-color: #f0b7b0;
+  box-shadow: 0 0 0 3px var(--error-bg);
+}
+
+.report-line .report-bubble.is-removed {
+  border-color: var(--line-strong);
+  background: #fff;
+  color: var(--muted);
+}
