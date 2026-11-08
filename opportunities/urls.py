@@ -18,4 +18,9 @@ urlpatterns = [
         views.opportunity_withdraw_interest,
         name="withdraw_interest",
     ),
+    path(
+        "<int:pk>/message-owner/",
+        views.opportunity_message_owner,
+        name="message_owner",
+    ),
 ]

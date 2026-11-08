@@ -1,163 +1,56 @@
-
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}My requests · PawPal{% endblock %}
-{% block main_class %}page page-my-requests{% endblock %}
+{% block main_class %}page page-my-requests co-wide{% endblock %}
 
 {% block content %}
+<link href="{% static 'css/opportunities.css' %}?v=2" rel="stylesheet">
 
+<div class="co-page">
 
-<style>
-  /* My requests header */
-  .page-my-requests .requests-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 12px;
-  }
+  <header class="co-header">
+    <h1>My requests</h1>
+    <a class="btn btn-dark co-header-btn" href="{% url 'bookings:booking_create' %}">
+      {% include "partials/plus_icon.html" %} New request
+    </a>
+  </header>
 
-  .page-my-requests .requests-page-header h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 750;
-    line-height: 1.2;
-  }
+  <nav class="co-toggle" aria-label="Request type">
+    <a href="{% url 'bookings:booking_list' %}" class="active" aria-current="page">Bookings</a>
+    <a href="{% url 'opportunities:list' %}">Care posts</a>
+  </nav>
 
-  /* Bookings / Care posts toggle */
-  .page-my-requests .requests-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px;
-    margin-bottom: 24px;
-    background: #f3e8e3;
-    border-radius: 999px;
-  }
+  {% if active or history %}
 
-  .page-my-requests .requests-toggle-link {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 999px;
-    color: #3c3330;
-    text-decoration: none;
-    font-size: 13px;
-    line-height: 1.2;
-  }
-
-  .page-my-requests .requests-toggle-link:hover {
-    background: #fff8f5;
-  }
-
-  .page-my-requests .requests-toggle-link.active {
-    background: white;
-    color: #211e1e;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  }
-
-  /* Active / History labels */
-  .page-my-requests .booking-section .requests-section-label {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.4;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-kerning: none;
-    font-variant-ligatures: none;
-    color: #9e786d;
-    margin: 0 0 14px;
-}
-
-  .page-my-requests .booking-section-header {
-    margin-bottom: 0;
-  }
-
-  .page-my-requests .booking-section {
-    margin-bottom: 24px;
-  }
-
-  @media (max-width: 600px) {
-    .page-my-requests .requests-page-header {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-  }
-</style>
-
-<div class="requests-page-header">
-  <h1>My requests</h1>
-
-  <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}">
-    <span aria-hidden="true">+</span> New request
-  </a>
-</div>
-
-<nav class="requests-toggle" aria-label="Request type">
-  <a href="{% url 'bookings:booking_list' %}"
-     class="requests-toggle-link active"
-     aria-current="page">
-    Bookings
-  </a>
-
-  <a href="{% url 'opportunities:list' %}"
-     class="requests-toggle-link">
-    Care posts
-  </a>
-</nav>
-
-{% if active or history %}
-
-  <section class="booking-section">
-    <div class="booking-section-header">
-      <h2 class="requests-section-label">Active</h2>
-    </div>
-
-    {% if active %}
-      <div class="card booking-list-card">
-        <div class="booking-rows">
-          {% for booking in active %}
-            {% include "bookings/partials/booking_row.html" %}
-          {% endfor %}
-        </div>
-      </div>
-    {% else %}
-      <p class="muted">No pending or upcoming care right now.</p>
-    {% endif %}
-  </section>
-
-  {% if history %}
-    <section class="booking-section">
-      <h2 class="requests-section-label">History</h2>
-
-      <div class="card booking-list-card">
-        <div class="booking-rows">
-          {% for booking in history %}
-            {% include "bookings/partials/booking_row.html" %}
-          {% endfor %}
-        </div>
-      </div>
+    <section class="co-booking-section">
+      <h2 class="co-label">Active</h2>
+      {% for booking in active %}
+        {% include "bookings/partials/owner_booking_row.html" %}
+      {% empty %}
+        <p class="co-empty">No pending or upcoming care right now.</p>
+      {% endfor %}
     </section>
+
+    {% if history %}
+      <section class="co-booking-section">
+        <h2 class="co-label">History</h2>
+        {% for booking in history %}
+          {% include "bookings/partials/owner_booking_row.html" %}
+        {% endfor %}
+      </section>
+    {% endif %}
+
+  {% else %}
+
+    <section class="co-panel co-no-match">
+      <span class="co-no-match-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+      <h2>No requests yet</h2>
+      <p>Choose a caregiver and send a request when your pet needs care.</p>
+      <a class="btn btn-dark co-btn" href="{% url 'bookings:booking_create' %}">Request care</a>
+    </section>
+
   {% endif %}
 
-{% else %}
-
-  <div class="card empty-state">
-    <span class="bubble bubble-yellow" aria-hidden="true">
-      {% include "partials/paw_icon.html" %}
-    </span>
-
-    <h2>No requests yet</h2>
-
-    <p class="muted">
-      Choose a caregiver and send a request when your pet needs care.
-    </p>
-
-    <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}">
-      Request care
-    </a>
-  </div>
-
-{% endif %}
-
+</div>
 {% endblock %}

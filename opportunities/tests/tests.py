@@ -360,7 +360,9 @@ class CareOpportunityTests(TestCase):
 
         self.assertEqual(list(response.context["interested_caregivers"]), [])
         self.assertNotContains(response, self.caregiver_profile.name)
-        self.assertContains(response, "No one interested yet.")
+        self.assertContains(
+            response, "No one yet. Interested caregivers will show up here."
+        )
 
     def test_owner_only_sees_interest_for_selected_own_post(self):
         second_post = CareOpportunity.objects.create(
@@ -713,3 +715,164 @@ class CareOpportunityBrowseTests(TestCase):
         )
 
         self.assertEqual(str(interest), expected)
+
+
+class CareOpportunityFigmaDetailsTests(CareOpportunityTests):
+    """Owner names, in-panel statuses and messaging shown in the Figma frames."""
+
+    def test_close_and_reopen_show_status_in_the_panel(self):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            reverse("opportunities:close", args=[self.opportunity.pk]), follow=True
+        )
+        self.assertContains(response, "Caregivers can’t see this post anymore.")
+        response = self.client.post(
+            reverse("opportunities:reopen", args=[self.opportunity.pk]), follow=True
+        )
+        self.assertContains(response, "Caregivers can see this post again.")
+
+    def test_closed_banner_only_right_after_closing(self):
+        self.opportunity.status = CareOpportunity.Status.CLOSED
+        self.opportunity.save()
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            f"{reverse('opportunities:list')}?post={self.opportunity.pk}"
+        )
+        self.assertNotContains(response, "Caregivers can’t see this post anymore.")
+        self.assertContains(response, "No caregivers were interested.")
+
+    def test_list_shows_interest_count(self):
+        CareOpportunityInterest.objects.create(
+            opportunity=self.opportunity, caregiver=self.caregiver_profile
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+        self.assertContains(response, "1 interested")
+        self.assertContains(
+            response,
+            reverse("messaging:message_caregiver", args=[self.caregiver_profile.pk]),
+        )
+
+    def test_new_post_starts_with_owner_neighborhood(self):
+        from accounts.models import AccountProfile
+
+        AccountProfile.objects.update_or_create(
+            user=self.owner, defaults={"neighborhood": "Park Slope"}
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:create"))
+        self.assertTrue(
+            response.context["form"]["location"].value().startswith("Park Slope")
+        )
+
+    def test_blank_post_shows_specific_errors(self):
+        self.client.force_login(self.owner)
+        response = self.client.post(reverse("opportunities:create"), {})
+        self.assertContains(response, "Required fields can’t be left blank.")
+        for message in ("Pick a pet.", "Pick a service.", "Choose a start date."):
+            self.assertContains(response, message)
+
+    def test_caregiver_can_message_post_owner(self):
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:message_owner", args=[self.opportunity.pk])
+        )
+        from messaging.models import Conversation
+
+        conversation = Conversation.objects.get(
+            owner=self.owner, caregiver=self.caregiver_profile, booking=None
+        )
+        self.assertRedirects(response, conversation.get_absolute_url())
+
+    def test_owner_without_caregiver_profile_cannot_message_owner(self):
+        self.client.force_login(self.other_user)
+        response = self.client.get(
+            reverse("opportunities:message_owner", args=[self.opportunity.pk])
+        )
+        self.assertRedirects(
+            response, reverse("opportunities:browse"), fetch_redirect_response=False
+        )
+
+    def test_browse_names_the_owner(self):
+        self.owner.first_name, self.owner.last_name = "Kat", "Wu"
+        self.owner.save()
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            f"{reverse('opportunities:browse')}?post={self.opportunity.pk}"
+        )
+        self.assertContains(response, "Owner: Kat W.")
+        self.assertContains(response, "Message Kat")
+        self.assertContains(response, "Note from Kat")
+
+    def test_unknown_neighborhood_is_used_as_typed(self):
+        from accounts.models import AccountProfile
+
+        AccountProfile.objects.update_or_create(
+            user=self.owner, defaults={"neighborhood": "Somewhere Else"}
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:create"))
+        self.assertEqual(response.context["form"]["location"].value(), "Somewhere Else")
+
+    def test_browse_shows_distance_from_the_caregiver(self):
+        CaregiverProfile.objects.filter(pk=self.caregiver_profile.pk).update(
+            latitude=40.6710, longitude=-73.9814
+        )
+        self.opportunity.location = "Park Slope, Brooklyn"
+        self.opportunity.save()
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertContains(response, "Park Slope ·")
+        self.assertContains(response, " mi</small>")
+
+    def test_caregiver_messaging_their_own_post_goes_back_to_it(self):
+        own_pet = Pet.objects.create(
+            owner=self.caregiver_user, name="Own", pet_type=self.pet_type
+        )
+        own_post = CareOpportunity.objects.create(
+            owner=self.caregiver_user,
+            pet=own_pet,
+            service_type=self.service,
+            start_time=self.start,
+            end_time=self.end,
+            location="Park Slope",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:message_owner", args=[own_post.pk])
+        )
+        self.assertRedirects(
+            response,
+            f"{reverse('opportunities:browse')}?post={own_post.pk}",
+            fetch_redirect_response=False,
+        )
+
+    def test_removed_reviews_do_not_count_toward_ratings(self):
+        from bookings.models import Booking
+        from reviews.models import Review
+
+        CareOpportunityInterest.objects.create(
+            opportunity=self.opportunity, caregiver=self.caregiver_profile
+        )
+        past = timezone.now() - timedelta(days=3)
+        for rating, removed in ((5, None), (1, timezone.now())):
+            booking = Booking.objects.create(
+                owner=self.owner,
+                pet=self.pet,
+                caregiver=self.caregiver_profile,
+                service_type=self.service,
+                start_time=past,
+                end_time=past + timedelta(hours=1),
+                status=Booking.Status.COMPLETED,
+            )
+            Review.objects.create(
+                booking=booking,
+                author=self.owner,
+                role=Review.Role.OWNER,
+                rating=rating,
+                removed_at=removed,
+            )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+        rating = response.context["interested_caregivers"][0].rating
+        self.assertEqual((rating["average"], rating["count"]), (5, 1))

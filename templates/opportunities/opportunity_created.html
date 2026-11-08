@@ -1,229 +1,36 @@
-
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Care post created · PawPal{% endblock %}
-{% block main_class %}page page-my-requests{% endblock %}
+
+{% block main_class %}page page-my-requests co-wide{% endblock %}
 
 {% block content %}
-<style>
-  .post-confirmation {
-    max-width: 650px;
-    margin: 0 auto;
-  }
+<link href="{% static 'css/opportunities.css' %}?v=1" rel="stylesheet">
 
-  .post-confirmation-back {
-    display: inline-block;
-    margin-bottom: 16px;
-    color: #55423a;
-    text-decoration: none;
-    font-size: 12px;
-  }
+<div class="co-page co-narrow">
+  <a class="co-back" href="{% url 'opportunities:list' %}">{% include "partials/chevron_left_icon.html" %} My requests</a>
 
-  .post-confirmation-back:hover {
-    text-decoration: underline;
-  }
-
-  .post-confirmation-card {
-    background: #fff;
-    border: 1px solid #f0dcd2;
-    border-radius: 22px;
-    box-shadow: 0 3px 0 #f0dcd2;
-    padding: 34px 28px;
-    text-align: center;
-  }
-
-  .post-confirmation-check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 58px;
-    height: 58px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    background: #cef2de;
-    color: #25684b;
-    font-size: 28px;
-    font-weight: 700;
-  }
-
-  .post-confirmation-card h1 {
-    margin: 0 0 8px;
-    font-size: 27px;
-    line-height: 1.25;
-  }
-
-  .post-confirmation-description {
-    margin: 0 0 22px;
-    font-size: 13px;
-    color: #847a76;
-  }
-
-  .post-confirmation-summary {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    max-width: 390px;
-    margin: 0 auto 22px;
-    padding: 12px;
-    background: #faf6f3;
-    border-radius: 14px;
-    text-align: left;
-  }
-
-  .post-confirmation-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    font-size: 17px;
-    font-weight: 700;
-    background: #fac9dc;
-    color: #923b5c;
-  }
-
-  .post-confirmation-avatar.bubble-mint {
-    background: #bdebd6;
-    color: #246b50;
-  }
-
-  .post-confirmation-avatar.bubble-yellow {
-    background: #ffe3a1;
-    color: #835a0d;
-  }
-
-  .post-confirmation-avatar.bubble-blue {
-    background: #d8eafa;
-    color: #285b85;
-  }
-
-  .post-confirmation-avatar.bubble-lavender {
-    background: #e5d7fa;
-    color: #62458b;
-  }
-
-  .post-confirmation-avatar.bubble-peach {
-    background: #ffd8bd;
-    color: #95532d;
-  }
-
-  .post-confirmation-info {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .post-confirmation-info strong {
-    display: block;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
-  .post-confirmation-info small {
-    display: block;
-    margin-top: 3px;
-    font-size: 10px;
-    color: #847a76;
-    line-height: 1.5;
-  }
-
-  .post-confirmation-status {
-    flex-shrink: 0;
-    border-radius: 999px;
-    background: #cef2de;
-    color: #25684b;
-    padding: 5px 9px;
-    font-size: 10px;
-    font-weight: 600;
-  }
-
-  .post-confirmation-actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .post-confirmation-actions .btn {
-    font-size: 12px;
-  }
-
-  @media (max-width: 600px) {
-    .post-confirmation-card {
-      padding: 28px 16px;
-    }
-
-    .post-confirmation-card h1 {
-      font-size: 23px;
-    }
-
-    .post-confirmation-summary {
-      flex-wrap: wrap;
-    }
-  }
-</style>
-
-<div class="post-confirmation">
-
-  <a class="post-confirmation-back"
-     href="{% url 'opportunities:list' %}">
-    ‹ My requests
-  </a>
-
-  <section class="post-confirmation-card">
-
-    <div class="post-confirmation-check"
-         aria-hidden="true">
-      ✓
+  <section class="co-panel co-done">
+    <div class="co-done-check" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
     </div>
-
     <h1>Your care post is live!</h1>
+    <p class="co-done-sub">Caregivers nearby can now see it and offer to help.</p>
 
-    <p class="post-confirmation-description">
-      Caregivers nearby can now see it and offer to help.
-    </p>
-
-    <div class="post-confirmation-summary">
-
-      <span class="post-confirmation-avatar bubble-{{ opportunity.pet.theme }}">
-        {{ opportunity.pet.name|slice:":1" }}
+    <div class="co-done-summary">
+      <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
+      <span class="co-item-copy">
+        <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
+        <small>{{ opportunity.start_time|date:"D, M j · g:i A" }} · {{ opportunity.location }}</small>
       </span>
-
-      <div class="post-confirmation-info">
-        <strong>
-          {{ opportunity.pet.name }} ·
-          {{ opportunity.service_type.name }}
-        </strong>
-
-        <small>
-          {{ opportunity.start_time|date:"D, M j · g:i A" }}
-          · {{ opportunity.location }}
-        </small>
-      </div>
-
-      <span class="post-confirmation-status">
-        ● {{ opportunity.get_status_display }}
-      </span>
-
+      <span class="co-badge {{ opportunity.status }}">{{ opportunity.get_status_display }}</span>
     </div>
 
-    <div class="post-confirmation-actions">
-
-      <a class="btn btn-dark"
-         href="{% url 'opportunities:list' %}">
-        View my care posts
-      </a>
-
-      <a class="btn"
-         href="{% url 'opportunities:create' %}"
-         style="border: 1px solid #e9cbbd; border-radius: 999px;">
-        Add another post
-      </a>
-
+    <div class="co-actions co-actions-center">
+      <a class="btn btn-dark co-btn" href="{% url 'opportunities:list' %}?post={{ opportunity.pk }}">View my care posts</a>
+      <a class="btn btn-outline co-btn" href="{% url 'opportunities:create' %}">Add another post</a>
     </div>
-
   </section>
-
 </div>
 {% endblock %}

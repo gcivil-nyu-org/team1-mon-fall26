@@ -1,7 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+
+from caregivers.geocoding import distance_miles
+from caregivers.search import find_neighborhood
+from messaging.models import Conversation
+from reviews.models import Review, rating_summary
 
 from .forms import CareOpportunityForm
 from .models import CareOpportunity, CareOpportunityInterest
@@ -15,6 +21,9 @@ def _render_opportunity_list(
     opportunities = list(
         CareOpportunity.objects.filter(owner=request.user)
         .select_related("pet", "pet__pet_type", "service_type")
+        .annotate(
+            interest_count=Count("interests", filter=Q(interests__is_active=True))
+        )
         .order_by("-created_at")
     )
     open_posts = [
@@ -46,6 +55,13 @@ def _render_opportunity_list(
         if selected
         else CareOpportunityInterest.objects.none()
     )
+    interested_caregivers = list(interested_caregivers)
+    for interest in interested_caregivers:
+        interest.rating = rating_summary(
+            Review.objects.visible().filter(
+                booking__caregiver=interest.caregiver, role=Review.Role.OWNER
+            )
+        )
 
     return render(
         request,
@@ -58,6 +74,8 @@ def _render_opportunity_list(
             "edit_form": edit_form,
             "active_requests_tab": "care_posts",
             "interested_caregivers": interested_caregivers,
+            # In-panel feedback after closing, reopening or saving a post.
+            "post_status": request.GET.get("status", ""),
         },
     )
 
@@ -66,6 +84,18 @@ def _render_opportunity_list(
 def opportunity_list(request):
     """Owner dashboard with optional inline edit state."""
     return _render_opportunity_list(request, editing=request.GET.get("edit") == "1")
+
+
+def _owner_location(user):
+    """The owner's neighborhood as "Park Slope, Brooklyn", or ""."""
+    profile = getattr(user, "account_profile", None)
+    neighborhood = (getattr(profile, "neighborhood", "") or "").strip()
+    if not neighborhood:
+        return ""
+    place = find_neighborhood(neighborhood)
+    if place and place.get("borough") and "," not in neighborhood:
+        return f"{neighborhood}, {place['borough']}"
+    return neighborhood
 
 
 @login_required
@@ -95,7 +125,10 @@ def opportunity_create(request):
                 pk=opportunity.pk,
             )
     else:
-        form = CareOpportunityForm(owner=request.user)
+        form = CareOpportunityForm(
+            owner=request.user,
+            initial={"location": _owner_location(request.user)},
+        )
 
     return render(
         request,
@@ -141,8 +174,9 @@ def opportunity_edit(request, pk):
         )
         if form.is_valid():
             form.save()
-            messages.success(request, "Your care post has been updated!")
-            return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
+            return redirect(
+                f"{reverse('opportunities:list')}?post={opportunity.pk}&status=saved"
+            )
         return _render_opportunity_list(
             request, selected_id=opportunity.pk, edit_form=form, editing=True
         )
@@ -164,12 +198,9 @@ def opportunity_close(request, pk):
         opportunity.status = CareOpportunity.Status.CLOSED
         opportunity.save(update_fields=["status"])
 
-        messages.success(
-            request,
-            "Your care post has been closed.",
-        )
-
-    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
+    return redirect(
+        f"{reverse('opportunities:list')}?post={opportunity.pk}&status=closed"
+    )
 
 
 @login_required
@@ -180,8 +211,21 @@ def opportunity_reopen(request, pk):
     if opportunity.status == CareOpportunity.Status.CLOSED:
         opportunity.status = CareOpportunity.Status.OPEN
         opportunity.save(update_fields=["status"])
-        messages.success(request, "Your care post has been reopened.")
-    return redirect(f"{reverse('opportunities:list')}?post={opportunity.pk}")
+    return redirect(
+        f"{reverse('opportunities:list')}?post={opportunity.pk}&status=reopened"
+    )
+
+
+def _place_and_distance(location, caregiver):
+    """Short place name ("Gowanus") and miles from the caregiver, if known."""
+    place_name = (location or "").split(",")[0].strip()
+    place = find_neighborhood(location or "")
+    if place is None or caregiver.latitude is None or caregiver.longitude is None:
+        return place_name, None
+    miles = distance_miles(
+        caregiver.latitude, caregiver.longitude, place["latitude"], place["longitude"]
+    )
+    return place_name, round(miles, 1)
 
 
 @login_required
@@ -226,8 +270,19 @@ def opportunity_browse(request):
             opportunity_id__in=[post.pk for post in posts],
         ).values_list("opportunity_id", flat=True)
     )
+    if selected is not None:
+        owner = selected.owner
+        # "Kat" for notes and buttons, "Kat W." next to the pet's details.
+        selected.owner_first = owner.first_name or owner.username
+        selected.owner_label = (
+            f"{owner.first_name} {owner.last_name[:1].upper()}."
+            if owner.first_name and owner.last_name
+            else selected.owner_first
+        )
+
     for post in posts:
         post.caregiver_interested = post.pk in interested_ids
+        post.place_name, post.distance = _place_and_distance(post.location, caregiver)
 
     return render(
         request,
@@ -242,6 +297,7 @@ def opportunity_browse(request):
             "interest_added": request.GET.get("interest") == "added",
             "interest_withdrawn": request.GET.get("interest") == "withdrawn",
             "active_requests_tab": "find_pets",
+            "caregiver_neighborhood": caregiver.neighborhood,
         },
     )
 
@@ -293,3 +349,24 @@ def opportunity_withdraw_interest(request, pk):
         opportunity_id=pk, caregiver=caregiver, is_active=True
     ).update(is_active=False)
     return redirect(f"{reverse('opportunities:browse')}?post={pk}&interest=withdrawn")
+
+
+@login_required
+def opportunity_message_owner(request, pk):
+    """A caregiver opens a chat with the owner of an open care post."""
+    caregiver = _caregiver_for_interest(request)
+    if caregiver is None:
+        messages.error(request, "A caregiver profile is required to message owners.")
+        return redirect("opportunities:browse")
+    opportunity = get_object_or_404(
+        CareOpportunity,
+        pk=pk,
+        status=CareOpportunity.Status.OPEN,
+        owner__is_active=True,
+    )
+    if opportunity.owner_id == request.user.pk:
+        return redirect(f"{reverse('opportunities:browse')}?post={pk}")
+    conversation, _ = Conversation.objects.get_or_create(
+        owner=opportunity.owner, caregiver=caregiver, booking=None
+    )
+    return redirect(conversation)

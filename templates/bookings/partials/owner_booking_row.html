@@ -1,0 +1,17 @@
+{% comment %}A row on the owner's My requests → Bookings tab (Figma "My requests (Bookings)").
+The whole row opens the booking; the buttons on the right do their own thing.{% endcomment %}
+<div class="co-booking-row">
+  {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
+  <span class="co-item-copy">
+    <a class="co-booking-link" href="{{ booking.get_absolute_url }}"><strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong></a>
+    <small>{{ booking.caregiver.name }} · {{ booking.start_time|date:"D, M j, g:i A" }}</small>
+  </span>
+  <span class="co-booking-actions">
+    {% if booking.status == "pending" or booking.status == "accepted" %}
+      <a class="btn btn-outline co-btn-sm" href="{% url 'messaging:message_booking' booking.pk %}">{% include "opportunities/partials/message_icon.html" %} Message</a>
+    {% elif booking.can_rate %}
+      <a class="btn btn-outline co-btn-sm" href="{% url 'reviews:create' booking.pk %}"><span class="co-rate-paw">{% include "partials/paw_icon.html" %}</span> Rate this visit</a>
+    {% endif %}
+    {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+  </span>
+</div>

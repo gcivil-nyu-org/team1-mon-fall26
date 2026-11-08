@@ -1,1574 +1,243 @@
-
-
 {% extends "base.html" %}
-
-
+{% load static %}
 
 {% block title %}Care posts · PawPal{% endblock %}
 
-{% block main_class %}page page-my-requests{% endblock %}
-
-
+{% block main_class %}page page-my-requests co-wide{% endblock %}
 
 {% block content %}
+<link href="{% static 'css/opportunities.css' %}?v=1" rel="stylesheet">
 
-<style>
+<div class="co-page">
 
-  .care-posts-page {
-
-    width: 100%;
-
-  }
-
-
-
-  .care-posts-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 16px;
-
-    margin-bottom: 12px;
-
-  }
-
-
-
-  .care-posts-header h1 {
-
-    margin: 0;
-
-    font-size: 30px;
-
-    line-height: 1.2;
-
-  }
-
-
-
-  .care-posts-toggle {
-
-    display: inline-flex;
-
-    gap: 4px;
-
-    padding: 5px;
-
-    margin-bottom: 22px;
-
-    background: #f3e8e3;
-
-    border-radius: 999px;
-
-  }
-
-
-
-  .care-posts-toggle a {
-
-    padding: 8px 16px;
-
-    border-radius: 999px;
-
-    text-decoration: none;
-
-    color: #3c3330;
-
-    font-size: 13px;
-
-  }
-
-
-
-  .care-posts-toggle a.active {
-
-    background: white;
-
-    color: #211e1e;
-
-    font-weight: 600;
-
-  }
-
-
-
-  .care-posts-layout {
-
-    display: grid;
-
-    grid-template-columns: minmax(0, 0.68fr) minmax(0, 1fr);
-
-    gap: 14px;
-
-    align-items: start;
-
-  }
-
-
-
-  .care-posts-panel {
-
-    min-width: 0;
-
-    background: white;
-
-    border: 1px solid #f0dcd2;
-
-    border-radius: 20px;
-
-    padding: 16px;
-
-    box-shadow: 0 3px 0 #f0dcd2;
-
-  }
-
-
-
-  .care-posts-label {
-
-    margin: 2px 0 8px;
-
-    font-size: 10px;
-
-    font-weight: 600;
-
-    letter-spacing: 1px;
-
-    text-transform: uppercase;
-
-    color: #a16f60;
-
-  }
-
-
-
-  .care-posts-label:not(:first-child) {
-
-    margin-top: 16px;
-
-  }
-
-
-
-  .care-posts-item {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 11px 9px;
-
-    margin-bottom: 7px;
-
-    border-radius: 13px;
-
-    background: #faf6f3;
-
-    text-decoration: none;
-
-    color: inherit;
-
-    border: 1.5px solid transparent;
-
-  }
-
-
-
-  .care-posts-item.selected {
-
-    background: white;
-
-    border-color: #211e1e;
-
-  }
-
-
-
-  .care-posts-avatar {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 36px;
-
-    height: 36px;
-
-    flex-shrink: 0;
-
-    border-radius: 50%;
-
-    font-size: 15px;
-
-    font-weight: 700;
-
-    background: #f9c7d8;
-
-    color: #8c3152;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-mint {
-
-    background: #bdebd6;
-
-    color: #246b50;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-yellow {
-
-    background: #ffe3a1;
-
-    color: #835a0d;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-blue {
-
-    background: #d8eafa;
-
-    color: #285b85;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-lavender {
-
-    background: #e5d7fa;
-
-    color: #62458b;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-peach {
-
-    background: #ffd8bd;
-
-    color: #95532d;
-
-  }
-
-
-
-  .care-posts-avatar.bubble-pink {
-
-    background: #fac9dc;
-
-    color: #923b5c;
-
-  }
-
-
-
-  .care-posts-item-copy {
-
-    min-width: 0;
-
-    flex: 1;
-
-  }
-
-
-
-  .care-posts-item-copy strong {
-
-    display: block;
-
-    font-size: 12px;
-
-    line-height: 1.35;
-
-  }
-
-
-
-  .care-posts-item-copy small {
-
-    display: block;
-
-    margin-top: 3px;
-
-    font-size: 10px;
-
-    color: #847a76;
-
-  }
-
-
-
-  .care-posts-badge {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    white-space: nowrap;
-
-    border-radius: 999px;
-
-    padding: 5px 9px;
-
-    font-size: 10px;
-
-    font-weight: 600;
-
-  }
-
-
-
-  .care-posts-badge.open {
-
-    background: #cef2de;
-
-    color: #25684b;
-
-  }
-
-
-
-  .care-posts-badge.closed {
-
-    background: #eee8e5;
-
-    color: #746e6a;
-
-  }
-
-
-
-  .care-posts-detail-heading {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 10px;
-
-    margin-bottom: 16px;
-
-  }
-
-
-
-  .care-posts-detail-pet {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    min-width: 0;
-
-  }
-
-
-
-  .care-posts-detail-pet h2 {
-
-    margin: 0;
-
-    font-size: 18px;
-
-    line-height: 1.3;
-
-  }
-
-
-
-  .care-posts-detail-pet p {
-
-    margin: 3px 0 0;
-
-    font-size: 11px;
-
-    color: #847a76;
-
-  }
-
-
-
-  .care-posts-detail-avatar {
-
-    width: 46px;
-
-    height: 46px;
-
-    font-size: 18px;
-
-  }
-
-
-
-  .care-posts-facts {
-
-    display: grid;
-
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-
-    gap: 8px;
-
-    margin-bottom: 18px;
-
-  }
-
-
-
-  .care-posts-fact {
-
-    min-width: 0;
-
-    padding: 11px;
-
-    border-radius: 12px;
-
-    background: #faf5f2;
-
-    font-size: 11px;
-
-    overflow-wrap: anywhere;
-
-  }
-
-
-
-  .care-posts-fact small {
-
-    display: block;
-
-    margin-bottom: 6px;
-
-    color: #a16f60;
-
-    font-size: 9px;
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.3px;
-
-  }
-
-
-
-  .care-posts-subheading {
-
-    margin: 0 0 9px;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-  }
-
-
-
-  .care-posts-notes {
-
-    margin-bottom: 17px;
-
-    padding: 13px;
-
-    border-radius: 12px;
-
-    background: #fff8e6;
-
-    color: #65584d;
-
-    font-size: 12px;
-
-    line-height: 1.5;
-
-  }
-
-
-
-  .care-posts-empty-interest {
-
-    padding: 16px;
-
-    border-radius: 12px;
-
-    background: #faf6f3;
-
-    color: #847a76;
-
-    font-size: 12px;
-
-  }
-
-
-
-  .care-posts-empty {
-
-    font-size: 12px;
-
-    color: #847a76;
-
-  }
-
-
-
-  .care-posts-actions {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-top: 18px;
-
-  }
-
-
-
-  .care-posts-actions a {
-
-    font-size: 12px;
-
-  }
-
-
-
-  @media (max-width: 700px) {
-
-    .care-posts-layout {
-
-      grid-template-columns: 1fr;
-
-    }
-
-
-
-    .care-posts-facts {
-
-      grid-template-columns: 1fr;
-
-    }
-
-
-
-    .care-posts-header h1 {
-
-      font-size: 25px;
-
-    }
-
-  }
-
-  /* Slightly enlarge the Care posts dashboard */
-
-
-
-.care-posts-header h1 {
-
-    font-size: 32px;
-
-}
-
-
-
-.care-posts-panel {
-
-    padding: 20px;
-
-}
-
-
-
-.care-posts-item-copy strong {
-
-    font-size: 13px;
-
-}
-
-
-
-.care-posts-item-copy small {
-
-    font-size: 11px;
-
-}
-
-
-
-.care-posts-detail-pet h2 {
-
-    font-size: 20px;
-
-}
-
-
-
-.care-posts-fact {
-
-    font-size: 12px;
-
-}
-
-
-
-.care-posts-subheading {
-
-    font-size: 14px;
-
-}
-
-
-
-.care-posts-notes,
-
-.care-posts-empty-interest {
-
-    font-size: 13px;
-
-}
-
-/* Final Care posts dashboard refinements */
-
-
-
-.care-posts-page {
-
-    max-width: 1050px;
-
-    margin: 0 auto;
-
-}
-
-
-
-.care-posts-layout {
-
-    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
-
-    gap: 16px;
-
-}
-
-
-
-.care-posts-panel {
-
-    padding: 21px;
-
-}
-
-
-
-.care-posts-item {
-
-    padding: 10px;
-
-    margin-bottom: 7px;
-
-}
-
-
-
-.care-posts-item-copy strong {
-
-    font-size: 13px;
-
-}
-
-
-
-.care-posts-item-copy small {
-
-    font-size: 10px;
-
-}
-
-
-
-.care-posts-detail-pet h2 {
-
-    font-size: 18px;
-
-}
-
-
-
-.care-posts-fact {
-
-    padding: 11px;
-
-    font-size: 11px;
-
-}
-
-
-
-.care-posts-notes {
-
-    padding: 12px;
-
-    margin-bottom: 18px;
-
-}
-
-
-
-.care-posts-actions {
-
-    margin-top: 18px;
-
-}
-
-
-
-@media (max-width: 700px) {
-
-    .care-posts-layout {
-
-        grid-template-columns: 1fr;
-
-    }
-
-}
-
-.care-posts-actions form {
-
-    margin: 0;
-
-}
-
-
-
-.care-posts-close-btn {
-
-    padding: 8px 0;
-
-    border: none;
-
-    background: transparent;
-
-    color: #c62828;
-
-    text-decoration: underline;
-
-    font: inherit;
-
-    font-size: 12px;
-
-    cursor: pointer;
-
-}
-
-
-
-.care-posts-close-btn:hover {
-
-    color: #9f1c1c;
-
-}
-
-
-
-  /* Inline editing within the right-hand care post panel */
-
-  .care-posts-edit-field { margin-bottom: 15px; min-width: 0; }
-
-  .care-posts-edit-label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 7px; }
-
-  .care-posts-required { color: #c12d20; }
-
-  .care-posts-service-options { display: flex; flex-wrap: wrap; gap: 7px; }
-
-  .care-posts-service-choice { cursor: pointer; position: relative; }
-
-  .care-posts-service-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-
-  .care-posts-service-choice span { display: inline-block; border: 1px solid #e9cbbd; border-radius: 999px; padding: 8px 11px; font-size: 11px; background: #fff; }
-
-  .care-posts-service-choice input:checked + span { background: #211e1e; color: white; border-color: #211e1e; }
-
-  .care-posts-service-choice input:focus-visible + span { outline: 2px solid #dc9c81; outline-offset: 2px; }
-
-  .care-posts-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
-
-  .care-posts-edit-field .post-form-input { width: 100%; box-sizing: border-box; min-width: 0; padding: 11px; border: 1px solid #e9cbbd; border-radius: 10px; background: #fffaf8; font: inherit; font-size: 12px; }
-
-  .care-posts-edit-field textarea.post-form-input { min-height: 78px; resize: vertical; }
-
-  .care-posts-edit-field .post-form-input:focus { outline: 2px solid #e9a98d; }
-
-  .care-posts-edit-error { color: #b42318; font-size: 11px; margin-top: 5px; }
-
-  .care-posts-edit-error-banner { background: #ffe7e4; color: #a82b21; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 12px; }
-
-  .care-posts-edit-actions { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
-
-  .care-posts-edit-actions button, .care-posts-edit-actions a { font: inherit; font-size: 12px; padding: 10px 14px; border-radius: 999px; text-decoration: none; cursor: pointer; }
-
-  .care-posts-edit-save { background: #211e1e; color: #fff; border: 1px solid #211e1e; box-shadow: 0 2px 0 #eeaa8d; }
-
-  .care-posts-edit-cancel { color: #211e1e; border: 1px solid #e9cbbd; background: white; }
-
-  .care-posts-actions .care-posts-edit-cancel { font-size: 12px; }
-
-  .care-posts-status-note { padding: 11px; background: #faf6f3; border-radius: 10px; font-size: 12px; margin-bottom: 14px; }
-
-  @media (max-width: 540px) { .care-posts-edit-grid { grid-template-columns: 1fr; } }
-
-
-
-  /* Inline confirmation and post-status feedback */
-
-  .care-posts-confirm { margin-top: 16px; padding: 14px; background: #faf6f3; border-radius: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-
-  .care-posts-confirm[hidden] { display: none; }
-
-  .care-posts-confirm strong { display: block; font-size: 12px; }
-
-  .care-posts-confirm p { margin: 3px 0 0; font-size: 11px; color: #847a76; }
-
-  .care-posts-confirm-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-  .care-posts-confirm-actions button { cursor: pointer; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 600; }
-
-  .care-posts-confirm-cancel { background: white; color: #211e1e; border: 1px solid #e9cbbd; }
-
-  .care-posts-confirm-submit { background: #211e1e; color: white; border: 1px solid #211e1e; box-shadow: 0 2px 0 #eeaa8d; }
-
-  .care-posts-status-banner { display: flex; align-items: center; gap: 9px; padding: 12px; margin: 0 0 15px; background: #f8e5de; border-radius: 12px; color: #65483f; font-size: 12px; font-weight: 600; }
-
-  .care-posts-status-banner.reopened { background: #e3f5e9; color: #25684b; }
-
-  .care-posts-reopen-btn { display: inline-block; padding: 10px 16px; border: 1px solid #e9cbbd; background: white; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
-
-  .care-posts-reopen-btn:hover, .care-posts-confirm-cancel:hover { background: #faf6f3; }
-
-  @media (max-width: 560px) { .care-posts-confirm { align-items: stretch; flex-direction: column; } }
-
-
-
-  /* PawPal Figma finishing details — dashboard and inline editor */
-
-  .care-posts-item {
-
-    transition: background-color .15s ease, border-color .15s ease,
-
-                box-shadow .15s ease, transform .15s ease;
-
-  }
-
-  .care-posts-item.selected {
-
-    border: 1.5px solid #211e1e;
-
-    box-shadow: 0 2px 0 #211e1e;
-
-    transform: translateY(-1px);
-
-  }
-
-  .care-posts-item:not(.selected):hover { background: #f6eee9; }
-
-  .care-posts-item:focus-visible { outline: 3px solid #e9a98d; outline-offset: 3px; }
-
-  .care-posts-service-choice span {
-
-    transition: background-color .15s ease, border-color .15s ease,
-
-                box-shadow .15s ease, transform .15s ease;
-
-  }
-
-  /* The inline editor uses a span, not .post-form-service-pill. */
-
-  .care-posts-service-choice input:checked + span {
-
-    background: #211e1e;
-
-    color: #fff;
-
-    border-color: #211e1e;
-
-    box-shadow: 0 3px 0 #f2a17e;
-
-    transform: translateY(-1px);
-
-  }
-
-  .care-posts-service-choice:hover input:not(:checked) + span {
-
-    background: #fffaf7;
-
-    border-color: #d7a995;
-
-  }
-
-  .care-posts-service-choice:active span { transform: translateY(1px); box-shadow: none; }
-
-  .care-posts-service-choice input:focus-visible + span {
-
-    outline: 3px solid #e9a98d;
-
-    outline-offset: 3px;
-
-  }
-
-  .care-posts-edit-field .post-form-input {
-
-    transition: border-color .15s ease, box-shadow .15s ease;
-
-  }
-
-  .care-posts-edit-field .post-form-input:focus {
-
-    border-color: #d7a995;
-
-    box-shadow: 0 0 0 2px #f9e9e0;
-
-  }
-
-  .care-posts-edit-save, .care-posts-confirm-submit {
-
-    box-shadow: 0 3px 0 #f2a17e;
-
-  }
-
-  .care-posts-edit-cancel, .care-posts-reopen-btn,
-
-  .care-posts-confirm-cancel {
-
-    box-shadow: 0 2px 0 #f0dcd2;
-
-  }
-
-  .care-posts-edit-cancel:hover, .care-posts-reopen-btn:hover,
-
-  .care-posts-confirm-cancel:hover { background: #faf6f3; }
-
-  .care-posts-panel { box-shadow: 0 4px 0 #f0dcd2; }
-
-  .care-posts-toggle a.active { box-shadow: 0 2px 0 #ead4ca; }
-
-  @media (prefers-reduced-motion: reduce) {
-
-    .care-posts-item, .care-posts-service-choice span,
-
-    .care-posts-edit-field .post-form-input { transition: none; }
-
-  }
-
-
-/* Page-specific sizing: match the Find Pets marketplace */
-main.page-my-requests:has(.care-posts-page),
-main.page-my-requests:has(.post-form-page) {
-  width: 100%; max-width: 1240px; box-sizing: border-box;
-  padding-left: 28px; padding-right: 28px;
-}
-
-.care-posts-page { max-width: 1160px; margin: 24px auto 65px; }
-.care-posts-header { margin-bottom: 20px; gap: 20px; }
-.care-posts-header h1 { font-size: 40px; letter-spacing: -.8px; }
-.care-posts-header .btn { padding: 14px 24px; font-size: 15px; white-space: nowrap; }
-.care-posts-toggle { margin-bottom: 26px; padding: 6px; }
-.care-posts-toggle a { padding: 11px 20px; font-size: 15px; }
-.care-posts-layout { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 22px; }
-.care-posts-panel { padding: 25px; border-radius: 24px; }
-.care-posts-label { font-size: 12px; margin-bottom: 12px; }
-.care-posts-label:not(:first-child) { margin-top: 22px; }
-.care-posts-item { padding: 15px 13px; gap: 13px; border-radius: 16px; margin-bottom: 9px; }
-.care-posts-avatar { width: 48px; height: 48px; font-size: 18px; }
-.care-posts-item-copy strong { font-size: 15px; }
-.care-posts-item-copy small { font-size: 13px; margin-top: 5px; }
-.care-posts-badge { font-size: 12px; padding: 7px 10px; }
-.care-posts-detail-heading { gap: 16px; margin-bottom: 22px; }
-.care-posts-detail-pet { gap: 14px; }
-.care-posts-detail-avatar { width: 60px; height: 60px; font-size: 23px; }
-.care-posts-detail-pet h2 { font-size: 23px; }
-.care-posts-detail-pet p { font-size: 14px; }
-.care-posts-facts { gap: 10px; margin-bottom: 24px; }
-.care-posts-fact { padding: 16px; font-size: 14px; border-radius: 14px; line-height: 1.5; }
-.care-posts-fact small { font-size: 11px; margin-bottom: 8px; }
-.care-posts-subheading { font-size: 17px; margin-bottom: 12px; }
-.care-posts-notes, .care-posts-empty-interest { font-size: 15px; padding: 18px; border-radius: 14px; }
-.care-posts-empty { font-size: 14px; }
-.care-posts-actions { margin-top: 22px; flex-wrap: wrap; gap: 15px; }
-.care-posts-actions a, .care-posts-close-btn, .care-posts-reopen-btn { font-size: 14px; }
-.care-posts-edit-field { margin-bottom: 19px; }
-.care-posts-edit-label { font-size: 14px; }
-.care-posts-service-choice span { font-size: 14px; padding: 10px 15px; }
-.care-posts-edit-grid { gap: 0 16px; }
-.care-posts-edit-field .post-form-input { padding: 13px; font-size: 14px; }
-.care-posts-edit-error, .care-posts-edit-error-banner { font-size: 13px; }
-.care-posts-edit-actions button, .care-posts-edit-actions a { font-size: 14px; padding: 12px 18px; }
-.care-posts-status-note, .care-posts-status-banner { font-size: 14px; }
-.care-posts-confirm { padding: 18px; }
-.care-posts-confirm strong { font-size: 15px; }
-.care-posts-confirm p { font-size: 13px; }
-.care-posts-confirm-actions button { font-size: 13px; }
-@media (max-width: 850px) { .care-posts-layout { grid-template-columns: 1fr; } }
-@media (max-width: 600px) {
-  main.page-my-requests:has(.care-posts-page) { padding-left: 16px; padding-right: 16px; }
-  .care-posts-page { margin-top: 15px; }
-  .care-posts-header { align-items: flex-start; flex-wrap: wrap; }
-  .care-posts-header h1 { font-size: 32px; }
-  .care-posts-panel { padding: 18px; }
-  .care-posts-facts { grid-template-columns: 1fr; }
-  .care-posts-edit-grid { grid-template-columns: 1fr; }
-}
-
-  /* Interested caregiver cards */
-  .care-posts-interest-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #ffe7b6; color: #75501b; font-size: 11px; margin-left: 5px; }
-  .care-posts-interested-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 13px; background: #faf6f3; margin-bottom: 7px; }
-  .care-posts-interested-avatar { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #ffcaa8; color: #8b4929; font-size: 12px; font-weight: 700; }
-  .care-posts-interested-info { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 2px; }
-  .care-posts-interested-info strong { font-size: 12px; }
-  .care-posts-interested-info small { font-size: 10px; color: #847a76; }
-  .care-posts-interested-profile { white-space: nowrap; border: 1px solid #efcfc2; border-radius: 999px; padding: 8px 11px; background: #fff; color: #2b2523; text-decoration: none; font-size: 11px; }
-  .care-posts-interested-profile:hover { background: #fff6f1; }
-  @media (max-width: 480px) { .care-posts-interested-row { flex-wrap: wrap; } .care-posts-interested-profile { margin-left: auto; } }
-
-</style>
-
-
-
-<div class="care-posts-page">
-
-
-
-  <header class="care-posts-header">
-
+  <header class="co-header">
     <h1>My requests</h1>
-
-
-
-    <a class="btn btn-dark"
-
-       href="{% url 'opportunities:create' %}">
-
-      <span aria-hidden="true">+</span> New care post
-
+    <a class="btn btn-dark co-header-btn" href="{% url 'opportunities:create' %}">
+      {% include "partials/plus_icon.html" %} New care post
     </a>
-
   </header>
 
-
-
-  <nav class="care-posts-toggle" aria-label="Request type">
-
-    <a href="{% url 'bookings:booking_list' %}">
-
-      Bookings
-
-    </a>
-
-
-
-    <a href="{% url 'opportunities:list' %}"
-
-       class="active"
-
-       aria-current="page">
-
-      Care posts
-
-    </a>
-
+  <nav class="co-toggle" aria-label="Request type">
+    <a href="{% url 'bookings:booking_list' %}">Bookings</a>
+    <a href="{% url 'opportunities:list' %}" class="active" aria-current="page">Care posts</a>
   </nav>
 
+  <div class="co-layout">
 
-
-  <div class="care-posts-layout">
-
-
-
-    <section class="care-posts-panel"
-
-             aria-label="Your care posts">
-
-
-
-      <h2 class="care-posts-label">Open</h2>
-
-
-
+    <section class="co-panel co-list" aria-label="Your care posts">
+      <h2 class="co-label">Open</h2>
       {% for opportunity in open_posts %}
-
-        <a href="?post={{ opportunity.pk }}"
-
-           class="care-posts-item {% if selected.pk == opportunity.pk %}selected{% endif %}">
-
-
-
-          <span class="care-posts-avatar bubble-{{ opportunity.pet.theme }}">
-
-            {{ opportunity.pet.name|slice:":1" }}
-
+        <a href="?post={{ opportunity.pk }}" class="co-item {% if selected.pk == opportunity.pk %}selected{% endif %}">
+          <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
+          <span class="co-item-copy">
+            <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
+            <small>{{ opportunity.start_time|date:"D, M j · g:i A" }}</small>
+            {% if opportunity.interest_count %}
+              <span class="co-interest-pill">{{ opportunity.interest_count }} interested</span>
+            {% else %}
+              <small>No one interested yet</small>
+            {% endif %}
           </span>
-
-
-
-          <span class="care-posts-item-copy">
-
-            <strong>
-
-              {{ opportunity.pet.name }} ·
-
-              {{ opportunity.service_type.name }}
-
-            </strong>
-
-
-
-            <small>
-
-              {{ opportunity.start_time|date:"D, M j · g:i A" }}
-
-            </small>
-
-          </span>
-
-
-
-          <span class="care-posts-badge open">● Open</span>
-
+          <span class="co-badge open">Open</span>
         </a>
-
       {% empty %}
-
-        <p class="care-posts-empty">No open care posts yet.</p>
-
+        <p class="co-empty">No open care posts yet.</p>
       {% endfor %}
 
-
-
-      <h2 class="care-posts-label">Closed</h2>
-
-
-
+      <h2 class="co-label">Closed</h2>
       {% for opportunity in closed_posts %}
-
-        <a href="?post={{ opportunity.pk }}"
-
-           class="care-posts-item {% if selected.pk == opportunity.pk %}selected{% endif %}">
-
-
-
-          <span class="care-posts-avatar bubble-{{ opportunity.pet.theme }}">
-
-            {{ opportunity.pet.name|slice:":1" }}
-
+        <a href="?post={{ opportunity.pk }}" class="co-item {% if selected.pk == opportunity.pk %}selected{% endif %}">
+          <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
+          <span class="co-item-copy">
+            <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
+            <small>{{ opportunity.start_time|date:"D, M j · g:i A" }}</small>
           </span>
-
-
-
-          <span class="care-posts-item-copy">
-
-            <strong>
-
-              {{ opportunity.pet.name }} ·
-
-              {{ opportunity.service_type.name }}
-
-            </strong>
-
-
-
-            <small>
-
-              {{ opportunity.start_time|date:"D, M j · g:i A" }}
-
-            </small>
-
-          </span>
-
-
-
-          <span class="care-posts-badge closed">● Closed</span>
-
+          <span class="co-badge closed">Closed</span>
         </a>
-
       {% empty %}
-
-        <p class="care-posts-empty">No closed posts.</p>
-
+        <p class="co-empty">No closed posts.</p>
       {% endfor %}
-
-
-
     </section>
 
-
-
-    <section class="care-posts-panel"
-
-             aria-label="Selected care post">
-
-
-
+    <section class="co-panel co-detail" aria-label="Selected care post">
       {% if selected %}
 
-
-
-        <div class="care-posts-detail-heading">
-
-
-
-          <div class="care-posts-detail-pet">
-
-            <span class="care-posts-avatar care-posts-detail-avatar bubble-{{ selected.pet.theme }}">
-
-              {{ selected.pet.name|slice:":1" }}
-
-            </span>
-
-
-
-            <div>
-
-              <h2>
-
-                {{ selected.pet.name }} ·
-
-                {{ selected.service_type.name }}
-
-              </h2>
-
-
-
-              <p>
-
-                {{ selected.pet.name }} ·
-
-                {{ selected.pet.pet_type.name }}
-
-              </p>
-
-            </div>
-
+        <div class="co-detail-heading">
+          <span class="co-avatar co-avatar-lg theme-{{ selected.pet.theme }}">{{ selected.pet.name|slice:":1" }}</span>
+          <div class="co-detail-title">
+            <h2>{{ selected.pet.name }} · {{ selected.service_type.name }}</h2>
+            <p>{{ selected.pet.name }} · {{ selected.pet.pet_type.name }}</p>
           </div>
-
-
-
-          <span class="care-posts-badge {{ selected.status }}">
-
-            ● {{ selected.get_status_display }}
-
-          </span>
-
-
-
+          <span class="co-badge {{ selected.status }}">{{ selected.get_status_display }}</span>
         </div>
 
-
-
-        {% if selected.status == "closed" %}
-
-          <div class="care-posts-status-banner" role="status">✓ Closed. Caregivers can’t see this post anymore.</div>
-
-        {% elif just_reopened %}
-
-          <div class="care-posts-status-banner reopened" role="status">✓ Reopened. Caregivers can see this post again.</div>
-
+        {% if post_status == "closed" and selected.status == "closed" %}
+          {% include "opportunities/partials/status_banner.html" with tone="peach" lead="Closed." rest="Caregivers can’t see this post anymore." %}
+        {% elif post_status == "reopened" and selected.status == "open" %}
+          {% include "opportunities/partials/status_banner.html" with lead="Reopened." rest="Caregivers can see this post again." %}
+        {% elif post_status == "saved" and not editing %}
+          {% include "opportunities/partials/status_banner.html" with lead="Saved." rest="Your care post is up to date." %}
         {% endif %}
 
-
-
         {% if editing %}
-
-          <form method="post" action="{% url 'opportunities:edit' selected.pk %}" novalidate>
-
+          <form method="post" action="{% url 'opportunities:edit' selected.pk %}" class="co-form co-form-inline" novalidate>
             {% csrf_token %}
-
             {% if edit_form.errors %}
-
-              <div class="care-posts-edit-error-banner" role="alert">
-
-                Almost there. Please check the highlighted fields.
-
-                {{ edit_form.non_field_errors }}
-
+              <div class="co-error-banner" role="alert">
+                <span class="co-error-mark" aria-hidden="true">!</span>
+                <span>{% if edit_form.non_field_errors %}{% for error in edit_form.non_field_errors %}{{ error }}{% endfor %}{% else %}<strong>Almost there.</strong> Required fields can’t be left blank.{% endif %}</span>
               </div>
-
             {% endif %}
 
-
-
-            <div class="care-posts-edit-field">
-
-              <span class="care-posts-edit-label">Service <span class="care-posts-required">*</span></span>
-
-              <div class="care-posts-service-options">
-
+            <div class="co-field {% if edit_form.service_type.errors %}has-error{% endif %}">
+              <span class="co-field-label">Service <span class="co-required">*</span></span>
+              <div class="co-chips">
                 {% for service in edit_form.fields.service_type.queryset %}
-
-                  <label class="care-posts-service-choice">
-
+                  <label class="co-choice">
                     <input type="radio" name="service_type" value="{{ service.pk }}"
-
                       {% if edit_form.service_type.value|stringformat:"s" == service.pk|stringformat:"s" %}checked{% endif %}>
-
-                    <span>{{ service.name }}</span>
-
+                    <span class="co-chip">{{ service.name }}</span>
                   </label>
-
                 {% endfor %}
-
               </div>
-
-              {% for error in edit_form.service_type.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+              {% for error in edit_form.service_type.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
             </div>
 
-
-
-            <div class="care-posts-edit-grid">
-
-              <div class="care-posts-edit-field">
-
-                <label class="care-posts-edit-label" for="{{ edit_form.start_date.id_for_label }}">Start date <span class="care-posts-required">*</span></label>
-
+            <div class="co-grid-2">
+              <div class="co-field {% if edit_form.start_date.errors %}has-error{% endif %}">
+                <label class="co-field-label" for="{{ edit_form.start_date.id_for_label }}">Start date <span class="co-required">*</span></label>
                 {{ edit_form.start_date }}
-
-                {% for error in edit_form.start_date.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+                {% for error in edit_form.start_date.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
               </div>
-
-              <div class="care-posts-edit-field">
-
-                <label class="care-posts-edit-label" for="{{ edit_form.start_clock.id_for_label }}">Start time <span class="care-posts-required">*</span></label>
-
+              <div class="co-field {% if edit_form.start_clock.errors %}has-error{% endif %}">
+                <label class="co-field-label" for="{{ edit_form.start_clock.id_for_label }}">Start time <span class="co-required">*</span></label>
                 {{ edit_form.start_clock }}
-
-                {% for error in edit_form.start_clock.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+                {% for error in edit_form.start_clock.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
               </div>
-
-              <div class="care-posts-edit-field">
-
-                <label class="care-posts-edit-label" for="{{ edit_form.end_date.id_for_label }}">End date <span class="care-posts-required">*</span></label>
-
+              <div class="co-field {% if edit_form.end_date.errors %}has-error{% endif %}">
+                <label class="co-field-label" for="{{ edit_form.end_date.id_for_label }}">End date <span class="co-required">*</span></label>
                 {{ edit_form.end_date }}
-
-                {% for error in edit_form.end_date.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+                {% for error in edit_form.end_date.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
               </div>
-
-              <div class="care-posts-edit-field">
-
-                <label class="care-posts-edit-label" for="{{ edit_form.end_clock.id_for_label }}">End time <span class="care-posts-required">*</span></label>
-
+              <div class="co-field {% if edit_form.end_clock.errors %}has-error{% endif %}">
+                <label class="co-field-label" for="{{ edit_form.end_clock.id_for_label }}">End time <span class="co-required">*</span></label>
                 {{ edit_form.end_clock }}
-
-                {% for error in edit_form.end_clock.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+                {% for error in edit_form.end_clock.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
               </div>
-
             </div>
 
-
-
-            <div class="care-posts-edit-field">
-
-              <label class="care-posts-edit-label" for="{{ edit_form.location.id_for_label }}">Location <span class="care-posts-required">*</span></label>
-
+            <div class="co-field {% if edit_form.location.errors %}has-error{% endif %}">
+              <label class="co-field-label" for="{{ edit_form.location.id_for_label }}">Location <span class="co-required">*</span></label>
               {{ edit_form.location }}
-
-              {% for error in edit_form.location.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+              {% for error in edit_form.location.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
             </div>
 
-            <div class="care-posts-edit-field">
-
-              <label class="care-posts-edit-label" for="{{ edit_form.notes.id_for_label }}">Care notes <span style="font-weight:400;color:#a16f60">Optional</span></label>
-
+            <div class="co-field {% if edit_form.notes.errors %}has-error{% endif %}">
+              <label class="co-field-label" for="{{ edit_form.notes.id_for_label }}">Care notes <span class="co-optional">Optional</span></label>
               {{ edit_form.notes }}
-
-              {% for error in edit_form.notes.errors %}<div class="care-posts-edit-error">{{ error }}</div>{% endfor %}
-
+              {% for error in edit_form.notes.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
             </div>
 
-            <div class="care-posts-edit-actions">
-
-              <button type="submit" class="care-posts-edit-save">Save changes</button>
-
-              <a class="care-posts-edit-cancel" href="{% url 'opportunities:list' %}?post={{ selected.pk }}">Cancel</a>
-
+            <div class="co-actions">
+              <button type="submit" class="btn btn-dark co-btn">Save changes</button>
+              <a class="btn btn-outline co-btn" href="{% url 'opportunities:list' %}?post={{ selected.pk }}">Cancel</a>
             </div>
-
           </form>
 
         {% else %}
 
-          <div class="care-posts-facts">
-
-            <div class="care-posts-fact"><small>Service</small>{{ selected.service_type.name }}</div>
-
-            <div class="care-posts-fact"><small>Date &amp; time</small>{{ selected.start_time|date:"D, M j · g:i A" }}</div>
-
-            <div class="care-posts-fact"><small>Location</small>{{ selected.location }}</div>
-
+          <div class="co-facts">
+            <div class="co-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
+            <div class="co-fact"><small>Date &amp; time</small><strong>{{ selected.start_time|date:"D, M j · g:i A" }}</strong></div>
+            <div class="co-fact"><small>Location</small><strong>{{ selected.location }}</strong></div>
           </div>
 
-          <h3 class="care-posts-subheading">Care notes</h3>
+          <h3 class="co-subheading">Care notes</h3>
+          <div class="co-notes">{{ selected.notes|default:"No additional care notes." }}</div>
 
-          <div class="care-posts-notes">{{ selected.notes|default:"No additional care notes." }}</div>
-
-          <h3 class="care-posts-subheading">Interested caregivers{% if interested_caregivers %} <span class="care-posts-interest-count">{{ interested_caregivers|length }}</span>{% endif %}</h3>
-
+          <h3 class="co-subheading">Interested caregivers{% if interested_caregivers %} <span class="co-count">{{ interested_caregivers|length }}</span>{% endif %}</h3>
           {% for interest in interested_caregivers %}
-            <div class="care-posts-interested-row">
-              <span class="care-posts-interested-avatar">{{ interest.caregiver.name|slice:":1"|upper }}</span>
-              <div class="care-posts-interested-info">
-                <strong>{{ interest.caregiver.name }}</strong>
-                <small>{{ interest.caregiver.service_area }}</small>
+            {% with caregiver=interest.caregiver %}
+              <div class="co-caregiver">
+                <span class="co-avatar co-avatar-caregiver{% if forloop.counter|divisibleby:2 %} alt{% endif %}">{% for word in caregiver.name.split|slice:":2" %}{{ word|first|upper }}{% endfor %}</span>
+                <div class="co-caregiver-info">
+                  <strong>{{ caregiver.name }}</strong>
+                  <small>{% if interest.rating.count %}{{ interest.rating.average }} · {{ interest.rating.count }} review{{ interest.rating.count|pluralize }} · {% endif %}{{ caregiver.neighborhood|default:caregiver.service_area }}</small>
+                </div>
+                <div class="co-caregiver-actions">
+                  <a class="btn btn-outline co-btn-sm" href="{% url 'messaging:message_caregiver' caregiver.pk %}">{% include "opportunities/partials/message_icon.html" %} Message</a>
+                  <a class="btn btn-outline co-btn-sm" href="{% url 'caregiver' caregiver.pk %}">View profile</a>
+                  {% if selected.status == "open" %}
+                    <a class="btn btn-dark co-btn-sm" href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}&amp;pet={{ selected.pet_id }}&amp;service_type={{ selected.service_type_id }}">Book</a>
+                  {% endif %}
+                </div>
               </div>
-              <a class="care-posts-interested-profile" href="{% url 'caregiver' interest.caregiver.pk %}">View profile</a>
-            </div>
+            {% endwith %}
           {% empty %}
-            <div class="care-posts-empty-interest">No one interested yet.</div>
+            <div class="co-empty-box">
+              {% if selected.status == "closed" %}No caregivers were interested.{% else %}No one yet. Interested caregivers will show up here.{% endif %}
+            </div>
           {% endfor %}
 
-          <div class="care-posts-actions">
-
-            {% if selected.status == "open" %}
-
-              <a class="btn care-posts-edit-cancel" href="{% url 'opportunities:edit' selected.pk %}">Edit details</a>
-
-              <button type="button" class="care-posts-close-btn" id="show-close-confirm" aria-expanded="false" aria-controls="close-confirmation">Close post</button>
-
-            {% else %}
-
-              <form method="post" action="{% url 'opportunities:reopen' selected.pk %}">
-
-                {% csrf_token %}
-
-                <button type="submit" class="care-posts-reopen-btn">Reopen post</button>
-
-              </form>
-
-            {% endif %}
-
-          </div>
-
           {% if selected.status == "open" %}
-
-            <div class="care-posts-confirm" id="close-confirmation" hidden>
-
-              <div><strong>Close this post?</strong><p>Caregivers won’t see it anymore.</p></div>
-
-              <div class="care-posts-confirm-actions">
-
-                <button type="button" class="care-posts-confirm-cancel" id="cancel-close-confirm">Cancel</button>
-
-                <form method="post" action="{% url 'opportunities:close' selected.pk %}">
-
-                  {% csrf_token %}
-
-                  <button type="submit" class="care-posts-confirm-submit">Close it</button>
-
-                </form>
-
-              </div>
-
+            <div class="co-actions" id="post-actions">
+              <a class="btn btn-outline co-btn" href="{% url 'opportunities:edit' selected.pk %}">Edit details</a>
+              <button type="button" class="co-link-danger" id="show-close-confirm" aria-expanded="false" aria-controls="close-confirmation">Close post</button>
             </div>
-
+            <div class="co-confirm" id="close-confirmation" hidden>
+              <div>
+                <strong>Close this post?</strong>
+                <p>Caregivers won’t see it anymore.</p>
+              </div>
+              <div class="co-confirm-actions">
+                <button type="button" class="btn btn-outline co-btn" id="cancel-close-confirm">Cancel</button>
+                <form method="post" action="{% url 'opportunities:close' selected.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-dark co-btn">Close it</button>
+                </form>
+              </div>
+            </div>
+          {% else %}
+            <div class="co-actions">
+              <form method="post" action="{% url 'opportunities:reopen' selected.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline co-btn">Reopen post</button>
+              </form>
+            </div>
           {% endif %}
 
         {% endif %}
 
-
-
       {% else %}
-
-
-
-        <h2>No care posts yet</h2>
-
-
-
-        <p class="care-posts-empty">
-
-          Create a care post so caregivers can discover
-
-          your pet's care needs.
-
-        </p>
-
-
-
-        <a class="btn btn-dark"
-
-           href="{% url 'opportunities:create' %}">
-
-          Create your first post
-
-        </a>
-
-
-
+        <h2 class="co-subheading">No care posts yet</h2>
+        <p class="co-empty">Create a care post so caregivers can discover your pet’s care needs.</p>
+        <a class="btn btn-dark co-btn" href="{% url 'opportunities:create' %}">Create your first post</a>
       {% endif %}
-
-
-
     </section>
 
-
-
   </div>
-
 </div>
 
 <script>
-
   (function () {
-
+    // The confirmation takes the place of the Edit details / Close post row.
     const show = document.getElementById('show-close-confirm');
-
     const panel = document.getElementById('close-confirmation');
-
     const cancel = document.getElementById('cancel-close-confirm');
-
-    if (!show || !panel || !cancel) return;
-
+    const actions = document.getElementById('post-actions');
+    if (!show || !panel || !cancel || !actions) return;
     show.addEventListener('click', function () {
-
       panel.hidden = false;
-
+      actions.hidden = true;
       show.setAttribute('aria-expanded', 'true');
-
       cancel.focus();
-
     });
-
     cancel.addEventListener('click', function () {
-
       panel.hidden = true;
-
+      actions.hidden = false;
       show.setAttribute('aria-expanded', 'false');
-
       show.focus();
-
     });
-
   })();
-
 </script>
-
 {% endblock %}

@@ -9,10 +9,22 @@ from .models import CareOpportunity
 
 
 class CareOpportunityForm(forms.ModelForm):
-    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
-    start_clock = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
-    end_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
-    end_clock = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        error_messages={"required": "Choose a start date."},
+    )
+    start_clock = forms.TimeField(
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        error_messages={"required": "Choose a start time."},
+    )
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        error_messages={"required": "Choose an end date."},
+    )
+    end_clock = forms.TimeField(
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        error_messages={"required": "Choose an end time."},
+    )
 
     class Meta:
         model = CareOpportunity
@@ -21,7 +33,7 @@ class CareOpportunityForm(forms.ModelForm):
             "notes": forms.Textarea(
                 attrs={
                     "rows": 4,
-                    "placeholder": "Anything your caregiver should know?",
+                    "placeholder": "Anything caregivers should know about your pet",
                 }
             ),
             "location": forms.TextInput(
@@ -49,6 +61,10 @@ class CareOpportunityForm(forms.ModelForm):
         self.fields["service_type"].queryset = ServiceType.objects.all().order_by(
             "name"
         )
+        # Short, specific messages as in the Figma error state.
+        self.fields["pet"].error_messages["required"] = "Pick a pet."
+        self.fields["service_type"].error_messages["required"] = "Pick a service."
+        self.fields["location"].error_messages["required"] = "Add a location."
 
         if self.instance.pk:
             for prefix, value in (
