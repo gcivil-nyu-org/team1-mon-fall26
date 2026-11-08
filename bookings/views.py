@@ -9,6 +9,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from caregivers.models import CaregiverProfile
+from reviews.models import Review
 
 from .forms import BookingRequestForm
 from .models import Booking
@@ -87,6 +88,16 @@ def split_owner_bookings(user):
 def booking_list(request):
     """Story #41: the owner's requests with their status, split into active and history."""
     active, history = split_owner_bookings(request.user)
+    # Completed visits the owner hasn't reviewed get a "Rate this visit" button.
+    reviewed = set(
+        Review.objects.filter(
+            author=request.user, booking__in=[b.pk for b in history]
+        ).values_list("booking_id", flat=True)
+    )
+    for booking in history:
+        booking.can_rate = (
+            booking.status == Booking.Status.COMPLETED and booking.pk not in reviewed
+        )
     return render(
         request,
         "bookings/booking_list.html",

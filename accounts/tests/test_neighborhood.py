@@ -23,9 +23,10 @@ class NeighborhoodTests(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.neighborhood, "Park Slope")
 
-    def test_owner_sees_the_link_in_the_account_menu(self):
+    def test_account_menu_no_longer_links_here(self):
+        # The Figma account menu has only My profile and Log out.
         self.client.force_login(self.owner)
-        self.assertContains(self.client.get(URL), f'href="{URL}"')
+        self.assertNotContains(self.client.get(URL), f'href="{URL}"')
 
     def test_caregiver_is_sent_home(self):
         sitter = User.objects.create_user("chloe")
