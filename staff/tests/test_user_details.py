@@ -4,6 +4,7 @@ recent bookings, so an admin has context before acting on an account."""
 from datetime import timedelta
 from decimal import Decimal
 
+from django.urls import reverse
 from django.utils import timezone
 
 from bookings.models import Booking
@@ -56,30 +57,32 @@ class DetailTests(StaffTestData):
         self.book(2, Booking.Status.ACCEPTED)
         response = self.client.get(detail_url(self.owner))
         for text in (
-            "Neighborhood",
-            "Park Slope",
+            "Pet owner · Park Slope",
             "Biscuit",
             "Dog · Beagle",
             "Pepper",
             "Deleted ",
             "Biscuit · Dog walking",
-            "Caregiver: Chloe Shih",
+            "with Chloe Shih",
             "Accepted",
         ):
             self.assertContains(response, text)
-        self.assertNotContains(response, "Caregiver profile")
+        self.assertNotContains(response, "View public profile")
 
     def test_caregiver_sees_profile_services_and_bookings(self):
         self.book(-3, Booking.Status.COMPLETED)
         response = self.client.get(detail_url(self.sitter))
-        self.assertContains(response, "Caregiver profile")
+        self.assertContains(response, "Caregiver · Park Slope")
+        self.assertContains(
+            response,
+            f'href="{reverse("caregiver", args=[self.sitter.caregiver_profile.pk])}"',
+        )
         self.assertContains(response, "View public profile")
-        self.assertContains(response, "Accepting")
         self.assertContains(response, "Dog walking · $25.00 per walk")
         self.assertNotContains(response, "Drop-in visit")  # inactive service
-        self.assertContains(response, "Owner: Kat W")
+        self.assertContains(response, "with Kat W")
         self.assertContains(response, "Completed")
-        self.assertNotContains(response, "<h2>Pets</h2>", html=True)
+        self.assertNotContains(response, "<h3>Pets</h3>", html=True)
 
     def test_empty_sections_say_so(self):
         response = self.client.get(detail_url(self.new))

@@ -1,21 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Users · PawPal admin{% endblock %}
+{% block title %}{% if selected %}{{ selected.get_full_name|default:selected.username }} · {% endif %}Users · PawPal admin{% endblock %}
 
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=2">
 
   <div class="staff-header">
-    <div>
-      <h1>Users</h1>
-      <p class="muted">
-        {% if query %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} matching “{{ query }}”{% else %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} on PawPal{% endif %}
-      </p>
-    </div>
-    <form method="get" class="staff-search" role="search">
+    <h1 class="admin-title">Users</h1>
+    <form method="get" action="{% url 'staff:user_list' %}" class="staff-search" role="search">
       <label class="visually-hidden" for="staff-search">Search by name, username or email</label>
       <input type="search" id="staff-search" name="q" value="{{ query }}" placeholder="Search name, username or email">
       <button type="submit" class="btn btn-dark btn-small">Search</button>
@@ -23,53 +18,139 @@
     </form>
   </div>
 
-  {% if page.object_list %}
-    <div class="card staff-list">
-      <div class="staff-row staff-row-head" aria-hidden="true">
-        <span>Account</span>
-        <span>Email</span>
-        <span>Type</span>
-        <span>Status</span>
-        <span>Joined</span>
-      </div>
-      <ul class="staff-rows">
-        {% for account in page %}
-          <li>
-            <a class="staff-row" href="{% url 'staff:user_detail' account.pk %}">
-              <span class="staff-row-account">
-                {% include "staff/partials/account_avatar.html" %}
-                <span>
-                  <strong>{{ account.get_full_name|default:account.username }}</strong>
-                  <span class="muted">@{{ account.username }}</span>
-                </span>
-              </span>
-              <span class="staff-row-email">{{ account.email|default:"—" }}</span>
-              <span><span class="tag">{{ account.type_label }}</span></span>
-              <span>{% include "staff/partials/account_status.html" %}</span>
-              <span class="muted">{{ account.date_joined|date:"M j, Y" }}</span>
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    {% if page.has_other_pages %}
-      <nav class="staff-pages" aria-label="Pages">
-        {% if page.has_previous %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
-        <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-        {% if page.has_next %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
-      </nav>
-    {% endif %}
-  {% else %}
-    <div class="card empty-state">
-      {% if query %}
-        <h2>No accounts match “{{ query }}”</h2>
-        <p class="muted">Check the spelling, or search by another name, username or email.</p>
-        <a class="btn btn-outline btn-small" href="{% url 'staff:user_list' %}">Show all users</a>
+  <div class="staff-layout">
+    {# Left: the accounts (#89). #}
+    <section class="card staff-list" aria-label="Accounts">
+      <p class="muted staff-count">
+        {% if query %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }} matching “{{ query }}”{% else %}{{ page.paginator.count }} account{{ page.paginator.count|pluralize }}{% endif %}
+      </p>
+      {% if page.object_list %}
+        <ul class="staff-rows">
+          {% for account in page %}
+              <li>
+                <a class="staff-row{% if account.pk == selected.pk %} is-selected{% endif %}" href="{% url 'staff:user_detail' account.pk %}{% if query %}?q={{ query|urlencode }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if account.pk == selected.pk %} aria-current="true"{% endif %}>
+                  {% include "staff/partials/account_avatar.html" %}
+                  <span class="staff-row-text">
+                    <strong>{{ account.get_full_name|default:account.username }}</strong>
+                    <span class="muted">{{ account.type_label }}{% if account.place %} · {{ account.place }}{% endif %}</span>
+                  </span>
+                  {% include "staff/partials/account_status.html" %}
+                </a>
+              </li>
+          {% endfor %}
+        </ul>
+        {% if page.has_other_pages %}
+          <nav class="staff-pages" aria-label="Pages">
+            {% if page.has_previous %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
+            <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a class="btn btn-outline btn-small" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
+          </nav>
+        {% endif %}
       {% else %}
-        <h2>No accounts yet</h2>
-        <p class="muted">Accounts appear here once people sign up.</p>
+        <div class="staff-empty">
+          {% if query %}
+            <strong>No accounts match “{{ query }}”</strong>
+            <p class="muted">Check the spelling, or search by another name, username or email.</p>
+          {% else %}
+            <strong>No accounts yet</strong>
+          {% endif %}
+        </div>
       {% endif %}
-    </div>
-  {% endif %}
+    </section>
+
+    {# Right: the selected account (#91). #}
+    {% if selected %}
+      {% with account=selected %}
+        <article class="card staff-account" aria-labelledby="account-name">
+          <header class="staff-account-header">
+            {% include "staff/partials/account_avatar.html" with large=True %}
+            <div>
+              <h2 id="account-name">{{ account.get_full_name|default:account.username }}</h2>
+              <p class="muted">{{ account.type_label }}{% if account.place %} · {{ account.place }}{% endif %} · @{{ account.username }}</p>
+            </div>
+            {% include "staff/partials/account_status.html" %}
+          </header>
+
+          <dl class="staff-facts">
+            <div><dt>Email</dt><dd>{{ account.email|default:"—" }}</dd></div>
+            <div><dt>Joined</dt><dd>{{ account.date_joined|date:"M Y" }}</dd></div>
+            <div><dt>Last log in</dt><dd>{{ account.last_login|date:"M j, Y"|default:"Never" }}</dd></div>
+            {% if account.status_key == "restricted" %}
+              <div><dt>Restricted</dt><dd>{{ account.account_profile.restricted_at|date:"M j, Y, g:i A" }}</dd></div>
+              {% if account.account_profile.restriction_reason %}
+                <div class="staff-fact-wide"><dt>Reason</dt><dd>{{ account.account_profile.restriction_reason }}</dd></div>
+              {% endif %}
+            {% endif %}
+          </dl>
+
+          {% if caregiver %}
+            <h3>Services</h3>
+            {% if services %}
+              <ul class="tags staff-services">
+                {% for offer in services %}<li class="tag">{{ offer.service_type.name }}{% if offer.price is not None %} · ${{ offer.price }} {{ offer.get_price_unit_display|lower }}{% endif %}</li>{% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted staff-none">No services listed.</p>
+            {% endif %}
+          {% endif %}
+
+          {% if pets or account.type_label == "Pet owner" %}
+            <h3>Pets</h3>
+            {% if pets %}
+              <ul class="staff-items">
+                {% for pet in pets %}
+                  <li class="staff-item{% if pet.deleted_at %} is-deleted{% endif %}">
+                    <span>
+                      <strong>{{ pet.name }}</strong>
+                      <span class="muted">{{ pet.pet_type.name }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.age_display %} · {{ pet.age_display }}{% endif %}</span>
+                    </span>
+                    {% if pet.deleted_at %}<span class="tag">Deleted {{ pet.deleted_at|date:"M j, Y" }}</span>{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted staff-none">No pet profiles.</p>
+            {% endif %}
+          {% endif %}
+
+          <h3>Bookings</h3>
+          {% if bookings %}
+            <ul class="staff-items">
+              {% for booking in bookings %}
+                <li class="staff-item">
+                  <span>
+                    <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                    <span class="muted">{{ booking.start_time|date:"M j" }} · with {% if booking.owner_id == account.pk %}{{ booking.caregiver.name }}{% else %}{{ booking.owner.get_full_name|default:booking.owner.username }}{% endif %}</span>
+                  </span>
+                  {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
+                </li>
+              {% endfor %}
+            </ul>
+            {% if booking_count > bookings|length %}<p class="muted staff-more">The {{ bookings|length }} most recent of {{ booking_count }}.</p>{% endif %}
+          {% else %}
+            <p class="muted staff-none">No bookings yet.</p>
+          {% endif %}
+
+          <div class="staff-actions">
+            {% if caregiver %}<a class="btn btn-outline" href="{% url 'caregiver' caregiver.pk %}">View public profile</a>{% endif %}
+            {% if can_restrict %}
+              {% if account.status_key == "restricted" %}
+                <form method="post" action="{% url 'staff:reinstate_user' account.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-dark">Reinstate account</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'staff:restrict_user' account.pk %}" class="staff-restrict-form">
+                  {% csrf_token %}
+                  <label class="visually-hidden" for="{{ restrict_form.reason.id_for_label }}">Reason</label>
+                  {{ restrict_form.reason }}
+                  <button type="submit" class="btn btn-outline-danger">Restrict account</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
+        </article>
+      {% endwith %}
+    {% endif %}
+  </div>
 {% endblock %}
