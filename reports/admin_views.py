@@ -1,103 +1,173 @@
-"""Admin pages for reported content (story #95: view open reports and reasons)."""
+"""Admin Reports page (story #95, laid out like Kat's Figma).
 
-from collections import Counter
+For a reported message, the page shows the whole conversation around it (#96).
 
-from django.shortcuts import get_object_or_404, render
+The list of reports sits on the left and the selected report on the right.
+Two tabs: Open, and Resolved (reports an admin dismissed or acted on).
+Dismissing a report (#98) and removing the content (#97) each ask for
+confirmation in a popup first.
+"""
+
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from staff.views import staff_required
 
+from messaging.models import Message
+
 from .models import Report
+from .moderation import dismiss, remove_content
 
-# The tabs on the reports page, in order: (status in the address, label).
-TABS = [
-    ("open", "Open"),
-    ("dismissed", "Dismissed"),
-    ("resolved", "Removed"),
-    ("all", "All"),
-]
+OPEN = "open"
+RESOLVED = "resolved"
+TABS = [(OPEN, "Open"), (RESOLVED, "Resolved")]
+
+# The confirm popups, opened with ?confirm=<action> on a report's page.
+CONFIRM = {
+    "dismiss": {
+        "title": "Dismiss this report?",
+        "text": "The {kind} stays up. The report will close as Dismissed.",
+        "button": "Dismiss",
+        "button_class": "btn-dark",
+        "url": "reports:admin_dismiss",
+    },
+    "remove": {
+        "title": "Remove this {kind}?",
+        "text": "Users won't see it anymore. The report will close as Removed.",
+        "button": "Remove",
+        "button_class": "btn-danger",
+        "url": "reports:admin_remove",
+    },
+}
+
+# The banner shown after an action, keyed by ?done=<action>.
+DONE = {
+    "dismissed": "Report dismissed and moved to Resolved.",
+    "removed": "{Kind} removed and moved to Resolved.",
+}
 
 
-def _with_counts(reports):
-    """How many open reports each review or message has, to help prioritize."""
-    open_reports = Report.objects.filter(status=Report.Status.OPEN)
-    by_review = Counter(
-        open_reports.filter(review__isnull=False).values_list("review_id", flat=True)
+def _in_tab(tab):
+    reports = Report.objects.select_related("reporter", "reported_user")
+    if tab == OPEN:
+        return reports.filter(status=Report.Status.OPEN)
+    return reports.exclude(status=Report.Status.OPEN)
+
+
+def _tab_for(report):
+    return OPEN if report.status == Report.Status.OPEN else RESOLVED
+
+
+def _detail(report):
+    """What the right-hand panel shows for one report."""
+    if report.review_id:
+        review = report.review
+        return {
+            "review": review,
+            "where": review.booking.caregiver,
+        }
+    message = report.message
+    if message is None:
+        return {"message": None}
+    # #96: the whole conversation, removed messages included, so admins can
+    # see what led up to the reported message.
+    conversation = (
+        Message.objects.filter(conversation_id=message.conversation_id)
+        .select_related("sender")
+        .order_by("created_at", "pk")
     )
-    by_message = Counter(
-        open_reports.filter(message__isnull=False).values_list("message_id", flat=True)
+    return {"message": message, "conversation": conversation}
+
+
+def _get(pk):
+    return get_object_or_404(
+        Report.objects.select_related(
+            "reporter",
+            "reported_user",
+            "handled_by",
+            "review__author",
+            "review__booking__caregiver",
+            "message__sender",
+        ),
+        pk=pk,
     )
-    for report in reports:
-        if report.review_id:
-            report.times_reported = by_review.get(report.review_id, 1)
-        elif report.message_id:
-            report.times_reported = by_message.get(report.message_id, 1)
-        else:
-            report.times_reported = 1
-    return reports
+
+
+def _render(request, tab, selected):
+    open_count = Report.objects.filter(status=Report.Status.OPEN).count()
+    tabs = [
+        {
+            "key": key,
+            "label": label,
+            "count": open_count if key == OPEN else Report.objects.count() - open_count,
+            "active": key == tab,
+        }
+        for key, label in TABS
+    ]
+    context = {
+        "tabs": tabs,
+        "tab": tab,
+        "reports": list(_in_tab(tab)),
+        "selected": selected,
+        "section": "reports",
+    }
+    if selected is not None:
+        context.update(_detail(selected))
+        kind = selected.get_kind_display().lower()
+        confirm = CONFIRM.get(request.GET.get("confirm"))
+        if confirm and selected.is_open:
+            context["confirm"] = {
+                **confirm,
+                "title": confirm["title"].format(kind=kind),
+                "text": confirm["text"].format(kind=kind),
+                "url": reverse(confirm["url"], args=[selected.pk]),
+            }
+        done = DONE.get(request.GET.get("done"))
+        context["done"] = done and done.format(Kind=kind.capitalize())
+    return render(request, "reports/admin_reports.html", context)
 
 
 @staff_required
 def report_list(request):
-    status = request.GET.get("status", "open")
-    if status not in dict(TABS):
-        status = "open"
-    reports = Report.objects.select_related("reporter", "reported_user")
-    if status != "all":
-        reports = reports.filter(status=status)
-    counts = Counter(Report.objects.values_list("status", flat=True))
-    tabs = [
-        {
-            "status": key,
-            "label": label,
-            "count": sum(counts.values()) if key == "all" else counts.get(key, 0),
-            "active": key == status,
-        }
-        for key, label in TABS
-    ]
-    return render(
-        request,
-        "reports/admin_list.html",
-        {
-            "reports": _with_counts(list(reports)),
-            "tabs": tabs,
-            "status": status,
-            "section": "reports",
-        },
-    )
-
-
-def _where(report):
-    """A link to where the reported content appears, when there is one."""
-    if report.review_id:
-        return reverse("caregiver", args=[report.review.booking.caregiver_id])
-    return None
+    tab = request.GET.get("status", OPEN)
+    if tab not in dict(TABS):
+        tab = OPEN
+    reports = _in_tab(tab)
+    return _render(request, tab, reports.first())
 
 
 @staff_required
 def report_detail(request, pk):
-    report = get_object_or_404(
-        Report.objects.select_related(
-            "reporter", "reported_user", "review__booking", "message__conversation"
-        ),
-        pk=pk,
-    )
-    # Other people who reported the same review or message.
-    target = report.review if report.kind == Report.Kind.REVIEW else report.message
-    others = Report.objects.none()
-    if target is not None:
-        others = (
-            Report.objects.filter(**{report.kind: target})
-            .exclude(pk=report.pk)
-            .select_related("reporter")
-        )
-    return render(
-        request,
-        "reports/admin_detail.html",
-        {
-            "report": report,
-            "others": others,
-            "where": _where(report),
-            "section": "reports",
-        },
-    )
+    report = _get(pk)
+    return _render(request, _tab_for(report), report)
+
+
+def _after(request, report, done):
+    if done is None:
+        messages.info(request, "This report was already handled.")
+        return redirect("reports:admin_detail", pk=report.pk)
+    return redirect(reverse("reports:admin_detail", args=[report.pk]) + f"?done={done}")
+
+
+@staff_required
+@require_POST
+def report_dismiss(request, pk):
+    """#98: the content is fine, so close the report and keep the content up."""
+    report = _get(pk)
+    if not report.is_open:
+        return _after(request, report, None)
+    dismiss(report, request.user)
+    return _after(request, report, "dismissed")
+
+
+@staff_required
+@require_POST
+def report_remove(request, pk):
+    """#97: the content breaks the rules, so hide it from users and close the report."""
+    report = _get(pk)
+    if not report.is_open:
+        return _after(request, report, None)
+    remove_content(report, request.user)
+    return _after(request, report, "removed")

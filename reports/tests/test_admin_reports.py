@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from reports.models import Report
+from reviews.templatetags.review_tags import reviewer_name
 
 from .test_report_content import ReportTestData
 
@@ -51,104 +52,115 @@ class AdminAccessTests(AdminReportsTestData):
             self.assertEqual(self.client.get(LIST_URL).status_code, 403)
             self.assertEqual(self.client.get(self.detail_url(report)).status_code, 403)
 
-    def test_reports_tab_only_for_admins(self):
+    def test_admin_header_matches_figma(self):
         page = reverse("pets:list")
         self.client.force_login(self.owner)
         self.assertNotContains(self.client.get(page), LIST_URL)
+        self.assertNotContains(self.client.get(page), 'class="admin-badge"')
         self.client.force_login(self.admin)
         response = self.client.get(LIST_URL)
+        self.assertContains(response, '<span class="admin-badge">Admin</span>')
         self.assertContains(
             response, f'<a href="{LIST_URL}" class="active">Reports</a>'
         )
+        self.assertContains(response, ">Explore</a>")
+        self.assertContains(response, "avatar avatar-admin")
+        html = response.content.decode()
+        self.assertLess(html.index(">Reports</a>"), html.index(">Users</a>"))
 
 
 class AdminReportListTests(AdminReportsTestData):
     def setUp(self):
         self.client.force_login(self.admin)
 
-    def test_lists_open_reports_with_reasons(self):
-        self.report(self.owner, self.their_message, reason="harassment")
-        self.report(self.stranger, self.owner_review, reason="fake", details="Fake.")
+    def test_lists_open_reports_and_selects_the_newest(self):
+        older = self.report(self.owner, self.their_message, reason="harassment")
+        newer = self.report(
+            self.stranger, self.owner_review, reason="fake", details="Never booked."
+        )
         response = self.client.get(LIST_URL)
-        self.assertContains(response, "Harassment or abusive language")
-        self.assertContains(response, "Fake or misleading")
-        self.assertContains(response, "Send me money first.")
-        self.assertContains(response, "Written by Chloe Shih")
-        self.assertContains(response, "reported by Kat Wong")
-        self.assertContains(response, 'class="report-kind report-kind-message"')
+        self.assertEqual(response.context["reports"], [newer, older])
+        self.assertEqual(response.context["selected"], newer)
+        self.assertContains(response, "Rude or harassing")
+        self.assertContains(response, "Message from Chloe S.")
+        self.assertContains(response, "Reported by Kat W.")
+        self.assertContains(response, "Review from Kat W.")
+        self.assertContains(
+            response, 'class="report-status report-status-open"', count=3
+        )
 
-    def test_only_open_reports_by_default(self):
-        self.report(self.owner, self.their_message, status="dismissed")
-        response = self.client.get(LIST_URL)
-        self.assertNotContains(response, "Send me money first.")
-        self.assertContains(response, "No open reports.")
-
-    def test_tabs_filter_and_count(self):
+    def test_tabs_are_open_and_resolved_with_counts(self):
         self.report(self.owner, self.their_message)
         self.report(self.stranger, self.owner_review, status="dismissed")
         self.report(self.sitter, self.owner_review, status="resolved")
-        response = self.client.get(LIST_URL, {"status": "dismissed"})
-        self.assertContains(response, "Great visit!")
+        tabs = {t["key"]: t["count"] for t in self.client.get(LIST_URL).context["tabs"]}
+        self.assertEqual(tabs, {"open": 1, "resolved": 2})
+        response = self.client.get(LIST_URL, {"status": "resolved"})
+        self.assertEqual(len(response.context["reports"]), 2)
+        self.assertContains(response, "report-status-dismissed")
+        self.assertContains(response, "report-status-resolved")
         self.assertNotContains(response, "Send me money first.")
-        tabs = {tab["status"]: tab["count"] for tab in response.context["tabs"]}
-        self.assertEqual(tabs, {"open": 1, "dismissed": 1, "resolved": 1, "all": 3})
-        everything = self.client.get(LIST_URL, {"status": "all"})
-        self.assertEqual(len(everything.context["reports"]), 3)
 
     def test_unknown_tab_falls_back_to_open(self):
         response = self.client.get(LIST_URL, {"status": "nope"})
-        self.assertEqual(response.context["status"], "open")
+        self.assertEqual(response.context["tab"], "open")
 
-    def test_newest_first(self):
-        first = self.report(self.owner, self.their_message)
-        second = self.report(self.stranger, self.owner_review)
-        reports = self.client.get(LIST_URL).context["reports"]
-        self.assertEqual(reports, [second, first])
-
-    def test_content_reported_by_several_people_is_flagged(self):
-        self.report(self.stranger, self.owner_review)
-        self.report(self.sitter, self.owner_review)
-        self.report(self.owner, self.their_message)
-        response = self.client.get(LIST_URL)
-        self.assertContains(response, "Reported 2 times", count=2)
-
-    def test_deleted_content_still_listed(self):
-        report = self.report(self.owner, self.their_message)
-        self.their_message.delete()
-        response = self.client.get(LIST_URL)
-        self.assertContains(response, "Send me money first.")
-        self.assertEqual(response.context["reports"][0].times_reported, 1)
-        detail = self.client.get(self.detail_url(report))
-        self.assertContains(detail, "has since been deleted")
+    def test_empty_states(self):
+        self.assertContains(self.client.get(LIST_URL), "No open reports. Nice!")
+        response = self.client.get(LIST_URL, {"status": "resolved"})
+        self.assertContains(response, "No resolved reports yet.")
+        self.assertIsNone(response.context["selected"])
 
 
 class AdminReportDetailTests(AdminReportsTestData):
     def setUp(self):
         self.client.force_login(self.admin)
 
-    def test_shows_the_content_reason_and_note(self):
+    def test_review_report_shows_the_note_and_review_card(self):
         report = self.report(
             self.stranger, self.owner_review, reason="fake", details="Never booked."
         )
         response = self.client.get(self.detail_url(report))
+        self.assertEqual(response.context["selected"], report)
         self.assertContains(response, "Fake or misleading")
+        self.assertContains(response, f"Note from {reviewer_name(self.stranger)}")
+        self.assertContains(response, "“Never booked.”")
+        self.assertContains(response, "Review on Chloe Shih's profile")
         self.assertContains(response, "Great visit!")
-        self.assertContains(response, "Never booked.")
-        self.assertContains(response, "Review by Kat Wong (kat)")
-        self.assertContains(response, reverse("caregiver", args=[self.caregiver.pk]))
+        self.assertContains(response, "Posted today")
+        self.assertContains(response, 'aria-label="Rated 5 out of 5"')
+        self.assertContains(response, "Today, ")
 
-    def test_lists_other_reports_of_the_same_content(self):
+    def test_message_report_shows_the_message(self):
+        report = self.report(self.owner, self.their_message, reason="harassment")
+        response = self.client.get(self.detail_url(report))
+        self.assertContains(response, "Conversation")
+        self.assertContains(
+            response, '<p class="report-bubble">Send me money first.</p>'
+        )
+        self.assertNotContains(response, "Note from")
+
+    def test_resolved_report_opens_in_the_resolved_tab(self):
+        report = self.report(self.owner, self.their_message, status="dismissed")
+        response = self.client.get(self.detail_url(report))
+        self.assertEqual(response.context["tab"], "resolved")
+        self.assertContains(response, 'class="report-row is-selected"')
+
+    def test_deleted_content_still_shows_the_saved_text(self):
         report = self.report(self.stranger, self.owner_review)
-        self.report(self.sitter, self.owner_review, reason="harassment")
+        self.owner_review.delete()
         response = self.client.get(self.detail_url(report))
-        self.assertContains(response, "Also reported by")
-        self.assertContains(response, "Chloe Shih: Harassment or abusive language")
+        self.assertContains(response, "Great visit!")
+        self.assertContains(response, "Deleted")
+        self.assertContains(response, "Reported review")
 
-    def test_message_report_has_no_public_link(self):
+    def test_deleted_message_shows_the_saved_text(self):
         report = self.report(self.owner, self.their_message)
+        self.their_message.delete()
         response = self.client.get(self.detail_url(report))
-        self.assertIsNone(response.context["where"])
-        self.assertNotContains(response, "Also reported by")
+        self.assertContains(response, "Reported message")
+        self.assertContains(response, "Send me money first.")
+        self.assertNotContains(response, "<h3>Conversation</h3>")
 
     def test_missing_report_is_404(self):
         self.assertEqual(

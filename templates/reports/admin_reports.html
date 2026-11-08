@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load review_tags report_tags %}
+
+{% block title %}Reports · PawPal admin{% endblock %}
+
+{% block main_class %}page page-admin-reports{% endblock %}
+
+{% block content %}
+  <h1 class="admin-title">Reports</h1>
+
+  <nav class="admin-tabs" aria-label="Report status">
+    {% for t in tabs %}
+      <a class="admin-tab{% if t.active %} is-active{% endif %}" href="?status={{ t.key }}"{% if t.active %} aria-current="page"{% endif %}>
+        {{ t.label }} <span class="admin-tab-count">{{ t.count }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <div class="reports-layout">
+    <section class="card reports-list" aria-label="{% if tab == 'open' %}Open{% else %}Resolved{% endif %} reports">
+      {% for report in reports %}
+        <a class="report-row{% if selected and report.pk == selected.pk %} is-selected{% endif %}" href="{% url 'reports:admin_detail' report.pk %}"{% if selected and report.pk == selected.pk %} aria-current="true"{% endif %}>
+          <span class="report-icon">{% include "reports/partials/kind_icon.html" with kind=report.kind %}</span>
+          <span class="report-row-text">
+            <strong>{{ report.get_reason_display }}</strong>
+            <span>{{ report.get_kind_display }} from {{ report.reported_user|reviewer_name }}</span>
+            <span class="muted">Reported by {{ report.reporter|reviewer_name }} · <span class="nowrap">{{ report.created_at|when_short }}</span></span>
+          </span>
+          {% include "reports/partials/status_pill.html" %}
+        </a>
+      {% empty %}
+        <p class="muted reports-empty">{% if tab == "open" %}No open reports. Nice!{% else %}No resolved reports yet.{% endif %}</p>
+      {% endfor %}
+    </section>
+
+    {% if selected %}
+      <article class="card report-detail" aria-labelledby="report-title">
+        <header class="report-detail-head">
+          <span class="report-icon report-icon-large">{% include "reports/partials/kind_icon.html" with kind=selected.kind %}</span>
+          <div>
+            <h2 id="report-title">{{ selected.get_reason_display }}</h2>
+            <p class="muted">{{ selected.get_kind_display }} · Reported by {{ selected.reporter|reviewer_name }} · {{ selected.created_at|when_long }}</p>
+          </div>
+          {% include "reports/partials/status_pill.html" with report=selected %}
+        </header>
+
+        {% if done %}
+          <p class="report-done" role="status">{% include "partials/check_icon.html" %} {{ done }}</p>
+        {% endif %}
+
+        {% if selected.details %}
+          <div class="report-note">
+            <strong>Note from {{ selected.reporter|reviewer_name }}</strong>
+            <p>“{{ selected.details }}”</p>
+          </div>
+        {% endif %}
+
+        {% if selected.kind == "review" %}
+          <h3>{% if where %}Review on {{ where.name }}'s profile{% else %}Reported review{% endif %}</h3>
+          <div class="report-review">
+            <div class="report-review-head">
+              <span class="review-avatar tone-{{ selected.reported_user|avatar_tone }}" aria-hidden="true">{{ selected.reported_user|initials }}</span>
+              <span class="report-review-who">
+                <strong>{{ selected.reported_user|reviewer_name }}</strong>
+                <span class="muted">{% if review %}{{ review.created_at|posted_ago }}{% else %}Deleted{% endif %}</span>
+              </span>
+              {% if review %}{% paws review.rating %}{% endif %}
+            </div>
+            <p{% if review.removed_at %} class="is-removed"{% endif %}>{{ selected.content_text|default:"(Rating only, no written review)"|linebreaksbr }}</p>
+            {% include "reports/partials/content_tag.html" with removed=review.removed_at %}
+          </div>
+        {% elif conversation %}
+          <h3>Conversation</h3>
+          <ol class="report-conversation">
+            {% for m in conversation %}
+                <li class="report-line{% if m.sender_id == selected.reporter_id %} is-reporter{% endif %}{% if m.pk == message.pk %} is-reported{% endif %}">
+                  <p class="report-chat-name">{{ m.sender|reviewer_name }}</p>
+                  <p class="report-bubble{% if m.removed_at %} is-removed{% endif %}">{{ m.body|linebreaksbr }}</p>
+                  <p class="report-chat-meta">
+                    <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"g:i A" }}</time>
+                    {% if m.pk == message.pk %}{% include "reports/partials/content_tag.html" with removed=m.removed_at %}{% elif m.removed_at %}{% include "reports/partials/content_tag.html" with removed=True %}{% endif %}
+                  </p>
+                </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <h3>Reported message</h3>
+          <div class="report-chat">
+            <p class="report-chat-name">{{ selected.reported_user.get_full_name|default:selected.reported_user.username }}</p>
+            <p class="report-bubble">{{ selected.content_text|linebreaksbr }}</p>
+            <p class="report-chat-meta">Deleted {% include "reports/partials/content_tag.html" %}</p>
+          </div>
+        {% endif %}
+
+        {% if selected.is_open %}
+          <div class="report-actions">
+            <a class="btn btn-danger" href="?confirm=remove">Remove {{ selected.get_kind_display|lower }}</a>
+            <a class="btn btn-outline" href="?confirm=dismiss">Dismiss report</a>
+          </div>
+        {% elif selected.handled_by %}
+          <p class="muted report-handled">{{ selected.get_status_display }} by {{ selected.handled_by|reviewer_name }} · {{ selected.handled_at|when_long }}</p>
+        {% endif %}
+      </article>
+    {% endif %}
+  </div>
+
+  {% if confirm %}
+    <div class="modal-backdrop">
+      <form method="post" action="{{ confirm.url }}" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="confirm-title">{{ confirm.title }}</h2>
+        <p class="muted">{{ confirm.text }}</p>
+        <div class="modal-quote">
+          <span class="review-avatar tone-{{ selected.reported_user|avatar_tone }}" aria-hidden="true">{{ selected.reported_user|initials }}</span>
+          <span><strong>{{ selected.reported_user.get_full_name|default:selected.reported_user.username }}</strong><br>“{{ selected.content_text|truncatechars:90 }}”</span>
+        </div>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'reports:admin_detail' selected.pk %}">Cancel</a>
+          <button type="submit" class="btn {{ confirm.button_class }}" autofocus>{{ confirm.button }}</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -76,6 +76,12 @@ class Conversation(models.Model):
         setattr(self, field, when)
 
 
+class MessageQuerySet(models.QuerySet):
+    def visible(self):
+        """Messages users can see: not removed by an admin (#97)."""
+        return self.filter(removed_at__isnull=True)
+
+
 class Message(models.Model):
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
@@ -87,6 +93,11 @@ class Message(models.Model):
     )
     body = models.TextField(max_length=MAX_MESSAGE_LENGTH)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    # Set when an admin removes the message after a report (#97). Users stop
+    # seeing it; admins still see it, crossed out, on the report.
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = MessageQuerySet.as_manager()
 
     class Meta:
         ordering = ["created_at", "pk"]

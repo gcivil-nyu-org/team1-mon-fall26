@@ -43,9 +43,11 @@ def with_unread(conversations, user):
         ),
         NEVER,
     )
-    newer = Message.objects.filter(
-        conversation=OuterRef("pk"), created_at__gt=OuterRef("my_read_at")
-    ).exclude(sender=user)
+    newer = (
+        Message.objects.visible()
+        .filter(conversation=OuterRef("pk"), created_at__gt=OuterRef("my_read_at"))
+        .exclude(sender=user)
+    )
     return conversations.annotate(my_read_at=read_at).annotate(unread=Exists(newer))
 
 
@@ -56,8 +58,10 @@ def unread_count(user):
 
 def inbox(user):
     """The user's conversations that have messages, newest first, ready to show."""
-    latest = Message.objects.filter(conversation=OuterRef("pk")).order_by(
-        "-created_at", "-pk"
+    latest = (
+        Message.objects.visible()
+        .filter(conversation=OuterRef("pk"))
+        .order_by("-created_at", "-pk")
     )
     conversations = (
         with_unread(conversations_for(user), user)
