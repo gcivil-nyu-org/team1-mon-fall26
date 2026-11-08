@@ -803,3 +803,46 @@ class CareOpportunityFigmaDetailsTests(CareOpportunityTests):
         self.assertContains(response, "Owner: Kat W.")
         self.assertContains(response, "Message Kat")
         self.assertContains(response, "Note from Kat")
+
+    def test_unknown_neighborhood_is_used_as_typed(self):
+        from accounts.models import AccountProfile
+
+        AccountProfile.objects.update_or_create(
+            user=self.owner, defaults={"neighborhood": "Somewhere Else"}
+        )
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:create"))
+        self.assertEqual(response.context["form"]["location"].value(), "Somewhere Else")
+
+    def test_browse_shows_distance_from_the_caregiver(self):
+        CaregiverProfile.objects.filter(pk=self.caregiver_profile.pk).update(
+            latitude=40.6710, longitude=-73.9814
+        )
+        self.opportunity.location = "Park Slope, Brooklyn"
+        self.opportunity.save()
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(reverse("opportunities:browse"))
+        self.assertContains(response, "Park Slope ·")
+        self.assertContains(response, " mi</small>")
+
+    def test_caregiver_messaging_their_own_post_goes_back_to_it(self):
+        own_pet = Pet.objects.create(
+            owner=self.caregiver_user, name="Own", pet_type=self.pet_type
+        )
+        own_post = CareOpportunity.objects.create(
+            owner=self.caregiver_user,
+            pet=own_pet,
+            service_type=self.service,
+            start_time=self.start,
+            end_time=self.end,
+            location="Park Slope",
+        )
+        self.client.force_login(self.caregiver_user)
+        response = self.client.get(
+            reverse("opportunities:message_owner", args=[own_post.pk])
+        )
+        self.assertRedirects(
+            response,
+            f"{reverse('opportunities:browse')}?post={own_post.pk}",
+            fetch_redirect_response=False,
+        )
