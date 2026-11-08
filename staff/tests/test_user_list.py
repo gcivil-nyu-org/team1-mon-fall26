@@ -148,7 +148,7 @@ class DetailTests(StaffTestData):
             "Pet owner",
             "Active",
             "Joined",
-            "Never",
+            "Reports",
         ):
             self.assertContains(response, text)
 

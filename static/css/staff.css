@@ -121,6 +121,11 @@
 .staff-none, .staff-more { margin: 0; font-size: 13px; }
 .staff-more { margin-top: 6px; }
 
+/* The latest report about the account, as in the Figma. */
+.staff-report { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: #fff4d9; }
+.staff-report > span { display: grid; gap: 2px; font-size: 13px; }
+.staff-report strong { font-size: 13px; }
+
 .staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 20px; }
 /* #92: the restrict popup reuses the Reports page's modal styles. */
 .staff-confirm-label { justify-self: start; font-size: 13px; font-weight: 700; }

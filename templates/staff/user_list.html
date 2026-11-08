@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static report_tags %}
 
 {% block title %}{% if selected %}{{ selected.get_full_name|default:selected.username }} · {% endif %}Users · PawPal admin{% endblock %}
 
@@ -85,7 +85,7 @@
           <dl class="staff-facts">
             <div><dt>Email</dt><dd>{{ account.email|default:"—" }}</dd></div>
             <div><dt>Joined</dt><dd>{{ account.date_joined|date:"M Y" }}</dd></div>
-            <div><dt>Last log in</dt><dd>{{ account.last_login|date:"M j, Y"|default:"Never" }}</dd></div>
+            <div><dt>Reports</dt><dd>{{ report_count }}</dd></div>
             {% if account.status_key == "restricted" %}
               <div><dt>Restricted</dt><dd>{{ account.account_profile.restricted_at|date:"M j, Y, g:i A" }}</dd></div>
               {% if account.account_profile.restriction_reason %}
@@ -140,6 +140,17 @@
             {% if booking_count > bookings|length %}<p class="muted staff-more">The {{ bookings|length }} most recent of {{ booking_count }}.</p>{% endif %}
           {% else %}
             <p class="muted staff-none">No bookings yet.</p>
+          {% endif %}
+
+          {% if latest_report %}
+            {# The latest report about this account, linked to the Reports page (#95). #}
+            <div class="staff-report">
+              <span>
+                <strong>Latest report</strong>
+                <span>{{ latest_report.get_reason_display }} · {{ latest_report.created_at|when_long }}{% if latest_report.status != "open" %} · {{ latest_report.get_status_display }}{% endif %}</span>
+              </span>
+              <a class="text-link" href="{% url 'reports:admin_detail' latest_report.pk %}">View reports</a>
+            </div>
           {% endif %}
 
           <div class="staff-actions">
