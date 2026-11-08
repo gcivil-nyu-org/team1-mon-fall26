@@ -4,21 +4,20 @@
 
 .page-staff { max-width: 1040px; }
 
-.staff-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
-.staff-header .admin-title { margin: 0; }
-
-.staff-search { display: flex; align-items: center; gap: 10px; }
+/* #90: the search box sits at the top of the accounts list. */
+.staff-search { position: relative; margin-bottom: 12px; }
 .staff-search input {
-  width: 300px;
-  max-width: 100%;
+  width: 100%;
   min-height: 42px;
-  padding: 8px 16px;
+  padding: 8px 16px 8px 40px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--input-bg);
   font: inherit;
   font-size: 14px;
 }
+.staff-search-icon { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.staff-clear { margin-left: 6px; color: var(--ink); font-weight: 700; }
 
 .staff-layout {
   display: grid;
@@ -137,8 +136,6 @@
 }
 
 @media (max-width: 760px) {
-  .staff-header { flex-direction: column; align-items: stretch; }
-  .staff-search input { flex: 1; width: auto; }
   .staff-layout { grid-template-columns: 1fr; }
   .staff-account-header { flex-wrap: wrap; }
   .staff-account-header .account-status { margin-left: 0; }
