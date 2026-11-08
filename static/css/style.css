@@ -4063,3 +4063,9 @@ img.pet-initial-large {
 .modal-actions .btn {
   justify-content: center;
 }
+
+.report-review p.is-removed,
+.report-bubble.is-removed {
+  color: var(--muted);
+  text-decoration: line-through;
+}

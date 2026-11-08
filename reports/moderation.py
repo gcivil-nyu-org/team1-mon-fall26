@@ -21,3 +21,17 @@ def close_reports(report, *, status, admin):
 def dismiss(report, admin):
     """The content is fine: close the reports and leave the content up."""
     return close_reports(report, status=Report.Status.DISMISSED, admin=admin)
+
+
+def remove_content(report, admin):
+    """The content breaks the rules: hide it from users and close the reports.
+
+    Admins still see it, crossed out, on the report. Returns how many reports
+    were closed.
+    """
+    target = report.review if report.kind == Report.Kind.REVIEW else report.message
+    count = close_reports(report, status=Report.Status.RESOLVED, admin=admin)
+    if target is not None and target.removed_at is None:
+        target.removed_at = timezone.now()
+        target.save(update_fields=["removed_at"])
+    return count

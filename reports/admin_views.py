@@ -2,7 +2,8 @@
 
 The list of reports sits on the left and the selected report on the right.
 Two tabs: Open, and Resolved (reports an admin dismissed or acted on).
-Dismissing (#98) asks for confirmation in a popup first.
+Dismissing a report (#98) and removing the content (#97) each ask for
+confirmation in a popup first.
 """
 
 from django.contrib import messages
@@ -13,7 +14,7 @@ from django.views.decorators.http import require_POST
 from staff.views import staff_required
 
 from .models import Report
-from .moderation import dismiss
+from .moderation import dismiss, remove_content
 
 OPEN = "open"
 RESOLVED = "resolved"
@@ -28,11 +29,19 @@ CONFIRM = {
         "button_class": "btn-dark",
         "url": "reports:admin_dismiss",
     },
+    "remove": {
+        "title": "Remove this {kind}?",
+        "text": "Users won't see it anymore. The report will close as Removed.",
+        "button": "Remove",
+        "button_class": "btn-danger",
+        "url": "reports:admin_remove",
+    },
 }
 
 # The banner shown after an action, keyed by ?done=<action>.
 DONE = {
     "dismissed": "Report dismissed and moved to Resolved.",
+    "removed": "{Kind} removed and moved to Resolved.",
 }
 
 
@@ -97,10 +106,12 @@ def _render(request, tab, selected):
         if confirm and selected.is_open:
             context["confirm"] = {
                 **confirm,
+                "title": confirm["title"].format(kind=kind),
                 "text": confirm["text"].format(kind=kind),
                 "url": reverse(confirm["url"], args=[selected.pk]),
             }
-        context["done"] = DONE.get(request.GET.get("done"))
+        done = DONE.get(request.GET.get("done"))
+        context["done"] = done and done.format(Kind=kind.capitalize())
     return render(request, "reports/admin_reports.html", context)
 
 
@@ -135,3 +146,14 @@ def report_dismiss(request, pk):
         return _after(request, report, None)
     dismiss(report, request.user)
     return _after(request, report, "dismissed")
+
+
+@staff_required
+@require_POST
+def report_remove(request, pk):
+    """#97: the content breaks the rules, so hide it from users and close the report."""
+    report = _get(pk)
+    if not report.is_open:
+        return _after(request, report, None)
+    remove_content(report, request.user)
+    return _after(request, report, "removed")

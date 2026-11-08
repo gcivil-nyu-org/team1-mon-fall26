@@ -67,7 +67,7 @@ def _report(request, *, kind, target, author, text, about, back):
 @login_required
 def report_review(request, pk):
     review = get_object_or_404(
-        Review.objects.select_related("author", "booking__caregiver"), pk=pk
+        Review.objects.visible().select_related("author", "booking__caregiver"), pk=pk
     )
     fallback = reverse("caregiver", args=[review.booking.caregiver_id])
     return _report(
@@ -85,9 +85,9 @@ def report_review(request, pk):
 def report_message(request, pk):
     # Only someone in the conversation can see, and so report, a message.
     message = get_object_or_404(
-        Message.objects.select_related("sender", "conversation").filter(
-            conversation__in=conversations_for(request.user)
-        ),
+        Message.objects.visible()
+        .select_related("sender", "conversation")
+        .filter(conversation__in=conversations_for(request.user)),
         pk=pk,
     )
     fallback = message.conversation.get_absolute_url()

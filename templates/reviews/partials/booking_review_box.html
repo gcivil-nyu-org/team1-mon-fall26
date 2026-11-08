@@ -1,5 +1,10 @@
 {% load review_tags %}
-{% if review %}
+{% if removed %}
+  <section class="review-box" aria-label="Your review">
+    <h3>Your review</h3>
+    <p class="muted">PawPal removed your review because it didn't follow our community guidelines.</p>
+  </section>
+{% elif review %}
   <section class="review-box" aria-label="Your review">
     <h3>Your review</h3>
     {% include "reviews/partials/review_card.html" %}
