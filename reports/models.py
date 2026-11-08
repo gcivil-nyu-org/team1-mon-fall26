@@ -19,16 +19,17 @@ class Report(models.Model):
         MESSAGE = "message", "Message"
 
     class Reason(models.TextChoices):
-        SPAM = "spam", "Spam or a scam"
-        HARASSMENT = "harassment", "Harassment or abusive language"
-        INAPPROPRIATE = "inappropriate", "Inappropriate or offensive content"
+        # Labels match Kat's Figma.
+        SPAM = "spam", "Spam or scam"
+        HARASSMENT = "harassment", "Rude or harassing"
+        INAPPROPRIATE = "inappropriate", "Inappropriate"
         FAKE = "fake", "Fake or misleading"
         OTHER = "other", "Something else"
 
     class Status(models.TextChoices):
         OPEN = "open", "Open"
         DISMISSED = "dismissed", "Dismissed"
-        RESOLVED = "resolved", "Action taken"
+        RESOLVED = "resolved", "Removed"
 
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
