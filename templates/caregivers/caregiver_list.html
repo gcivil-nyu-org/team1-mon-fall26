@@ -7,7 +7,7 @@
 
 {% block content %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=5">
 
   <div class="search-page">
     <form method="get" class="search-hero" id="caregiver-search" autocomplete="off">
@@ -161,7 +161,7 @@
               </div>
               <div class="tags result-tags">
                 <span class="tag tag-experience">{% include "partials/paw_icon.html" %} {{ caregiver.years_of_experience|experience_range }}</span>
-                {% for pet_type in caregiver.supported_pet_types.all %}<span class="tag">{{ pet_type.name }}</span>{% endfor %}
+                {% for pet in caregiver.supported_pet_types.all|pet_tags %}<span class="tag">{{ pet }}</span>{% endfor %}
               </div>
               {% if caregiver.listed_services %}
                 <ul class="service-chips" aria-label="Services">

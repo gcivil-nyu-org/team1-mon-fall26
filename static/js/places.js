@@ -96,7 +96,12 @@
 
   if (!mapElement || typeof L === "undefined") return;
 
-  map = L.map(mapElement, { scrollWheelZoom: false, zoomControl: false, attributionControl: false });
+  map = L.map(mapElement, {
+    scrollWheelZoom: false,
+    zoomControl: false,
+    attributionControl: false,
+    zoomSnap: 0.5,
+  });
   L.control.zoom({ position: "topleft" }).addTo(map);
   L.control.attribution({ position: "bottomleft", prefix: '<a href="https://leafletjs.com">Leaflet</a>' }).addTo(map);
   // CARTO Voyager, as in the design. CARTO needs a (free) key; without one,
@@ -154,14 +159,23 @@
     bounds.push(spot);
   });
 
-  // Show every place, leaving room for the list on wide screens. The card may
-  // cover a corner; picking a place moves it into view.
-  var fit = wide.matches
-    ? { paddingTopLeft: [400, 50], paddingBottomRight: [50, 50] }
-    : { padding: [30, 30] };
-  fit.maxZoom = 16;
-  if (bounds.length > 1) map.fitBounds(bounds, fit);
-  else map.setView(bounds[0], 15);
+  // Open at street level around where the owner searched from, as in the
+  // design: closer for 1 mi, further out for larger distances. Places outside
+  // the view are still in the list, and picking one moves the map to it.
+  // Half steps (zoomSnap below) to match the street spacing in the Figma frames.
+  var STREET_ZOOM = { 1: 15.5, 2: 14.5, 5: 13.5, 10: 12.5 };
+  if (data.origin) {
+    map.setView([data.origin.latitude, data.origin.longitude], STREET_ZOOM[data.distance] || 15);
+  } else if (bounds.length > 1) {
+    // No search yet: show every place, leaving room for the list.
+    var fit = wide.matches
+      ? { paddingTopLeft: [400, 50], paddingBottomRight: [50, 50] }
+      : { padding: [30, 30] };
+    fit.maxZoom = 16;
+    map.fitBounds(bounds, fit);
+  } else {
+    map.setView(bounds[0], 15);
+  }
   if (markers[selected]) map.panInside(markers[selected].getLatLng(), padding());
   sizePins();
 })();

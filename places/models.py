@@ -83,9 +83,26 @@ class Place(models.Model):
         return [line.strip() for line in self.features.splitlines() if line.strip()]
 
     def place_line(self):
-        """ "214 7th Ave, Brooklyn", or "Park Slope, Brooklyn" when there's no address."""
-        parts = [p for p in (self.address or self.neighborhood, self.borough) if p]
-        return ", ".join(parts)
+        """ "214 7th Ave, Brooklyn", or "Park Slope, Brooklyn" when there's no address.
+
+        The borough is added once, even when the address already ends with it.
+        """
+        first = self.address or self.neighborhood
+        if not first:
+            return self.borough
+        if self.borough and not first.rstrip().lower().endswith(self.borough.lower()):
+            return f"{first}, {self.borough}"
+        return first
+
+    def hours_line(self):
+        """ "8 AM – 6 PM" -> "Open today 8 AM – 6 PM", as in the design.
+
+        Hours written as a sentence ("Open daily 6 AM – 1 AM") are shown as is.
+        """
+        hours = self.hours.strip()
+        if hours[:1].isdigit():
+            return f"Open today {hours}"
+        return hours
 
     def directions_url(self):
         return (

@@ -1,6 +1,7 @@
 """Explore nearby (Figma "View Nearby Pet-Friendly Locations", "View Nearby Dog
 Parks" and "(No result)" frames). Address lookups are mocked."""
 
+from datetime import date
 from decimal import Decimal
 from unittest import mock
 
@@ -107,10 +108,16 @@ class ViewNearbyPlacesTests(ExploreData):
         )
         self.assertContains(response, "3 places near Park Slope")
         self.assertContains(response, "0.1 mi away")
-        # The list: distance first, so a long address never hides it.
-        self.assertContains(response, "<span>0.1 mi · 214 7th Ave</span>")
-        self.assertContains(response, "<span>0.3 mi · Park Slope</span>")
-        self.assertContains(response, "<span>0.4 mi</span>")
+        # The list: address first, as in the design. The distance never wraps
+        # or gets cut off, so a long address can't hide it.
+        distance = '<span class="place-distance">{} mi</span>'
+        self.assertContains(
+            response, "<span>214 7th Ave · " + distance.format("0.1") + "</span>"
+        )
+        self.assertContains(
+            response, "<span>Park Slope · " + distance.format("0.3") + "</span>"
+        )
+        self.assertContains(response, "<span>" + distance.format("0.4") + "</span>")
         self.assertEqual(response.context["distance"], 1)
 
     def test_distance_choice(self):
@@ -349,3 +356,37 @@ class ReportWrongInfoTests(ExploreData):
     def test_login_required(self):
         self.client.logout()
         self.assertEqual(self.client.get(self.url()).status_code, 302)
+
+
+class FigmaDetailsTests(ExploreData):
+    """Small details from the Figma Pet-Friendly Locations frames."""
+
+    def test_borough_is_shown_once(self):
+        place = Place(address="214 7th Ave, Brooklyn", borough="Brooklyn")
+        self.assertEqual(place.place_line(), "214 7th Ave, Brooklyn")
+        self.assertEqual(Place(borough="Queens").place_line(), "Queens")
+
+    def test_hours_read_open_today(self):
+        self.assertEqual(
+            Place(hours="8 AM – 6 PM").hours_line(), "Open today 8 AM – 6 PM"
+        )
+        self.assertEqual(
+            Place(hours="Open daily 8 AM – 6 PM").hours_line(), "Open daily 8 AM – 6 PM"
+        )
+        self.assertEqual(Place().hours_line(), "")
+
+    def test_source_says_verified(self):
+        self.park.checked_on = date(2026, 11, 8)
+        self.park.save()
+        response = self.client.get(
+            EXPLORE, {"location": "Park Slope", "place": self.park.pk}
+        )
+        self.assertContains(response, "verified Nov 8, 2026")
+        self.assertNotContains(response, "checked Nov 8, 2026")
+
+    def test_headings_name_the_area_as_typed(self):
+        response = self.client.get(
+            EXPLORE, {"location": "Carroll Gardens", "category": "cafe"}
+        )
+        self.assertEqual(response.context["origin_name"], "Carroll Gardens")
+        self.assertContains(response, "<h2>No cafés near Carroll Gardens yet</h2>")

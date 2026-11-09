@@ -55,6 +55,16 @@ def explore_places(request):
     else:
         results = list(places)
 
+    # The headings name the area as typed ("Carroll Gardens"), not the full
+    # neighborhood name it matched ("Carroll Gardens-Cobble Hill-...").
+    typed = params.get("location", "").strip()
+    if origin is None:
+        origin_name = ""
+    elif typed and not current:
+        origin_name = typed.split(",")[0].strip()
+    else:
+        origin_name = origin["label"].split(",")[0].strip()
+
     picked = params.get("place", "")
     selected = next((p for p in results if str(p.pk) == picked), None)
     if selected is None and results:
@@ -87,6 +97,7 @@ def explore_places(request):
             "count_label": _count_label(len(results), category),
             "chips": chips,
             "origin": origin,
+            "origin_name": origin_name,
             "notice": notice,
             "location_text": "" if current else params.get("location", "").strip(),
             "current": current,
