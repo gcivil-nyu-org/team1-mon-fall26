@@ -6,84 +6,83 @@
 {% block main_class %}page page-owner-form{% endblock %}
 
 {% block content %}
-{# #47: Kat's "Update Personal Information (Pet owner)" Figma. The form styles come from the caregiver profile form. #}
-<link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">
+  {# #47: Kat's "Update Personal Information (Pet owner)" Figma. The form styles come from the caregiver profile form. #}
+  <link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">
 
-<div class="caregiver-heading">
-  <span class="caregiver-eyebrow">Pet owner profile</span>
-  <h1>Edit your profile</h1>
-  <p><span class="required">*</span> Required</p>
-</div>
-
-<form method="post" novalidate>
-  {% csrf_token %}
-  <section class="caregiver-section">
-    <h2>Personal info</h2>
-    <div class="caregiver-two-fields">
-      <div class="field{% if form.first_name.errors %} has-error{% endif %}">
-        <label for="{{ form.first_name.id_for_label }}">First name <span class="required">*</span></label>
-        {{ form.first_name }}{{ form.first_name.errors }}
-      </div>
-      <div class="field{% if form.last_name.errors %} has-error{% endif %}">
-        <label for="{{ form.last_name.id_for_label }}">Last name <span class="required">*</span></label>
-        {{ form.last_name }}{{ form.last_name.errors }}
-      </div>
-    </div>
-
-    <div class="field{% if form.email.errors %} has-error{% endif %}">
-      <div class="label-row">
-        <label for="{{ form.email.id_for_label }}">Email <span class="required">*</span></label>
-        <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see email &amp; address</span>
-      </div>
-      {{ form.email }}
-      {# A new email only takes effect once the link sent to it is clicked. #}
-      <p class="caregiver-hint">If you change it, we'll email a link to the new address to confirm it.</p>
-      {{ form.email.errors }}
-    </div>
-
-    <div class="field{% if form.address.errors %} has-error{% endif %}" data-address-lookup
-      data-suggest-url="{% url 'address_suggestions' %}">
-      <label for="{{ form.address.id_for_label }}">Address <span class="required">*</span></label>
-      {{ form.address }}
-      <datalist id="address-suggestions"></datalist>
-      <p class="caregiver-hint">Caregivers only see your neighborhood.</p>
-      {{ form.address.errors }}
-    </div>
-  </section>
-
-  <div class="form-actions owner-form-actions">
-    <a class="btn btn-outline" href="{% url 'my_profile' %}">Cancel</a>
-    <button class="btn btn-dark caregiver-save" type="submit">Save profile</button>
+  <div class="caregiver-heading">
+    <span class="caregiver-eyebrow">Pet owner profile</span>
+    <h1>Edit your profile</h1>
+    <p><span class="required">*</span> Required</p>
   </div>
-</form>
 
-<script>
-  // NYC address suggestions while typing, like the caregiver profile form.
-  (() => {
-    const lookup = document.querySelector('[data-address-lookup]');
-    const address = lookup && lookup.querySelector('input[name="address"]');
-    if (!address) return;
-    const list = document.getElementById('address-suggestions');
-    let timer;
-    address.setAttribute('list', 'address-suggestions');
-    address.setAttribute('autocomplete', 'off');
-    address.addEventListener('input', () => {
-      clearTimeout(timer);
-      const text = address.value.trim();
-      if (text.length < 3) { list.replaceChildren(); return; }
-      timer = setTimeout(async () => {
-        try {
-          const response = await fetch(lookup.dataset.suggestUrl + '?q=' + encodeURIComponent(text));
-          const data = await response.json();
-          list.replaceChildren(...data.suggestions.map(item => {
-            const option = document.createElement('option');
-            option.value = item.address;
-            return option;
-          }));
-        } catch (error) { /* Suggestions are optional; typing still works. */ }
-      }, 250);
-    });
-  })();
-</script>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <section class="caregiver-section">
+      <h2>Personal info</h2>
+      <div class="caregiver-two-fields">
+        <div class="field{% if form.first_name.errors %} has-error{% endif %}">
+          <label for="{{ form.first_name.id_for_label }}">First name <span class="required">*</span></label>
+          {{ form.first_name }}{{ form.first_name.errors }}
+        </div>
+        <div class="field{% if form.last_name.errors %} has-error{% endif %}">
+          <label for="{{ form.last_name.id_for_label }}">Last name <span class="required">*</span></label>
+          {{ form.last_name }}{{ form.last_name.errors }}
+        </div>
+      </div>
+
+      <div class="field{% if form.email.errors %} has-error{% endif %}">
+        <div class="label-row">
+          <label for="{{ form.email.id_for_label }}">Email <span class="required">*</span></label>
+          <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see email &amp; address</span>
+        </div>
+        {{ form.email }}
+        {# A new email only takes effect once the link sent to it is clicked. #}
+        <p class="caregiver-hint">If you change it, we'll email a link to the new address to confirm it.</p>
+        {{ form.email.errors }}
+      </div>
+
+      <div class="field{% if form.address.errors %} has-error{% endif %}" data-address-lookup data-suggest-url="{% url 'address_suggestions' %}">
+        <label for="{{ form.address.id_for_label }}">Address <span class="required">*</span></label>
+        {{ form.address }}
+        <datalist id="address-suggestions"></datalist>
+        <p class="caregiver-hint">Caregivers only see your neighborhood.</p>
+        {{ form.address.errors }}
+      </div>
+    </section>
+
+    <div class="form-actions owner-form-actions">
+      <a class="btn btn-outline" href="{% url 'my_profile' %}">Cancel</a>
+      <button class="btn btn-dark caregiver-save" type="submit">Save profile</button>
+    </div>
+  </form>
+
+  <script>
+    // NYC address suggestions while typing, like the caregiver profile form.
+    (() => {
+      const lookup = document.querySelector('[data-address-lookup]');
+      const address = lookup && lookup.querySelector('input[name="address"]');
+      if (!address) return;
+      const list = document.getElementById('address-suggestions');
+      let timer;
+      address.setAttribute('list', 'address-suggestions');
+      address.setAttribute('autocomplete', 'off');
+      address.addEventListener('input', () => {
+        clearTimeout(timer);
+        const text = address.value.trim();
+        if (text.length < 3) { list.replaceChildren(); return; }
+        timer = setTimeout(async () => {
+          try {
+            const response = await fetch(lookup.dataset.suggestUrl + '?q=' + encodeURIComponent(text));
+            const data = await response.json();
+            list.replaceChildren(...data.suggestions.map(item => {
+              const option = document.createElement('option');
+              option.value = item.address;
+              return option;
+            }));
+          } catch (error) { /* Suggestions are optional; typing still works. */ }
+        }, 250);
+      });
+    })();
+  </script>
 {% endblock %}

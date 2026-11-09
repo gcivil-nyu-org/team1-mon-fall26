@@ -7,311 +7,49 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=8">
-{% if is_own %}
-<link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">{% endif %}
+{% if is_own %}<link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">{% endif %}
 
 
 <style>
-  /* Scoped public calendar: does not alter caregiver management calendar or global styles. */
-  .public-availability-card {
-    min-width: 0;
-  }
-
-  .public-availability-head,
-  .public-availability-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .public-availability-head h2 {
-    margin: 0;
-  }
-
-  .public-availability-toggle {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px;
-    border-radius: 99px;
-    background: #fff;
-    box-shadow: 0 0 0 1.5px #f0ddd5, 0 3px 0 #f0ddd5;
-  }
-
-  .public-availability-toggle button {
-    min-height: 38px;
-    padding: 0 20px;
-    border: 0;
-    border-radius: 99px;
-    background: transparent;
-    color: #5a4038;
-    font: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 23.25px;
-    cursor: pointer;
-  }
-
-  .public-availability-toggle button.active {
-    background: #1c1a1a;
-    color: #fff;
-  }
-
-  .public-availability-nav {
-    justify-content: center;
-    gap: 6px;
-    margin: 16px 0;
-  }
-
-  .public-availability-nav strong {
-    min-width: 160px;
-    text-align: center;
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 31px;
-  }
-
-  .public-availability-nav button {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-radius: 18px;
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .public-availability-days,
-  .public-availability-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 6px;
-  }
-
-  .public-availability-days {
-    margin-bottom: 6px;
-    text-align: center;
-    color: #8a6f64;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18.6px;
-    letter-spacing: .72px;
-  }
-
-  .public-availability-days[hidden] {
-    display: none;
-  }
-
-  .public-availability-grid {
-    min-height: 120px;
-  }
-
-  .public-day {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font: inherit;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .public-day:focus-visible {
-    outline: 2px solid #8057ad;
-    outline-offset: 1px;
-  }
-
-  .public-week .public-day {
-    gap: 6px;
-    padding: 10px 6px 12px;
-    border-radius: 18px;
-  }
-
-  .public-day-label {
-    color: #8a6f64;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18.6px;
-    letter-spacing: .72px;
-    text-transform: uppercase;
-  }
-
-  .public-day.is-past .public-day-label {
-    color: #b8a8a1;
-  }
-
-  .public-week .public-day-number {
-    display: grid;
-    place-items: center;
-    width: 42px;
-    height: 42px;
-    margin-bottom: 4px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 0 0 1.5px #f0ddd5, 0 3px 0 #f0ddd5;
-    color: #1c1a1a;
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    transform: rotate(-4deg);
-  }
-
-  .public-week .public-day.is-today .public-day-number {
-    background: #f2b94b;
-    box-shadow: 0 3px 0 #d9982e;
-  }
-
-  .public-week .public-day.is-past .public-day-number {
-    background: #f3eeeb;
-    box-shadow: none;
-    color: #b8a8a1;
-  }
-
-  .public-time-pill {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 5px 4px;
-    border-radius: 99px;
-    background: #cdefdc;
-    color: #14532d;
-    font-size: 12.5px;
-    font-weight: 700;
-    line-height: 19.375px;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .public-day-off {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding-top: 6px;
-    color: #c9b5ac;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 20.15px;
-  }
-
-  .public-month .public-day {
-    gap: 4px;
-    min-height: 64px;
-    padding: 6px 4px;
-    border-radius: 16px;
-  }
-
-  .public-month .public-day.is-selected {
-    background: #faf5f2;
-  }
-
-  .public-month .public-day-number {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 34px;
-    border-radius: 10px;
-    color: #6a5a54;
-    font-family: var(--font-display);
-    font-size: 17px;
-    font-weight: 600;
-  }
-
-  .public-month .public-day.is-past .public-day-number {
-    color: #b8a8a1;
-  }
-
-  .public-month .public-day.has-open .public-day-number {
-    background: #cdefdc;
-    color: #14532d;
-  }
-
-  .public-month .public-day.is-today .public-day-number {
-    background: #f2b94b;
-    color: #1c1a1a;
-  }
-
-  .public-selected-summary {
-    margin-top: 16px;
-    padding: 14px 16px;
-    background: #faf5f2;
-    border-radius: 18px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    font-size: 16px;
-    line-height: 24.8px;
-  }
-
-  .public-selected-summary[hidden] {
-    display: none;
-  }
-
-  .public-selected-summary strong {
-    margin-right: 4px;
-    font-weight: 700;
-  }
-
-  .public-selected-summary .public-summary-time {
-    background: #cdefdc;
-    color: #14532d;
-    padding: 5px 12px;
-    border-radius: 99px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 21.7px;
-  }
-
-  .public-selected-summary .public-empty {
-    color: #897972;
-  }
-
-  @media(max-width:600px) {
-
-    .public-availability-days,
-    .public-availability-grid {
-      gap: 2px
-    }
-
-    .public-week .public-day {
-      padding: 6px 1px 8px
-    }
-
-    .public-week .public-day-number {
-      width: 32px;
-      height: 32px;
-      font-size: 16px
-    }
-
-    .public-day-label {
-      font-size: 10px;
-      letter-spacing: 0
-    }
-
-    .public-time-pill {
-      font-size: 10px;
-      padding: 3px 1px
-    }
-
-    .public-availability-toggle button {
-      padding: 0 12px
-    }
-
-    .public-availability-nav strong {
-      min-width: 0;
-      font-size: 16px
-    }
-  }
+/* Scoped public calendar: does not alter caregiver management calendar or global styles. */
+.public-availability-card {min-width:0;}
+.public-availability-head,.public-availability-nav {display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.public-availability-head h2 {margin:0;}
+.public-availability-toggle {display:flex;align-items:center;gap:4px;padding:5px;border-radius:99px;background:#fff;box-shadow:0 0 0 1.5px #f0ddd5,0 3px 0 #f0ddd5;}
+.public-availability-toggle button {min-height:38px;padding:0 20px;border:0;border-radius:99px;background:transparent;color:#5a4038;font:inherit;font-size:15px;font-weight:700;line-height:23.25px;cursor:pointer;}
+.public-availability-toggle button.active {background:#1c1a1a;color:#fff;}
+.public-availability-nav {justify-content:center;gap:6px;margin:16px 0;}
+.public-availability-nav strong {min-width:160px;text-align:center;font-family:var(--font-display);font-size:20px;font-weight:600;line-height:31px;}
+.public-availability-nav button {display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:18px;background:transparent;cursor:pointer;}
+.public-availability-days,.public-availability-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;}
+.public-availability-days {margin-bottom:6px;text-align:center;color:#8a6f64;font-size:12px;font-weight:700;line-height:18.6px;letter-spacing:.72px;}
+.public-availability-days[hidden] {display:none;}
+.public-availability-grid {min-height:120px;}
+.public-day {min-width:0;display:flex;flex-direction:column;align-items:center;font:inherit;border:0;background:transparent;cursor:pointer;}
+.public-day:focus-visible {outline:2px solid #8057ad;outline-offset:1px;}
+.public-week .public-day {gap:6px;padding:10px 6px 12px;border-radius:18px;}
+.public-day-label {color:#8a6f64;font-size:12px;font-weight:700;line-height:18.6px;letter-spacing:.72px;text-transform:uppercase;}
+.public-day.is-past .public-day-label {color:#b8a8a1;}
+.public-week .public-day-number {display:grid;place-items:center;width:42px;height:42px;margin-bottom:4px;border-radius:12px;background:#fff;box-shadow:0 0 0 1.5px #f0ddd5,0 3px 0 #f0ddd5;color:#1c1a1a;font-family:var(--font-display);font-size:20px;font-weight:600;transform:rotate(-4deg);}
+.public-week .public-day.is-today .public-day-number {background:#f2b94b;box-shadow:0 3px 0 #d9982e;}
+.public-week .public-day.is-past .public-day-number {background:#f3eeeb;box-shadow:none;color:#b8a8a1;}
+.public-time-pill {display:block;width:100%;box-sizing:border-box;padding:5px 4px;border-radius:99px;background:#cdefdc;color:#14532d;font-size:12.5px;font-weight:700;line-height:19.375px;text-align:center;white-space:nowrap;}
+.public-day-off {display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:6px;color:#c9b5ac;font-size:13px;font-weight:600;line-height:20.15px;}
+.public-month .public-day {gap:4px;min-height:64px;padding:6px 4px;border-radius:16px;}
+.public-month .public-day.is-selected {background:#faf5f2;}
+.public-month .public-day-number {display:grid;place-items:center;width:36px;height:34px;border-radius:10px;color:#6a5a54;font-family:var(--font-display);font-size:17px;font-weight:600;}
+.public-month .public-day.is-past .public-day-number {color:#b8a8a1;}
+.public-month .public-day.has-open .public-day-number {background:#cdefdc;color:#14532d;}
+.public-month .public-day.is-today .public-day-number {background:#f2b94b;color:#1c1a1a;}
+.public-selected-summary {margin-top:16px;padding:14px 16px;background:#faf5f2;border-radius:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:16px;line-height:24.8px;}
+.public-selected-summary[hidden] {display:none;}
+.public-selected-summary strong {margin-right:4px;font-weight:700;}
+.public-selected-summary .public-summary-time {background:#cdefdc;color:#14532d;padding:5px 12px;border-radius:99px;font-size:14px;font-weight:700;line-height:21.7px;}
+.public-selected-summary .public-empty {color:#897972;}
+@media(max-width:600px) {.public-availability-days,.public-availability-grid{gap:2px}.public-week .public-day{padding:6px 1px 8px}.public-week .public-day-number{width:32px;height:32px;font-size:16px}.public-day-label{font-size:10px;letter-spacing:0}.public-time-pill{font-size:10px;padding:3px 1px}.public-availability-toggle button{padding:0 12px}.public-availability-nav strong{min-width:0;font-size:16px}}
 </style>
 
-{% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">{% include
-  "partials/chevron_left_icon.html" %} Back to caregivers</a>{% endif %}
+{% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">{% include "partials/chevron_left_icon.html" %} Back to caregivers</a>{% endif %}
 
 {# On a caregiver's own profile, their private Personal info takes the request card's place. #}
 <div class="caregiver-public-grid{% if is_own %} is-own-profile{% endif %}">
@@ -324,31 +62,28 @@
         {% include "partials/paw_icon.html" with class="cover-paw" %}
       </div>
       {% if is_own %}
-      {# Same white pencil button as the pet profile, plus the "…" menu with Delete account (#47). #}
-      <div class="profile-actions">
-        <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include
-          "partials/pencil_icon.html" %} Edit profile</a>
-        {% include "accounts/partials/profile_more_menu.html" %}
-      </div>
+        {# Same white pencil button as the pet profile, plus the "…" menu with Delete account (#47). #}
+        <div class="profile-actions">
+          <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+          {% include "accounts/partials/profile_more_menu.html" %}
+        </div>
       {% endif %}
       <div class="caregiver-avatar">
         {% if caregiver.profile_photo %}
-        <img src="{{ caregiver.profile_photo.url }}" alt="Profile photo of {{ caregiver.name }}">
+          <img src="{{ caregiver.profile_photo.url }}" alt="Profile photo of {{ caregiver.name }}">
         {% else %}
-        <span aria-hidden="true">{{ caregiver.initials }}</span>
+          <span aria-hidden="true">{{ caregiver.initials }}</span>
         {% endif %}
       </div>
       <div class="caregiver-header-info">
         <h1>{{ caregiver.name }}</h1>
         <div class="caregiver-badges">
           {% if caregiver.service_area %}
-          <span class="caregiver-badge">{% include "partials/pin_icon.html" %}{{ caregiver.service_area }}</span>
+            <span class="caregiver-badge">{% include "partials/pin_icon.html" %}{{ caregiver.service_area }}</span>
           {% endif %}
-          <span class="caregiver-badge">{% include "partials/paw_icon.html" %}{{ caregiver.experience_label }} caring
-            for pets</span>
+          <span class="caregiver-badge">{% include "partials/paw_icon.html" %}{{ caregiver.experience_label }} caring for pets</span>
           {% if not caregiver.accepting_new_bookings %}
-          <span class="caregiver-availability unavailable"><span class="availability-dot"
-              aria-hidden="true"></span>Taking a little paws</span>
+            <span class="caregiver-availability unavailable"><span class="availability-dot" aria-hidden="true"></span>Taking a little paws</span>
           {% endif %}
         </div>
         {% if caregiver.bio %}<p class="caregiver-intro">{{ caregiver.bio }}</p>{% endif %}
@@ -358,23 +93,22 @@
     <section class="caregiver-public-card caregiver-card-body">
       <h2>Services</h2>
       {% if provided_services %}
-      {# Prices are hidden on the profile for now; they're still saved with each service. #}
-      <ul class="caregiver-service-tiles">
-        {% for service in provided_services %}
-        <li class="caregiver-service-tile">
-          {% include "caregivers/partials/service_icon.html" with kind=service.service_type.icon %}
-          <span>{{ service.service_type.name }}</span>
-        </li>
-        {% endfor %}
-      </ul>
+        {# Prices are hidden on the profile for now; they're still saved with each service. #}
+        <ul class="caregiver-service-tiles">
+          {% for service in provided_services %}
+            <li class="caregiver-service-tile">
+              {% include "caregivers/partials/service_icon.html" with kind=service.service_type.icon %}
+              <span>{{ service.service_type.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
       {% else %}
-      <p class="caregiver-text muted">No services added yet.</p>
+        <p class="caregiver-text muted">No services added yet.</p>
       {% endif %}
     </section>
 
 
-    <section class="caregiver-public-card caregiver-card-body public-availability-card"
-      aria-label="Caregiver availability">
+    <section class="caregiver-public-card caregiver-card-body public-availability-card" aria-label="Caregiver availability">
       <div class="public-availability-head">
         <h2>Availability</h2>
         <div class="public-availability-toggle" role="group" aria-label="Calendar view">
@@ -383,11 +117,9 @@
         </div>
       </div>
       <div class="public-availability-nav">
-        <button type="button" id="public-prev" aria-label="Previous period"><img
-            src="{% static 'images/availability/chevron-left.svg' %}" alt="" width="18" height="18"></button>
+        <button type="button" id="public-prev" aria-label="Previous period"><img src="{% static 'images/availability/chevron-left.svg' %}" alt="" width="18" height="18"></button>
         <strong id="public-calendar-title"></strong>
-        <button type="button" id="public-next" aria-label="Next period"><img
-            src="{% static 'images/availability/chevron-right.svg' %}" alt="" width="18" height="18"></button>
+        <button type="button" id="public-next" aria-label="Next period"><img src="{% static 'images/availability/chevron-right.svg' %}" alt="" width="18" height="18"></button>
       </div>
       <div class="public-availability-days" id="public-calendar-days" aria-hidden="true">
         <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
@@ -401,32 +133,30 @@
         <h2>Happy to care for</h2>
         <div class="caregiver-tags">
           {% for pet_type in caregiver.supported_pet_types.all %}
-          <span class="caregiver-tag tag-pet">{{ pet_type.name }}</span>
+            <span class="caregiver-tag tag-pet">{{ pet_type.name }}</span>
           {% empty %}
-          <p class="caregiver-text muted">Pet types haven't been added yet.</p>
+            <p class="caregiver-text muted">Pet types haven't been added yet.</p>
           {% endfor %}
         </div>
       </section>
 
       {% if caregiver.pet_care_skill_labels %}
-      <section class="caregiver-public-card caregiver-card-body">
-        <h2>Skills</h2>
-        <div class="caregiver-tags">
-          {% for skill in caregiver.pet_care_skill_labels %}
-          <span class="caregiver-tag tag-skill">{{ skill }}</span>
-          {% endfor %}
-        </div>
-      </section>
+        <section class="caregiver-public-card caregiver-card-body">
+          <h2>Skills</h2>
+          <div class="caregiver-tags">
+            {% for skill in caregiver.pet_care_skill_labels %}
+              <span class="caregiver-tag tag-skill">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </section>
       {% endif %}
     </div>
 
     <section class="caregiver-public-card caregiver-card-body">
       <h2>Experience</h2>
       {% if caregiver.special_skills %}<p class="caregiver-text">{{ caregiver.special_skills }}</p>{% endif %}
-      {% if caregiver.certifications %}<p class="caregiver-text"><strong>Certifications:</strong> {{
-        caregiver.certifications }}</p>{% endif %}
-      {% if not caregiver.special_skills and not caregiver.certifications %}<p class="caregiver-text">{{
-        caregiver.experience_label }} of pet care experience.</p>{% endif %}
+      {% if caregiver.certifications %}<p class="caregiver-text"><strong>Certifications:</strong> {{ caregiver.certifications }}</p>{% endif %}
+      {% if not caregiver.special_skills and not caregiver.certifications %}<p class="caregiver-text">{{ caregiver.experience_label }} of pet care experience.</p>{% endif %}
     </section>
 
     <section class="caregiver-public-card caregiver-card-body">
@@ -441,18 +171,15 @@
     <span class="booking-deco booking-deco-pink" aria-hidden="true"></span>
     <h2>Request care from {{ caregiver.first_name }}</h2>
     {% if caregiver.accepting_new_bookings %}
-    <p>Pick a pet, a service and one of {{ caregiver.first_name }}'s open times. {{ caregiver.first_name }} will accept
-      or decline, and you'll see the status in My requests.</p>
-    <a href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}" class="caregiver-booking-button">Send a
-      booking request</a>
+      <p>Pick a pet, a service and one of {{ caregiver.first_name }}'s open times. {{ caregiver.first_name }} will accept or decline, and you'll see the status in My requests.</p>
+      <a href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}" class="caregiver-booking-button">Send a booking request</a>
     {% else %}
-    <p>{{ caregiver.first_name }} is taking a little paws right now and isn't accepting new booking requests.</p>
-    <span class="caregiver-booking-button is-disabled">Currently unavailable</span>
+      <p>{{ caregiver.first_name }} is taking a little paws right now and isn't accepting new booking requests.</p>
+      <span class="caregiver-booking-button is-disabled">Currently unavailable</span>
     {% endif %}
     {# Message before a Service: owners can ask questions before they book. #}
     {% if caregiver.user.is_active and not user.caregiver_profile %}
-    <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{
-      caregiver.first_name }}</a>
+      <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{ caregiver.first_name }}</a>
     {% endif %}
   </aside>
   {% else %}
@@ -462,14 +189,8 @@
       <h2>Personal info</h2>
       <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see this</span>
       <dl class="info-tiles is-stacked">
-        <div class="info-tile">
-          <dt>Email</dt>
-          <dd>{{ user.email|default:"Not added yet" }}</dd>
-        </div>
-        <div class="info-tile">
-          <dt>Address</dt>
-          <dd>{{ caregiver.address|default:"Not added yet" }}</dd>
-        </div>
+        <div class="info-tile"><dt>Email</dt><dd>{{ user.email|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Address</dt><dd>{{ caregiver.address|default:"Not added yet" }}</dd></div>
       </dl>
     </section>
   </aside>
@@ -477,73 +198,73 @@
 </div>
 {{ public_availability_json|json_script:"public-availability-data" }}
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const rawAvailability = JSON.parse(document.getElementById("public-availability-data").textContent);
-    // Support both JSON strings (older view) and arrays (updated view).
-    const slots = typeof rawAvailability === "string" ? JSON.parse(rawAvailability) : rawAvailability;
-    const grid = document.getElementById("public-calendar-grid");
-    const dayHeadings = document.getElementById("public-calendar-days");
-    const offIcon = "{% static 'images/availability/paw-off.svg' %}";
-    const title = document.getElementById("public-calendar-title");
-    const summary = document.getElementById("public-selected-summary");
-    const weekButton = document.getElementById("public-week");
-    const monthButton = document.getElementById("public-month");
-    const now = new Date(); now.setHours(12, 0, 0, 0);
-    let selected = new Date(now);
-    let focus = new Date(now);
-    let mode = "week";
-    const key = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const plusDays = (d, n) => { const result = new Date(d); result.setDate(result.getDate() + n); return result; };
-    const monday = d => plusDays(d, -((d.getDay() + 6) % 7));
-    const formatTime = time => { const [h, m] = time.split(":").map(Number); return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""}${h >= 12 ? "p" : "a"}`; };
-    const formatRange = slot => `${formatTime(slot.start)}–${formatTime(slot.end)}`;
-    const longTime = time => { const [h, m] = time.split(":").map(Number); return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""} ${h >= 12 ? "PM" : "AM"}`; };
-    const longRange = slot => { const start = longTime(slot.start), end = longTime(slot.end); return start.slice(-2) === end.slice(-2) ? `${start.slice(0, -3)}–${end}` : `${start}–${end}`; };
-    const slotsFor = d => slots.filter(s => s.date === key(d) && (s.date > key(now) || (s.date === key(now) && s.end > `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`))).sort((a, b) => a.start.localeCompare(b.start));
-    function render() {
-      weekButton.classList.toggle("active", mode === "week");
-      monthButton.classList.toggle("active", mode === "month");
-      weekButton.setAttribute("aria-pressed", String(mode === "week"));
-      monthButton.setAttribute("aria-pressed", String(mode === "month"));
-      const first = mode === "week" ? monday(focus) : new Date(focus.getFullYear(), focus.getMonth(), 1, 12);
-      const count = mode === "week" ? 7 : new Date(focus.getFullYear(), focus.getMonth() + 1, 0).getDate();
-      const last = plusDays(first, count - 1);
-      title.textContent = mode === "month" ? focus.toLocaleDateString("en-US", { month: "long", year: "numeric" }) : `${first.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${last.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-      grid.replaceChildren();
-      grid.classList.toggle("public-week", mode === "week");
-      grid.classList.toggle("public-month", mode === "month");
-      dayHeadings.hidden = mode === "week";
-      summary.hidden = mode === "week";
-      if (mode === "month") for (let i = 0; i < (first.getDay() + 6) % 7; i++)grid.append(document.createElement("div"));
-      for (let i = 0; i < count; i++) {
-        const day = plusDays(first, i), open = slotsFor(day), button = document.createElement("button"), isPast = key(day) < key(now), isToday = key(day) === key(now);
-        button.type = "button"; button.className = "public-day";
-        if (open.length) button.classList.add("has-open");
-        if (isToday) button.classList.add("is-today");
-        if (key(day) === key(selected)) button.classList.add("is-selected");
-        if (isPast) button.classList.add("is-past");
-        button.setAttribute("aria-label", `${day.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}, ${open.length} open time slots`);
-        if (mode === "week") { const label = document.createElement("span"); label.className = "public-day-label"; label.textContent = isToday ? "Today" : day.toLocaleDateString("en-US", { weekday: "short" }); button.append(label); }
-        const number = document.createElement("span"); number.className = "public-day-number"; number.textContent = day.getDate(); button.append(number);
-        if (mode === "week") {
-          open.forEach(slot => { const pill = document.createElement("span"); pill.className = "public-time-pill"; pill.textContent = formatRange(slot); button.append(pill); });
-          if (!open.length && !isPast) { const off = document.createElement("span"); off.className = "public-day-off"; const paw = document.createElement("img"); paw.src = offIcon; paw.alt = ""; paw.width = 20; paw.height = 20; off.append(paw, "Off"); button.append(off); }
-        }
-        button.addEventListener("click", () => { selected = new Date(day); focus = new Date(day); render(); });
-        grid.append(button);
+document.addEventListener("DOMContentLoaded", () => {
+  const rawAvailability = JSON.parse(document.getElementById("public-availability-data").textContent);
+  // Support both JSON strings (older view) and arrays (updated view).
+  const slots = typeof rawAvailability === "string" ? JSON.parse(rawAvailability) : rawAvailability;
+  const grid = document.getElementById("public-calendar-grid");
+  const dayHeadings = document.getElementById("public-calendar-days");
+  const offIcon = "{% static 'images/availability/paw-off.svg' %}";
+  const title = document.getElementById("public-calendar-title");
+  const summary = document.getElementById("public-selected-summary");
+  const weekButton = document.getElementById("public-week");
+  const monthButton = document.getElementById("public-month");
+  const now = new Date(); now.setHours(12,0,0,0);
+  let selected = new Date(now);
+  let focus = new Date(now);
+  let mode = "week";
+  const key = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const plusDays = (d,n) => { const result=new Date(d); result.setDate(result.getDate()+n); return result; };
+  const monday = d => plusDays(d, -((d.getDay()+6)%7));
+  const formatTime = time => {const [h,m]=time.split(":").map(Number);return `${h%12||12}${m ? ":"+String(m).padStart(2,"0") : ""}${h>=12?"p":"a"}`;};
+  const formatRange = slot => `${formatTime(slot.start)}–${formatTime(slot.end)}`;
+  const longTime = time => {const [h,m]=time.split(":").map(Number);return `${h%12||12}${m ? ":"+String(m).padStart(2,"0") : ""} ${h>=12?"PM":"AM"}`;};
+  const longRange = slot => {const start=longTime(slot.start),end=longTime(slot.end);return start.slice(-2)===end.slice(-2)?`${start.slice(0,-3)}–${end}`:`${start}–${end}`;};
+  const slotsFor = d => slots.filter(s => s.date===key(d) && (s.date>key(now) || (s.date===key(now) && s.end>`${String(new Date().getHours()).padStart(2,"0")}:${String(new Date().getMinutes()).padStart(2,"0")}`))).sort((a,b)=>a.start.localeCompare(b.start));
+  function render() {
+    weekButton.classList.toggle("active",mode==="week");
+    monthButton.classList.toggle("active",mode==="month");
+    weekButton.setAttribute("aria-pressed",String(mode==="week"));
+    monthButton.setAttribute("aria-pressed",String(mode==="month"));
+    const first=mode==="week"?monday(focus):new Date(focus.getFullYear(),focus.getMonth(),1,12);
+    const count=mode==="week"?7:new Date(focus.getFullYear(),focus.getMonth()+1,0).getDate();
+    const last=plusDays(first,count-1);
+    title.textContent=mode==="month"?focus.toLocaleDateString("en-US",{month:"long",year:"numeric"}):`${first.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${last.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
+    grid.replaceChildren();
+    grid.classList.toggle("public-week",mode==="week");
+    grid.classList.toggle("public-month",mode==="month");
+    dayHeadings.hidden=mode==="week";
+    summary.hidden=mode==="week";
+    if(mode==="month")for(let i=0;i<(first.getDay()+6)%7;i++)grid.append(document.createElement("div"));
+    for(let i=0;i<count;i++) {
+      const day=plusDays(first,i), open=slotsFor(day), button=document.createElement("button"), isPast=key(day)<key(now), isToday=key(day)===key(now);
+      button.type="button";button.className="public-day";
+      if(open.length)button.classList.add("has-open");
+      if(isToday)button.classList.add("is-today");
+      if(key(day)===key(selected))button.classList.add("is-selected");
+      if(isPast)button.classList.add("is-past");
+      button.setAttribute("aria-label",`${day.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}, ${open.length} open time slots`);
+      if(mode==="week"){const label=document.createElement("span");label.className="public-day-label";label.textContent=isToday?"Today":day.toLocaleDateString("en-US",{weekday:"short"});button.append(label);}
+      const number=document.createElement("span");number.className="public-day-number";number.textContent=day.getDate();button.append(number);
+      if(mode==="week") {
+        open.forEach(slot=>{const pill=document.createElement("span");pill.className="public-time-pill";pill.textContent=formatRange(slot);button.append(pill);});
+        if(!open.length&&!isPast){const off=document.createElement("span");off.className="public-day-off";const paw=document.createElement("img");paw.src=offIcon;paw.alt="";paw.width=20;paw.height=20;off.append(paw,"Off");button.append(off);}
       }
-      summary.replaceChildren();
-      const dateLabel = document.createElement("strong"); dateLabel.textContent = selected.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); summary.append(dateLabel);
-      const open = slotsFor(selected);
-      if (!open.length) { const empty = document.createElement("span"); empty.className = "public-empty"; empty.textContent = "No open times"; summary.append(empty); }
-      else open.forEach(slot => { const pill = document.createElement("span"); pill.className = "public-summary-time"; pill.textContent = longRange(slot); summary.append(pill); });
+      button.addEventListener("click",()=>{selected=new Date(day);focus=new Date(day);render();});
+      grid.append(button);
     }
-    weekButton.addEventListener("click", () => { mode = "week"; render(); });
-    monthButton.addEventListener("click", () => { mode = "month"; render(); });
-    document.getElementById("public-prev").addEventListener("click", () => { focus = mode === "week" ? plusDays(focus, -7) : new Date(focus.getFullYear(), focus.getMonth() - 1, 1, 12); render(); });
-    document.getElementById("public-next").addEventListener("click", () => { focus = mode === "week" ? plusDays(focus, 7) : new Date(focus.getFullYear(), focus.getMonth() + 1, 1, 12); render(); });
-    render();
-  });
+    summary.replaceChildren();
+    const dateLabel=document.createElement("strong");dateLabel.textContent=selected.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});summary.append(dateLabel);
+    const open=slotsFor(selected);
+    if(!open.length){const empty=document.createElement("span");empty.className="public-empty";empty.textContent="No open times";summary.append(empty);}
+    else open.forEach(slot=>{const pill=document.createElement("span");pill.className="public-summary-time";pill.textContent=longRange(slot);summary.append(pill);});
+  }
+  weekButton.addEventListener("click",()=>{mode="week";render();});
+  monthButton.addEventListener("click",()=>{mode="month";render();});
+  document.getElementById("public-prev").addEventListener("click",()=>{focus=mode==="week"?plusDays(focus,-7):new Date(focus.getFullYear(),focus.getMonth()-1,1,12);render();});
+  document.getElementById("public-next").addEventListener("click",()=>{focus=mode==="week"?plusDays(focus,7):new Date(focus.getFullYear(),focus.getMonth()+1,1,12);render();});
+  render();
+});
 </script>
 
 

@@ -200,7 +200,6 @@
 /* ---------- Smaller screens ---------- */
 
 @media (max-width: 640px) {
-
   .page-owner-profile,
   .page-owner-form {
     padding: 8px 16px 48px;
