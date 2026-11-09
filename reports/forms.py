@@ -29,12 +29,3 @@ class ReportForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ["reason", "details"]
-
-    def clean(self):
-        cleaned = super().clean()
-        if (
-            cleaned.get("reason") == Report.Reason.OTHER
-            and not cleaned.get("details", "").strip()
-        ):
-            self.add_error("details", "Tell us a little about what's wrong.")
-        return cleaned

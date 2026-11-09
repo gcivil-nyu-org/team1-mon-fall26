@@ -5,7 +5,6 @@ from django.db.models import Q
 
 from accounts.restriction import is_restricted
 from bookings.models import Booking
-from caregivers.search import listed_services
 from pets.models import Pet
 from reports.models import Report
 
@@ -59,10 +58,12 @@ def describe(user):
 
 
 def all_accounts():
-    """Every account, newest first, with what the list needs in one query."""
+    """Every pet owner and caregiver account, newest first, with what the
+    list needs in one query. Admin accounts aren't listed, as in the Figma."""
     return (
         get_user_model()
-        .objects.select_related("account_profile", "caregiver_profile")
+        .objects.filter(is_staff=False)
+        .select_related("account_profile", "caregiver_profile")
         .order_by("-date_joined", "-pk")
     )
 
@@ -90,8 +91,8 @@ def search(accounts, query):
 def details(user):
     """#91: what the account page shows besides the basics.
 
-    Pets (a deleted pet is listed but marked), the caregiver profile and its
-    services, the latest bookings the account took part in, either as the
+    Pets (a deleted pet is listed but marked), the caregiver profile (its
+    services are on the public profile), the latest bookings the account took part in, either as the
     pet owner or as the caregiver, and how often it has been reported.
     """
     caregiver = getattr(user, "caregiver_profile", None)
@@ -106,14 +107,6 @@ def details(user):
         .select_related("pet_type")
         .order_by("deleted_at", "name"),
         "caregiver": caregiver,
-        "services": (
-            listed_services()
-            .filter(caregiver=caregiver)
-            .select_related("service_type")
-            .order_by("service_type__name")
-            if caregiver
-            else []
-        ),
         "bookings": bookings[:RECENT_BOOKINGS],
         "booking_count": bookings.count(),
         # Reports other people made about this account (#95), newest first.

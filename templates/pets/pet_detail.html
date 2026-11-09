@@ -35,9 +35,13 @@
       </dl>
 
       {% include "pets/partials/care_info.html" with is_owner=True %}
-      {% pet_reviews pet %}
     </div>
   </article>
+
+  {# Reviews in their own card, like on the caregiver profile. #}
+  <section class="card reviews-card">
+    {% pet_reviews pet %}
+  </section>
 
   <section class="cta-banner">
     <span class="deco deco-corner" aria-hidden="true"></span>

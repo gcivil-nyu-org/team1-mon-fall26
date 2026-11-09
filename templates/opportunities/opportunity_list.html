@@ -6,7 +6,7 @@
 {% block main_class %}page page-my-requests co-wide{% endblock %}
 
 {% block content %}
-<link href="{% static 'css/opportunities.css' %}?v=1" rel="stylesheet">
+<link href="{% static 'css/opportunities.css' %}?v=4" rel="stylesheet">
 
 <div class="co-page">
 
@@ -128,7 +128,11 @@
 
             <div class="co-field {% if edit_form.location.errors %}has-error{% endif %}">
               <label class="co-field-label" for="{{ edit_form.location.id_for_label }}">Location <span class="co-required">*</span></label>
-              {{ edit_form.location }}
+              {# Suggestions as you type, like the Explore search (location_suggest.js). #}
+              <div class="co-location" data-location-field>
+                {{ edit_form.location }}
+                <ul class="co-suggestions" id="location-suggestions" role="listbox" hidden></ul>
+              </div>
               {% for error in edit_form.location.errors %}<div class="co-field-error">{{ error }}</div>{% endfor %}
             </div>
 
@@ -240,4 +244,6 @@
     });
   })();
 </script>
+{{ neighborhood_options|json_script:"neighborhood-options" }}
+<script src="{% static 'js/location_suggest.js' %}?v=2"></script>
 {% endblock %}

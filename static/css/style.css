@@ -95,7 +95,8 @@ a {
 
 .site-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* The menu is centered between the logo and the account, as in the Figma. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
   padding: 52px 32px 16px;
@@ -129,6 +130,7 @@ a {
 }
 
 .main-nav {
+  justify-self: center;
   display: flex;
   gap: 4px;
   padding: 5px;
@@ -3288,8 +3290,22 @@ img.pet-initial-large {
   margin-top: 22px;
 }
 
-.caregiver-card-body .review-list {
+.caregiver-card-body .review-list,
+.reviews-card .review-list {
   margin-top: 0;
+}
+
+/* A pet's Reviews: their own card, styled like the caregiver profile's. */
+.reviews-card {
+  margin-top: 24px;
+  padding: 30px;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+@media (max-width: 760px) {
+  .reviews-card { padding: 22px 18px; }
 }
 
 .review-list-head {
@@ -3318,28 +3334,36 @@ img.pet-initial-large {
 }
 
 /* The caregiver profile's larger Reviews header. */
-.caregiver-card-body .review-list-head {
+.caregiver-card-body .review-list-head,
+.reviews-card .review-list-head {
   margin-bottom: 16px;
 }
 
-.caregiver-card-body .review-list-head h2 {
+.caregiver-card-body .review-list-head h2,
+.reviews-card .review-list-head h2 {
   font-size: 26px;
+  line-height: 1.55;
+  letter-spacing: -0.13px;
 }
 
-.caregiver-card-body .review-average {
+.caregiver-card-body .review-average,
+.reviews-card .review-average {
   gap: 10px;
 }
 
-.caregiver-card-body .review-average strong {
+.caregiver-card-body .review-average strong,
+.reviews-card .review-average strong {
   font-size: 24px;
   font-weight: 600;
 }
 
-.caregiver-card-body .review-average .paws {
+.caregiver-card-body .review-average .paws,
+.reviews-card .review-average .paws {
   gap: 2px;
 }
 
-.caregiver-card-body .review-average .paw svg {
+.caregiver-card-body .review-average .paw svg,
+.reviews-card .review-average .paw svg {
   width: 17px;
   height: 17px;
 }
@@ -3662,16 +3686,17 @@ img.pet-initial-large {
 
 /* ---------- Admin: Reports page (#95, Kat's Figma) ---------- */
 
+/* 68 × 29px, as in the Figma. */
 .admin-badge {
-  margin-left: 4px;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: var(--ink);
   color: #fff;
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 13px;
+  line-height: 21px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
