@@ -117,6 +117,21 @@ class ElasticBeanstalkDatabaseTests(SimpleTestCase):
         self.assertIn("touch /var/app/data/db.sqlite3", database)
 
 
+class ElasticBeanstalkStaticFilesTests(SimpleTestCase):
+    """Bug report: the live site showed no CSS. nginx was told to serve
+    /static itself and answered 404, so WhiteNoise has to serve it."""
+
+    def test_static_is_served_by_whitenoise_not_nginx(self):
+        static = (BASE_DIR / ".ebextensions" / "01_static.config").read_text()
+        self.assertNotIn("/static:", static)
+        self.assertIn("/media: media", static)
+        self.assertIn("collectstatic --noinput", static)
+        self.assertIn(
+            "whitenoise.middleware.WhiteNoiseMiddleware",
+            (BASE_DIR / "config" / "settings.py").read_text(),
+        )
+
+
 class EmailSettingsTests(SimpleTestCase):
     """Password reset emails (#46): printed locally, sent by SMTP on a server."""
 
