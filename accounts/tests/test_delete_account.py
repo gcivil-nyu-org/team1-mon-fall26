@@ -36,9 +36,19 @@ class DeleteAccountTests(BookingTestData):
         self.client.force_login(user)
         return self.client.post(DELETE_URL, {"password": password}, follow=True)
 
-    def test_menu_links_to_delete_account(self):
+    def test_my_profile_links_to_delete_account(self):
+        # #47: Delete account is in the "…" menu on My profile, not the account menu.
         self.client.force_login(self.owner)
-        response = self.client.get(reverse("pets:list"))
+        self.assertNotContains(
+            self.client.get(reverse("pets:list")), f'href="{DELETE_URL}"'
+        )
+        self.assertContains(
+            self.client.get(reverse("my_profile")), f'href="{DELETE_URL}"'
+        )
+
+    def test_caregiver_profile_links_to_delete_account(self):
+        self.client.force_login(self.sitter)
+        response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
         self.assertContains(response, f'href="{DELETE_URL}"')
 
     def test_signed_out_visitors_go_to_login(self):

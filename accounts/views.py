@@ -5,10 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from pets.models import Pet
+
 from .deletion import delete_account
 from .forms import (
     DeleteAccountForm,
-    NeighborhoodForm,
+    PersonalInfoForm,
     ResendVerificationForm,
     SignUpForm,
 )
@@ -139,21 +141,56 @@ class ResetSentView(auth_views.PasswordResetDoneView):
         return context
 
 
-@login_required
-def neighborhood_view(request):
-    """A pet owner sets the neighborhood caregivers see in Messages."""
-    profile, _ = AccountProfile.objects.get_or_create(user=request.user)
-    if (
-        hasattr(request.user, "caregiver_profile")
-        or profile.role == AccountProfile.Role.CAREGIVER
-    ):
+def _other_profile_page(user):
+    """#47's profile pages are for pet owners. Send admins home and caregivers
+    to their caregiver profile (or to make one). None means stay."""
+    if user.is_staff:
         return redirect("home")
-    form = NeighborhoodForm(request.POST or None, instance=profile)
+    caregiver = getattr(user, "caregiver_profile", None)
+    if caregiver is not None:
+        return redirect("caregiver", caregiver.pk)
+    if user.account_profile.role == AccountProfile.Role.CAREGIVER:
+        return redirect("create_caregiver_profile")
+    return None
+
+
+@login_required
+def my_profile_view(request):
+    """#47: a pet owner's profile with their personal info (Kat's Figma)."""
+    AccountProfile.objects.get_or_create(user=request.user)
+    elsewhere = _other_profile_page(request.user)
+    if elsewhere is not None:
+        return elsewhere
+    pet_count = Pet.objects.active().filter(owner=request.user).count()
+    return render(
+        request,
+        "accounts/my_profile.html",
+        {"profile": request.user.account_profile, "pet_count": pet_count},
+    )
+
+
+@login_required
+def edit_profile_view(request):
+    """#47: a pet owner updates their name and address."""
+    AccountProfile.objects.get_or_create(user=request.user)
+    elsewhere = _other_profile_page(request.user)
+    if elsewhere is not None:
+        return elsewhere
+    form = PersonalInfoForm(
+        request.POST if request.method == "POST" else None, user=request.user
+    )
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Your neighborhood is saved.")
-        return redirect("neighborhood")
-    return render(request, "accounts/neighborhood.html", {"form": form})
+        if form.geocoding_unavailable:
+            messages.warning(
+                request,
+                "Your profile was saved, but we couldn't look up your "
+                "neighborhood right now. Please save your profile again later.",
+            )
+        else:
+            messages.success(request, "Your profile is saved.")
+        return redirect("my_profile")
+    return render(request, "accounts/edit_profile.html", {"form": form})
 
 
 @login_required
