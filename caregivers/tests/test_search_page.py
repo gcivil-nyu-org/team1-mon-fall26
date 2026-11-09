@@ -12,6 +12,7 @@ from caregivers.templatetags.caregiver_tags import (
     avatar_theme,
     experience_range,
     initials,
+    pet_plural,
     pet_tags,
     place_name,
 )
@@ -80,6 +81,11 @@ class CardHelperTests(SimpleTestCase):
             pet_tags(pets),
             ["Dogs", "Cats", "Rabbits", "Birds", "Fish", "Guinea pigs", "Mice"],
         )
+
+    def test_pet_plural_endings(self):
+        self.assertEqual(pet_plural("Tortoise"), "Tortoises")
+        self.assertEqual(pet_plural("Fox"), "Foxes")
+        self.assertEqual(pet_plural("Other"), "Other pets")
 
 
 class SearchPageTests(SearchTestData):
