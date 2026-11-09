@@ -81,18 +81,24 @@ class AccessTests(StaffTestData):
 class ListTests(StaffTestData):
     def test_lists_every_account_with_type_and_status(self):
         response = self.client.get(LIST_URL)
-        self.assertEqual(response.context["page"].paginator.count, 5)
+        self.assertEqual(response.context["page"].paginator.count, 4)
         for text in (
             "Kat W",
             "Chloe Shih",
             "Caregiver",
             "Pet owner",
-            "Admin",
             "Email not confirmed",
             "Deleted",
             "Active",
         ):
             self.assertContains(response, text)
+
+    def test_admin_accounts_are_not_listed(self):
+        # Only pet owners and caregivers, as in the Figma.
+        response = self.client.get(LIST_URL)
+        self.assertNotIn(self.admin, list(response.context["page"]))
+        self.assertNotContains(response, f'href="{detail_url(self.admin)}"')
+        self.assertEqual(self.client.get(detail_url(self.admin)).status_code, 404)
 
     def test_first_account_is_shown_next_to_the_list(self):
         response = self.client.get(LIST_URL)
@@ -103,14 +109,14 @@ class ListTests(StaffTestData):
     def test_opening_an_account_keeps_the_list(self):
         response = self.client.get(detail_url(self.owner))
         self.assertEqual(response.context["selected"], self.owner)
-        self.assertEqual(len(response.context["page"]), 5)
+        self.assertEqual(len(response.context["page"]), 4)
         self.assertContains(response, 'aria-current="true"', count=1)
 
     def test_newest_first_and_each_row_opens_the_account(self):
         response = self.client.get(LIST_URL)
         accounts = list(response.context["page"])
         self.assertEqual(accounts[0], self.gone)
-        self.assertEqual(accounts[-1], self.admin)
+        self.assertEqual(accounts[-1], self.owner)
         for user in accounts:
             self.assertContains(response, f'href="{detail_url(user)}"')
 
@@ -122,7 +128,7 @@ class ListTests(StaffTestData):
         self.assertContains(first, "Page 1 of 2")
         self.assertContains(first, f'href="{LIST_URL}?page=2"')
         second = self.client.get(LIST_URL, {"page": 2})
-        self.assertEqual(len(second.context["page"]), 5)
+        self.assertEqual(len(second.context["page"]), 4)
         self.assertContains(second, f'href="{LIST_URL}?page=1"')
 
     def test_type_and_status_rules(self):
@@ -143,7 +149,6 @@ class DetailTests(StaffTestData):
         response = self.client.get(detail_url(self.owner))
         for text in (
             "Kat W",
-            "@kat",
             "kat@example.com",
             "Pet owner",
             "Active",
@@ -151,10 +156,11 @@ class DetailTests(StaffTestData):
             "Reports",
         ):
             self.assertContains(response, text)
+        self.assertNotContains(response, "@kat")
 
     def test_deleted_account_has_no_email(self):
         response = self.client.get(detail_url(self.gone))
-        self.assertContains(response, "@gone")
+        self.assertContains(response, 'id="account-name">gone</h2>')
         self.assertContains(response, "Deleted")
         self.assertContains(response, "<dd>—</dd>", html=True)
 

@@ -1,12 +1,16 @@
 """#92 Restrict or Reinstate User Account."""
 
+from datetime import datetime, timedelta
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import AccountProfile
 
 from accounts.restriction import RESTRICTED_MESSAGE, is_restricted, restrict
 from caregivers.search import searchable_caregivers
+from reports.templatetags.report_tags import since_day
 
 from .test_user_list import LIST_URL, StaffTestData, detail_url
 
@@ -39,6 +43,13 @@ class RestrictTests(StaffTestData):
         # The button opens a confirm popup with the reason box.
         response = self.client.get(detail_url(self.owner), {"confirm": "restrict"})
         self.assertContains(response, "Restrict Kat’s account?")
+        self.assertContains(
+            response,
+            "Kat won’t be able to send messages, requests or reviews until you "
+            "reinstate the account.",
+        )
+        self.assertContains(response, "Reason <span")
+        self.assertContains(response, "required")
         self.assertContains(response, f'action="{restrict_url(self.owner)}"')
         self.assertContains(response, 'name="reason"')
         self.assertContains(response, f'href="{detail_url(self.owner)}">Cancel</a>')
@@ -46,8 +57,12 @@ class RestrictTests(StaffTestData):
         response = self.client.post(
             restrict_url(self.owner), {"reason": "Spam messages"}, follow=True
         )
-        self.assertRedirects(response, detail_url(self.owner))
-        self.assertContains(response, "Kat W&#x27;s account is restricted.")
+        self.assertRedirects(response, f"{detail_url(self.owner)}?done=restricted")
+        self.assertContains(
+            response,
+            "Account restricted. Kat can’t use PawPal until you reinstate it.",
+        )
+        self.assertContains(response, "Restricted since Today")
         self.assertContains(response, "Spam messages")
         self.assertContains(response, "Reinstate account")
         self.owner.account_profile.refresh_from_db()
@@ -94,7 +109,9 @@ class RestrictTests(StaffTestData):
     def test_admin_can_reinstate(self):
         restrict(self.owner, "Spam")
         response = self.client.post(reinstate_url(self.owner), follow=True)
-        self.assertContains(response, "Kat W&#x27;s account is reinstated.")
+        self.assertRedirects(response, f"{detail_url(self.owner)}?done=reinstated")
+        self.assertContains(response, "Account reinstated. Kat has full access again.")
+        self.assertNotContains(response, "Restricted since")
         self.assertContains(response, "Restrict account")
         self.owner.account_profile.refresh_from_db()
         self.assertIsNone(self.owner.account_profile.restricted_at)
@@ -113,7 +130,7 @@ class RestrictTests(StaffTestData):
 
     def test_account_without_a_profile_gets_one(self):
         plain = get_user_model().objects.create_user("plain", password="pw-12345!")
-        self.client.post(restrict_url(plain))
+        self.client.post(restrict_url(plain), {"reason": "Spam"})
         plain.refresh_from_db()
         self.assertTrue(is_restricted(plain))
 
@@ -123,9 +140,19 @@ class RestrictTests(StaffTestData):
         other_admin.save()
         for account in (self.admin, other_admin, self.gone):
             response = self.client.get(detail_url(account))
-            self.assertNotContains(response, "Restrict account")
-            self.assertEqual(self.client.post(restrict_url(account)).status_code, 403)
-            self.assertEqual(self.client.post(reinstate_url(account)).status_code, 403)
+            # Admin accounts aren't on the Users page at all.
+            self.assertNotContains(
+                response,
+                "Restrict account",
+                status_code=404 if account.is_staff else 200,
+            )
+            refused = 404 if account.is_staff else 403
+            self.assertEqual(
+                self.client.post(restrict_url(account)).status_code, refused
+            )
+            self.assertEqual(
+                self.client.post(reinstate_url(account)).status_code, refused
+            )
         self.assertFalse(is_restricted(other_admin))
 
     def test_only_admins_and_only_post(self):
@@ -141,7 +168,7 @@ class RestrictedTabTests(StaffTestData):
         restrict(self.gone)  # deleted accounts don't count as restricted
         response = self.client.get(LIST_URL)
         tabs = {t["key"]: t["count"] for t in response.context["tabs"]}
-        self.assertEqual(tabs, {"all": 5, "restricted": 1})
+        self.assertEqual(tabs, {"all": 4, "restricted": 1})
         self.assertContains(response, f'href="{LIST_URL}?tab=restricted"')
 
     def test_restricted_tab_lists_only_restricted_accounts(self):
@@ -167,7 +194,37 @@ class RestrictedTabTests(StaffTestData):
 
     def test_no_popup_for_accounts_that_cant_be_restricted(self):
         restrict(self.owner)
-        for account in (self.owner, self.admin, self.gone):
+        for account in (self.owner, self.gone):
             response = self.client.get(detail_url(account), {"confirm": "restrict"})
             self.assertFalse(response.context["confirm"])
             self.assertNotContains(response, "modal-backdrop")
+
+
+class RestrictReasonTests(StaffTestData):
+    def test_reason_is_required(self):
+        response = self.client.post(restrict_url(self.owner), {"reason": "  "})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(is_restricted(self.owner))
+        # The popup opens again with the error.
+        self.assertTrue(response.context["confirm"])
+        self.assertContains(response, "Add a reason for restricting the account.")
+        self.assertContains(response, "staff-confirm-field has-error")
+
+    def test_banner_only_while_the_account_is_in_that_state(self):
+        response = self.client.get(detail_url(self.owner), {"done": "restricted"})
+        self.assertEqual(response.context["done"], "")
+        self.assertNotContains(response, "staff-banner")
+        response = self.client.get(detail_url(self.owner), {"done": "reinstated"})
+        self.assertContains(response, "staff-banner-reinstated")
+
+    def test_restricted_since_an_older_day(self):
+        restrict(self.owner, "Spam")
+        profile = self.owner.account_profile
+        profile.restricted_at = timezone.make_aware(datetime(2026, 3, 2, 12))
+        profile.save()
+        response = self.client.get(detail_url(self.owner))
+        self.assertContains(response, "Restricted since Mar 2, 2026")
+
+    def test_since_day_filter(self):
+        self.assertEqual(since_day(None), "")
+        self.assertEqual(since_day(timezone.now() - timedelta(days=1)), "Yesterday")
