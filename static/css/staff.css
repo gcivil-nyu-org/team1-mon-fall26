@@ -7,7 +7,7 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .page-staff .admin-title { margin: 12px 0 18px; font-size: 44px; letter-spacing: -0.5px; }
 .page-staff .admin-tabs { padding: 5px; margin-bottom: 20px; }
 .page-staff .admin-tab { gap: 6px; padding: 8px 18px; font-size: 16px; line-height: 24px; }
-.page-staff .admin-tab-count { min-width: 22px; height: 20px; font-size: 12px; }
+.page-staff .admin-tab-count { min-width: 22px; height: 20px; font-size: 12px; line-height: 1; }
 
 /* #90: the search box sits at the top of the accounts list. */
 .staff-search { position: relative; margin-bottom: 10px; }
