@@ -68,7 +68,7 @@ class CardHelperTests(SimpleTestCase):
 class SearchPageTests(SearchTestData):
     def test_page_matches_the_design(self):
         response = self.client.get(URL)
-        self.assertContains(response, "Find a caregiver nearby")
+        self.assertContains(response, "Explore nearby")
         self.assertContains(response, 'name="location"')
         self.assertContains(response, 'name="distance"')
         self.assertContains(response, "Use my current location")

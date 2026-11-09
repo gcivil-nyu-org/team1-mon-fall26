@@ -1,0 +1,296 @@
+/* Explore nearby: pet-friendly places and dog parks (Figma "View Nearby
+   Pet-Friendly Locations", "View Nearby Dog Parks" and "(No result)" frames).
+   Builds on caregiver_search.css for the purple search box and the chips. */
+
+/* The design's Explore page is 1176px wide (the caregiver search is 1136px). */
+.page-places { max-width: 1240px; }
+
+/* Category colors, from the Figma pins, list icons and badges. */
+.cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; --badge-bg: #cdefdc; --badge-ink: #14532d; }
+.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
+.cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+
+/* ---------- Map card ---------- */
+
+.places-card {
+  position: relative;
+  padding: 10px;
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.places-map {
+  position: relative;
+  z-index: 0; /* keeps Leaflet's layers under the list and the card */
+  height: 640px;
+  background: #f2ede6;
+  border-radius: 20px;
+  font-family: var(--font-body);
+}
+
+/* Floating panels: the list (left) and the picked place (bottom right). */
+.places-panel,
+.place-detail {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5, 0 14px 30px rgba(60, 30, 20, 0.1);
+}
+
+.places-panel {
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 350px;
+  padding: 14px;
+}
+
+.places-count {
+  margin: 0;
+  padding: 2px 0;
+  color: #8a6f64;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20.15px;
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+}
+
+.places-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 2px 2px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.place-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px; /* + 2px border = Figma's 10px */
+  background: #faf5f2;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.place-row:hover { border-color: #ead3c9; }
+.place-row.is-selected { background: #fff; border-color: var(--ink); }
+.place-row:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+.place-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  background: var(--cat-bg);
+  border-radius: 50%;
+  color: var(--cat-ink);
+}
+.place-icon svg { width: 22px; height: 22px; }
+.place-icon-large { width: 48px; height: 48px; }
+
+.place-row-text { display: grid; flex: 1; min-width: 0; }
+.place-row-text strong { font-size: 15px; line-height: 23.25px; }
+.place-row-text span { color: #6a5a54; font-size: 13px; line-height: 20.15px; }
+/* Long names and neighborhoods stop at two lines; the card has them in full. */
+.place-row-text strong,
+.place-row-text span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.place-badge {
+  flex: none;
+  padding: 2px 10px;
+  background: var(--badge-bg, #f3e7e1);
+  border-radius: 999px;
+  color: var(--badge-ink, #5a4038);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18.6px;
+  white-space: nowrap;
+}
+
+/* ---------- The picked place ---------- */
+
+.place-detail {
+  position: absolute;
+  right: 26px;
+  bottom: 24px;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  width: 360px;
+  padding: 18px;
+}
+.place-detail[hidden] { display: none; }
+
+.place-detail-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.place-detail-head > div { min-width: 0; }
+.place-detail h2 { margin: 0; font-size: 22px; line-height: 25.3px; letter-spacing: -0.11px; }
+.place-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-top: 2px;
+  color: #6a5a54;
+  font-size: 14px;
+  line-height: 21.7px;
+}
+
+.place-facts,
+.place-features { display: grid; margin: 0; padding: 0; list-style: none; }
+.place-facts { gap: 4px; }
+.place-facts li { display: flex; align-items: center; gap: 8px; color: #3d322e; font-size: 15px; line-height: 23.25px; }
+.place-facts svg { flex: none; width: 16px; height: 16px; color: #3d322e; }
+
+.place-features { gap: 6px; }
+.place-features li { display: flex; align-items: center; gap: 10px; color: #3d322e; font-size: 14px; font-weight: 600; line-height: 21.7px; }
+.place-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  background: #cdefdc;
+  border-radius: 10px;
+  color: #14532d;
+}
+.place-check svg { width: 12px; height: 12px; }
+
+.place-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-top: 2px; }
+.place-directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  background: var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--orange);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 23.25px;
+  text-decoration: none;
+}
+.place-directions svg { width: 18px; height: 18px; }
+.place-directions:focus-visible,
+.place-report:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+.place-report { color: #5c3d2e; font-size: 14px; font-weight: 600; line-height: 21.7px; text-decoration: underline; }
+
+.place-source { margin: -2px 0 0; color: #8a6f64; font-size: 12px; line-height: 18px; }
+.place-source a { color: inherit; }
+
+/* ---------- Map pins ---------- */
+
+.place-marker,
+.origin-marker { background: none; border: 0; }
+
+.map-pin { position: absolute; top: 0; left: 0; display: block; transform: translate(-50%, -50%); }
+.map-pin-dot {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 46px;
+  height: 46px;
+  background: var(--cat-bg);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 rgba(60, 30, 20, 0.18);
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+.map-pin-dot svg { width: 20px; height: 20px; }
+.places-map.is-far .map-pin-dot { width: 32px; height: 32px; border-width: 2px; box-shadow: 0 2px 0 rgba(60, 30, 20, 0.18); }
+.places-map.is-far .map-pin-dot svg { width: 15px; height: 15px; }
+.map-pin.is-selected .map-pin-dot { width: 60px; height: 60px; border-color: var(--ink); box-shadow: 0 4px 0 var(--orange); }
+.map-pin.is-selected .map-pin-dot svg { width: 26px; height: 26px; }
+.map-pin-label {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  padding: 4px 10px;
+  background: var(--ink);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 15px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.place-marker:focus-visible { outline: none; }
+.place-marker:focus-visible .map-pin-dot { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* Where the owner searched from. */
+.origin-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #3d82f0;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 12px rgba(61, 130, 240, 0.2);
+  transform: translate(-50%, -50%);
+}
+
+/* Warm the gray map toward PawPal's cream background. */
+.places-map .places-base-tiles { filter: sepia(0.3) saturate(0.7) brightness(1.03); }
+
+/* Leaflet's zoom buttons and credits, styled like the design. */
+.places-map .leaflet-bar { border: 0; border-radius: 10px; box-shadow: 0 0 0 1.5px #ead3c9, 0 3px 0 #ead3c9; }
+.places-map .leaflet-bar a { width: 34px; height: 34px; color: var(--ink); font-size: 20px; line-height: 34px; }
+.places-map .leaflet-control-attribution { margin: 0 0 10px 10px; padding: 2px 8px; background: rgba(255, 255, 255, 0.9); border-radius: 8px; color: #6a5a54; font-size: 11px; }
+.places-map .leaflet-control-attribution a { color: inherit; }
+
+/* ---------- No places ---------- */
+
+.places-empty { padding: 40px 32px 44px; }
+.places-empty h2 { font-size: 28px; line-height: 1.2; }
+.places-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  background: #f8e6df;
+  border-radius: 50%;
+  color: #5a4038;
+}
+.places-empty-icon svg { width: 24px; height: 24px; }
+
+/* ---------- Wide screens: room for the list beside the map controls ---------- */
+
+@media (min-width: 861px) {
+  .places-map .leaflet-top.leaflet-left,
+  .places-map .leaflet-bottom.leaflet-left { left: 364px; }
+}
+
+/* ---------- Phones and narrow windows: map, picked place, then the list ---------- */
+
+@media (max-width: 860px) {
+  .places-card { display: flex; flex-direction: column; gap: 14px; padding: 8px; }
+  .places-map { order: 0; height: 340px; border-radius: 22px; }
+  .place-detail { position: static; order: 1; width: auto; }
+  .places-panel { position: static; order: 2; width: auto; padding: 4px 6px 8px; box-shadow: none; }
+  .places-list { overflow: visible; }
+  .places-empty h2 { font-size: 24px; }
+}

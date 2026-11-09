@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static caregiver_tags %}
+
+{% block title %}Explore places · PawPal{% endblock %}
+
+{% block main_class %}page page-search page-places{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=3">
+
+  <div class="search-page">
+    {# Same form as the caregiver search, so caregiver_search.js adds location suggestions and "Use my current location". #}
+    <form method="get" class="search-hero" id="caregiver-search" autocomplete="off">
+      <span class="hero-dot hero-dot-pink" aria-hidden="true"></span>
+      <span class="hero-dot hero-dot-orange" aria-hidden="true"></span>
+      <span class="hero-dot hero-dot-yellow" aria-hidden="true"></span>
+
+      <h1>Explore nearby</h1>
+      <p class="hero-lead">Enter a neighborhood or ZIP code to see spots that welcome pets.</p>
+
+      <div class="hero-row">
+        {% include "partials/explore_looking_for.html" with looking_for="places" %}
+        <div class="hero-field hero-location">
+          <label for="search-location">Location</label>
+          <div class="location-input">
+            {% include "partials/pin_icon.html" %}
+            <input type="text" id="search-location" name="location" value="{{ location_text }}"
+                   placeholder="e.g. Park Slope, 11215 or 70 Washington Sq S"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="location-suggestions">
+          </div>
+          <ul class="suggestions" id="location-suggestions" role="listbox" hidden></ul>
+        </div>
+        <div class="hero-field hero-distance">
+          <label for="search-distance">Distance</label>
+          <select id="search-distance" name="distance">
+            {% for miles in distance_choices %}
+              <option value="{{ miles }}"{% if miles == distance %} selected{% endif %}>{{ miles }} mi</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn hero-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Search
+        </button>
+      </div>
+
+      <div class="hero-links">
+        <button type="button" class="current-location" id="use-current-location" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          Use my current location
+        </button>
+        <span class="current-location-status" id="current-location-status" role="status"></span>
+      </div>
+
+      <input type="hidden" name="lat" id="search-lat">
+      <input type="hidden" name="lng" id="search-lng">
+      <input type="hidden" name="here" id="search-here">
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+    </form>
+
+    {# View Dog Parks: the "Dog parks" chip. #}
+    <nav class="service-filters" aria-label="Filter places">
+      {% for chip in chips %}
+        <a class="filter-chip{% if chip.active %} is-active{% endif %}" href="?{{ chip.query }}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if notice %}
+      <div class="alert alert-info" role="status"><span class="alert-icon" aria-hidden="true">!</span><span>{{ notice }}</span></div>
+    {% endif %}
+
+    {% if places %}
+      <section class="places-card" aria-label="Map of {{ category_names.1 }}">
+        <div class="places-map" id="places-map"></div>
+
+        <div class="places-panel">
+          <h2 class="places-count">{{ count_label }} {% if origin %}near {{ origin.label|place_name }}{% else %}in New York City{% endif %}</h2>
+          <ul class="places-list">
+            {% for place in places %}
+              <li>
+                <a class="place-row cat-{{ place.category }}{% if place == selected %} is-selected{% endif %}" href="?{% if query_without_place %}{{ query_without_place }}&amp;{% endif %}place={{ place.pk }}" data-place="{{ place.pk }}"{% if place == selected %} aria-current="true"{% endif %}>
+                  <span class="place-icon">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+                  <span class="place-row-text">
+                    <strong>{{ place.name }}</strong>
+                    <span>{% if origin %}{{ place.distance|floatformat:1 }} mi{% if place.address or place.neighborhood %} · {% endif %}{% endif %}{{ place.address|default:place.neighborhood }}</span>
+                  </span>
+                  {% if place.category == "dog_park" %}<span class="place-badge">Dog park</span>{% endif %}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        {% for place in places %}
+          <article class="place-detail cat-{{ place.category }}" data-place="{{ place.pk }}" aria-label="{{ place.name }}"{% if place != selected %} hidden{% endif %}>
+            <header class="place-detail-head">
+              <span class="place-icon place-icon-large">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+              <div>
+                <h2>{{ place.name }}</h2>
+                <p class="place-detail-meta">
+                  <span class="place-badge">{{ place.get_category_display }}</span>
+                  {% if origin %}<span>{{ place.distance|floatformat:1 }} mi away</span>{% endif %}
+                </p>
+              </div>
+            </header>
+
+            <ul class="place-facts">
+              {% if place.place_line %}
+                <li>{% include "partials/pin_icon.html" %} {{ place.place_line }}</li>
+              {% endif %}
+              {% if place.hours %}
+                <li><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.6V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> {{ place.hours }}</li>
+              {% endif %}
+            </ul>
+
+            {% if place.feature_list %}
+              <ul class="place-features">
+                {% for feature in place.feature_list %}
+                  <li><span class="place-check" aria-hidden="true"><svg viewBox="0 0 12 12" focusable="false"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>{{ feature }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            <div class="place-actions">
+              <a class="place-directions" href="{{ place.directions_url }}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                Get directions<span class="visually-hidden"> (opens Google Maps)</span>
+              </a>
+              <a class="place-report" href="{{ place.report_url }}?next={{ request.path|urlencode }}%3F{% if query_without_place %}{{ query_without_place|urlencode }}%26{% endif %}place%3D{{ place.pk }}">Report wrong info</a>
+            </div>
+
+            {# Use Reliable Location Data: say where this came from and when it was checked. #}
+            <p class="place-source">
+              Source: {% if place.source == "nyc_parks" %}<a href="https://data.cityofnewyork.us/d/hxx3-bwgv" target="_blank" rel="noopener" title="NYC Parks Dog Runs dataset">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · checked {{ place.checked_on|date:"M j, Y" }}{% endif %}
+            </p>
+          </article>
+        {% endfor %}
+      </section>
+    {% else %}
+      <div class="card no-results places-empty">
+        <span class="places-empty-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+        {% if origin %}
+          <h2>No {{ category_names.1 }} near {{ origin.label|place_name }} yet</h2>
+          <p>Search a nearby neighborhood or zip code.</p>
+          <a class="btn btn-dark" href="#search-location" data-focus-location>Try another area</a>
+        {% elif any_places %}
+          <h2>No {{ category_names.1 }} on PawPal yet</h2>
+          <p>Try another kind of place.</p>
+          <a class="btn btn-dark" href="?{{ chips.0.query }}">Show all places</a>
+        {% else %}
+          <h2>No pet-friendly places yet</h2>
+          <p>Places will show up here once they're added.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {{ map_data|json_script:"places-map-data" }}
+  {{ neighborhood_options|json_script:"neighborhood-options" }}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="{% static 'js/caregiver_search.js' %}?v=2"></script>
+  <script src="{% static 'js/places.js' %}?v=4"></script>
+{% endblock %}

@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "messaging",
     "staff",
     "reports",
+    "places",
 ]
 
 MIDDLEWARE = [
@@ -183,6 +184,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+
+# CARTO Voyager map tiles on the Explore map (free key for non-commercial use:
+# https://carto.com/basemaps/apikey). Without one the map falls back to a
+# light gray Esri map. The key is sent to browsers in tile URLs, as CARTO intends.
+CARTO_BASEMAPS_KEY = os.environ.get("CARTO_BASEMAPS_KEY", "")
 
 
 # Email

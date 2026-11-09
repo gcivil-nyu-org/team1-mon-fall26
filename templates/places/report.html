@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Report wrong info · PawPal{% endblock %}
+
+{% block main_class %}page page-review{% endblock %}
+
+{% block content %}
+  {# Same layout as the content reports (reports/report_form.html). #}
+  <a class="back-link" href="{{ back }}">{% include "partials/chevron_left_icon.html" %} Back</a>
+
+  <form method="post" class="card form-card report-form" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ back }}">
+
+    <h1>Report wrong info</h1>
+    <p class="muted">Tell us what's wrong with {{ place.name }}. Our team will check it and fix the map.</p>
+
+    <figure class="report-quote">
+      <figcaption>{{ place.get_category_display }}</figcaption>
+      <blockquote>{{ place.name }}{% if place.place_line %}<br>{{ place.place_line }}{% endif %}</blockquote>
+    </figure>
+
+    <div class="field{% if error %} has-error{% endif %}">
+      <label for="report-details">What should we fix?</label>
+      <textarea id="report-details" name="details" rows="5" maxlength="{{ max_length }}"
+                placeholder="For example: it closed, it moved, or dogs aren't allowed"{% if error %} aria-invalid="true" aria-describedby="report-error"{% endif %}>{{ details }}</textarea>
+      {% if error %}<p class="field-error" id="report-error">{{ error }}</p>{% endif %}
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-outline" href="{{ back }}">Cancel</a>
+      <button type="submit" class="btn btn-dark">Send report</button>
+    </div>
+  </form>
+{% endblock %}

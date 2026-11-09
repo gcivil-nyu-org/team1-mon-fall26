@@ -29,7 +29,7 @@
         {# Admins review reports (#95) and manage accounts (#89-#92), as in Kat's admin Figma. #}
         <a href="{% url 'reports:admin_list' %}" class="{% if section == 'reports' %}active{% endif %}">Reports</a>
         <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
-        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' %}active{% endif %}">Explore</a>
+        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
@@ -41,7 +41,7 @@
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
       {% else %}
         <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
-        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Find caregivers</a>
+        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Explore</a>
         <a href="{{ my_requests_url|default:'#' }}" class="{% if section == 'bookings' and request.resolver_match.url_name != 'booking_create' or section == 'opportunities' %}active{% endif %}">My requests</a>
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
       {% endif %}

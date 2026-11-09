@@ -27,6 +27,7 @@ urlpatterns = [
     # Admin pages for PawPal accounts (#89-#92); Django's own admin stays at /admin/.
     path("manage/", include("staff.urls")),
     path("reports/", include("reports.urls")),
+    path("explore/", include("places.urls")),
 ]
 
 # Serve uploaded photos while developing locally.
