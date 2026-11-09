@@ -87,6 +87,24 @@ def describe(conversation, user):
     return conversation
 
 
+def person(user):
+    """How someone is named and drawn across Messages and Reports: caregivers by
+    their full name ("Jeff Oakden"), pet owners as "Kat W."."""
+    caregiver = getattr(user, "caregiver_profile", None)
+    if caregiver is not None and caregiver.name:
+        return {
+            "name": caregiver.name,
+            "initials": initials(caregiver.name),
+            "theme": avatar_theme(caregiver),
+        }
+    full = user.get_full_name() or user.username
+    return {
+        "name": owner_name(user),
+        "initials": initials(full),
+        "theme": OWNER_THEMES[user.pk % len(OWNER_THEMES)],
+    }
+
+
 def counterpart(conversation, user):
     """The other person in the conversation, as the header and inbox show them."""
     if conversation.is_owner(user):

@@ -6,6 +6,8 @@ from django import template
 from django.utils import timezone
 from django.utils.formats import date_format
 
+from messaging.inbox import person
+
 register = template.Library()
 
 
@@ -52,3 +54,20 @@ def posted_ago(value):
         if day
         else f"Posted {date_format(timezone.localtime(value), 'M j')}"
     )
+
+
+@register.filter
+def display_name(user):
+    """ "Jeff Oakden" for caregivers, "Kat W." for pet owners, as in Messages."""
+    return person(user)["name"]
+
+
+@register.filter
+def person_theme(user):
+    """The avatar color the person has in Messages."""
+    return person(user)["theme"]
+
+
+@register.filter
+def person_initials(user):
+    return person(user)["initials"]

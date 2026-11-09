@@ -42,7 +42,10 @@ class DismissReportTests(AdminReportsTestData):
         response = self.client.post(self.dismiss_url(report), follow=True)
         self.assertRedirects(response, self.detail_url(report) + "?done=dismissed")
         self.assertContains(response, "Report dismissed and moved to Resolved.")
-        self.assertEqual(response.context["tab"], "resolved")
+        self.assertContains(response, "report-done is-dismissed")
+        # Figma: stay on Open, without the report just dismissed in the list.
+        self.assertEqual(response.context["tab"], "open")
+        self.assertNotIn(report, response.context["reports"])
         self.assertContains(response, "report-status-dismissed")
         report.refresh_from_db()
         self.assertEqual(report.status, Report.Status.DISMISSED)
@@ -50,7 +53,9 @@ class DismissReportTests(AdminReportsTestData):
         self.assertIsNotNone(report.handled_at)
         # The message stays up.
         self.their_message.refresh_from_db()
-        self.assertContains(response, "Dismissed by Ada")
+        # Opened again later: a gray banner says who handled it (Figma).
+        later = self.client.get(self.detail_url(report))
+        self.assertContains(later, "Dismissed by Ada · Today,")
         self.assertNotContains(response, "?confirm=dismiss")
 
     def test_dismissing_closes_every_open_report_about_the_same_content(self):
@@ -94,3 +99,15 @@ class DismissReportTests(AdminReportsTestData):
         self.assertEqual(self.client.post(self.dismiss_url(report)).status_code, 403)
         report.refresh_from_db()
         self.assertTrue(report.is_open)
+
+    def test_tabs_work_from_a_handled_report(self):
+        # Dismiss, go to Resolved, then back to Open: the tabs must switch.
+        report = self.report(self.owner, self.their_message)
+        response = self.client.post(self.dismiss_url(report), follow=True)
+        list_url = reverse("reports:admin_list")
+        self.assertContains(response, f'href="{list_url}?status=resolved"')
+        resolved = self.client.get(list_url, {"status": "resolved"})
+        self.assertEqual(resolved.context["tab"], "resolved")
+        self.assertContains(resolved, f'href="{list_url}?status=open"')
+        back = self.client.get(list_url, {"status": "open"})
+        self.assertEqual(back.context["tab"], "open")

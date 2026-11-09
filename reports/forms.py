@@ -7,14 +7,20 @@ class ReportForm(forms.ModelForm):
     reason = forms.ChoiceField(
         choices=Report.Reason.choices,
         widget=forms.RadioSelect,
-        label="Why are you reporting this?",
+        label="Reason",
         error_messages={"required": "Choose a reason."},
     )
     details = forms.CharField(
-        label="Anything else we should know?",
+        label="More details",
         required=False,
         max_length=MAX_DETAILS_LENGTH,
-        widget=forms.Textarea(attrs={"rows": 4, "maxlength": MAX_DETAILS_LENGTH}),
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "maxlength": MAX_DETAILS_LENGTH,
+                "placeholder": "Anything else we should know?",
+            }
+        ),
         error_messages={
             "max_length": f"Keep it under {MAX_DETAILS_LENGTH} characters.",
         },
