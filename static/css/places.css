@@ -103,11 +103,12 @@
 .place-icon-large { width: 48px; height: 48px; }
 
 .place-row-text { display: grid; flex: 1; min-width: 0; }
-.place-row-text strong { font-size: 15px; line-height: 23.25px; }
+.place-row-text strong { font-size: 16px; font-weight: 600; line-height: 24px; }
 .place-row-text span { color: #6a5a54; font-size: 13px; line-height: 20.15px; }
-/* Long names and neighborhoods stop at two lines; the card has them in full. */
-.place-row-text strong,
-.place-row-text span {
+/* Long names stop at two lines; the card has them in full. The address line
+   wraps instead, so the distance at its end always shows. */
+.place-row-text .place-distance { white-space: nowrap; }
+.place-row-text strong {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -264,18 +265,19 @@
 
 /* ---------- No places ---------- */
 
-.places-empty { padding: 40px 32px 44px; }
-.places-empty h2 { font-size: 28px; line-height: 1.2; }
+.places-empty { gap: 16px; padding: 46px 32px 50px; }
+.places-empty .btn { padding: 13px 26px; font-size: 16px; }
+.places-empty h2 { font-size: 27px; line-height: 1.2; }
 .places-empty-icon {
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 58px;
+  width: 72px;
+  height: 72px;
   background: #f8e6df;
   border-radius: 50%;
   color: #5a4038;
 }
-.places-empty-icon svg { width: 24px; height: 24px; }
+.places-empty-icon svg { width: 28px; height: 28px; }
 
 /* ---------- Wide screens: room for the list beside the map controls ---------- */
 

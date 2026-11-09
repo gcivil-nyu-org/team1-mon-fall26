@@ -1,7 +1,8 @@
 {# One icon per place category, as in the Figma map pins and list. #}
 <svg class="category-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 {% if category == "dog_park" %}
-  <path d="M17 14l3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17z"/><path d="M12 22v-3"/>
+  {# A two-tier pine tree with a trunk, as in the Figma list and pins. #}
+  <path d="M12 3L7.5 9.5H10L5.5 16h13L14 9.5h2.5z"/><path d="M12 16v5"/>
 {% elif category == "cafe" %}
   <path d="M4 9h12v4.5A5.5 5.5 0 0 1 10.5 19h-1A5.5 5.5 0 0 1 4 13.5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c0 1 1 1.5 1 2.5M12 3.5c0 1 1 1.5 1 2.5"/>
 {% elif category == "pet_store" %}

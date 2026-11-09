@@ -7,11 +7,16 @@ from unittest import mock, skip
 from django.test import SimpleTestCase
 
 from caregivers.search import find_neighborhood, find_zip_code, zip_codes
+from caregivers.models import CaregiverProfile
 from caregivers.templatetags.caregiver_tags import (
+    avatar_theme,
     experience_range,
     initials,
+    pet_plural,
+    pet_tags,
     place_name,
 )
+from pets.models import PetType
 
 from .test_search import NYU, URL, SearchTestData
 
@@ -63,6 +68,24 @@ class CardHelperTests(SimpleTestCase):
         self.assertEqual(experience_range(2), "1–2 years")
         self.assertEqual(experience_range(4), "3–5 years")
         self.assertEqual(experience_range(9), "5+ years")
+
+    def test_avatar_colors_start_with_orange(self):
+        # Same order as the design's cards: orange, blue, mint, pink.
+        themes = [avatar_theme(CaregiverProfile(pk=pk)) for pk in range(1, 6)]
+        self.assertEqual(themes, ["peach", "blue", "mint", "pink", "peach"])
+
+    def test_pet_tags_are_plural_with_dogs_first(self):
+        names = ["Rabbit", "Bird", "Cat", "Dog", "Mouse", "Guinea pig", "Fish"]
+        pets = [PetType(name=n) for n in names]
+        self.assertEqual(
+            pet_tags(pets),
+            ["Dogs", "Cats", "Rabbits", "Birds", "Fish", "Guinea pigs", "Mice"],
+        )
+
+    def test_pet_plural_endings(self):
+        self.assertEqual(pet_plural("Tortoise"), "Tortoises")
+        self.assertEqual(pet_plural("Fox"), "Foxes")
+        self.assertEqual(pet_plural("Other"), "Other pets")
 
 
 class SearchPageTests(SearchTestData):

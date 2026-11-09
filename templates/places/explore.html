@@ -7,8 +7,8 @@
 
 {% block content %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=4">
-  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=4">
 
   <div class="search-page">
     {# Same form as the caregiver search, so caregiver_search.js adds location suggestions and "Use my current location". #}
@@ -76,7 +76,7 @@
         <div class="places-map" id="places-map"></div>
 
         <div class="places-panel">
-          <h2 class="places-count">{{ count_label }} {% if origin %}near {{ origin.label|place_name }}{% else %}in New York City{% endif %}</h2>
+          <h2 class="places-count">{{ count_label }} {% if origin %}near {{ origin_name }}{% else %}in New York City{% endif %}</h2>
           <ul class="places-list">
             {% for place in places %}
               <li>
@@ -84,7 +84,7 @@
                   <span class="place-icon">{% include "places/partials/category_icon.html" with category=place.category %}</span>
                   <span class="place-row-text">
                     <strong>{{ place.name }}</strong>
-                    <span>{% if origin %}{{ place.distance|floatformat:1 }} mi{% if place.address or place.neighborhood %} · {% endif %}{% endif %}{{ place.address|default:place.neighborhood }}</span>
+                    <span>{{ place.address|default:place.neighborhood }}{% if origin %}{% if place.address or place.neighborhood %} · {% endif %}<span class="place-distance">{{ place.distance|floatformat:1 }} mi</span>{% endif %}</span>
                   </span>
                   {% if place.category == "dog_park" %}<span class="place-badge">Dog park</span>{% endif %}
                 </a>
@@ -111,7 +111,7 @@
                 <li>{% include "partials/pin_icon.html" %} {{ place.place_line }}</li>
               {% endif %}
               {% if place.hours %}
-                <li><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.6V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> {{ place.hours }}</li>
+                <li><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.6V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> {{ place.hours_line }}</li>
               {% endif %}
             </ul>
 
@@ -131,9 +131,9 @@
               <a class="place-report" href="{{ place.report_url }}?next={{ request.path|urlencode }}%3F{% if query_without_place %}{{ query_without_place|urlencode }}%26{% endif %}place%3D{{ place.pk }}">Report wrong info</a>
             </div>
 
-            {# Use Reliable Location Data: say where this came from and when it was checked. #}
+            {# Use Reliable Location Data: say where this came from and when it was last verified. #}
             <p class="place-source">
-              Source: {% if place.source == "nyc_parks" %}<a href="https://data.cityofnewyork.us/d/hxx3-bwgv" target="_blank" rel="noopener" title="NYC Parks Dog Runs dataset">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · checked {{ place.checked_on|date:"M j, Y" }}{% endif %}
+              Source: {% if place.source == "nyc_parks" %}<a href="https://data.cityofnewyork.us/d/hxx3-bwgv" target="_blank" rel="noopener" title="NYC Parks Dog Runs dataset">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
             </p>
           </article>
         {% endfor %}
@@ -142,7 +142,7 @@
       <div class="card no-results places-empty">
         <span class="places-empty-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
         {% if origin %}
-          <h2>No {{ category_names.1 }} near {{ origin.label|place_name }} yet</h2>
+          <h2>No {{ category_names.1 }} near {{ origin_name }} yet</h2>
           <p>Search a nearby neighborhood or zip code.</p>
           <a class="btn btn-dark" href="#search-location" data-focus-location>Try another area</a>
         {% elif any_places %}
@@ -161,5 +161,5 @@
   {{ neighborhood_options|json_script:"neighborhood-options" }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="{% static 'js/caregiver_search.js' %}?v=2"></script>
-  <script src="{% static 'js/places.js' %}?v=4"></script>
+  <script src="{% static 'js/places.js' %}?v=6"></script>
 {% endblock %}

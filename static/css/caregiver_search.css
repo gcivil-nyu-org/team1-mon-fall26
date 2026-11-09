@@ -215,6 +215,7 @@
   font-weight: 600;
   object-fit: cover;
 }
+.result-avatar.theme-peach { background: var(--orange); color: #4a1f0b; }
 .result-avatar.theme-blue { background: var(--blue-soft); color: #1f4f7a; }
 .result-avatar.theme-mint { background: var(--mint); color: #14532d; }
 .result-avatar.theme-pink { background: var(--pink); color: #4a0f2a; }
