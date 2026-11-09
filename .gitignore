@@ -3,6 +3,11 @@
 venv/
 env/
 
+# Environment variables and API keys
+.env
+.env.*
+!.env.example
+
 #Python compiled files and cache
 __pycache__
 *.py[cod]
