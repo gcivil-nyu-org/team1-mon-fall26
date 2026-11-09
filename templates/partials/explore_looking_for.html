@@ -1,0 +1,8 @@
+{# "Looking for" on both Explore pages: switching it runs the search on the other page. #}
+<div class="hero-field hero-looking">
+  <label for="search-looking-for">Looking for</label>
+  <select id="search-looking-for" name="looking_for" data-autosubmit>
+    <option value="caregivers"{% if looking_for == "caregivers" %} selected{% endif %}>Caregivers</option>
+    <option value="places"{% if looking_for == "places" %} selected{% endif %}>Pet-friendly places</option>
+  </select>
+</div>

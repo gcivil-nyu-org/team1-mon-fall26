@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static caregiver_tags %}
 
-{% block title %}Find caregivers · PawPal{% endblock %}
+{% block title %}Explore · PawPal{% endblock %}
 
 {% block main_class %}page page-search{% endblock %}
 
 {% block content %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=4">
 
   <div class="search-page">
     <form method="get" class="search-hero" id="caregiver-search" autocomplete="off">
@@ -15,10 +15,11 @@
       <span class="hero-dot hero-dot-orange" aria-hidden="true"></span>
       <span class="hero-dot hero-dot-yellow" aria-hidden="true"></span>
 
-      <h1>Find a caregiver nearby</h1>
+      <h1>Explore nearby</h1>
       <p class="hero-lead">Enter a neighborhood or ZIP code to see caregivers in your area.</p>
 
       <div class="hero-row">
+        {% include "partials/explore_looking_for.html" with looking_for="caregivers" %}
         <div class="hero-field hero-location">
           <label for="search-location">Location</label>
           <div class="location-input">

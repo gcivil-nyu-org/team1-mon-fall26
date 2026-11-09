@@ -376,6 +376,11 @@ def caregiver_list(request):
     by distance and sorted.
     """
     params = request.GET
+    if params.get("looking_for") == "places":
+        # "Looking for: Pet-friendly places" on the Explore form.
+        from places.views import explore_url
+
+        return redirect(explore_url("places:explore", params))
     notice = ""
 
     availability = params.get("availability", "available")
