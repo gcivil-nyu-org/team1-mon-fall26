@@ -2,9 +2,6 @@
    Pet-Friendly Locations", "View Nearby Dog Parks" and "(No result)" frames).
    Builds on caregiver_search.css for the purple search box and the chips. */
 
-/* The design's Explore page is 1176px wide (the caregiver search is 1136px). */
-.page-places { max-width: 1240px; }
-
 /* Category colors, from the Figma pins, list icons and badges. */
 .cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; --badge-bg: #cdefdc; --badge-ink: #14532d; }
 .cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
