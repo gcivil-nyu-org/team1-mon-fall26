@@ -53,6 +53,8 @@ class RemoveReportedContentTests(AdminReportsTestData):
         self.assertRedirects(response, self.detail_url(report) + "?done=removed")
         self.assertContains(response, "Message removed and moved to Resolved.")
         self.assertContains(response, "report-status-resolved")
+        # Figma: the page stays on the Open tab.
+        self.assertEqual(response.context["tab"], "open")
         self.assertContains(response, '<p class="report-bubble is-removed">')
         report.refresh_from_db()
         self.assertEqual(report.status, Report.Status.RESOLVED)

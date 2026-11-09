@@ -7,10 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from messaging.inbox import conversations_for
+from messaging.inbox import conversations_for, person
 from messaging.models import Message
 from reviews.models import Review
-from reviews.templatetags.review_tags import reviewer_name
 
 from .forms import ReportForm
 from .models import Report
@@ -29,12 +28,22 @@ def _next_url(request, fallback):
     return fallback
 
 
+def _in_popup(request):
+    """The Messages page opens the form as a pop-up and sends it in the background."""
+    return request.headers.get("X-Requested-With") == "fetch"
+
+
 def _report(request, *, kind, target, author, text, about, back):
     """Show the report form for one review or message, and save it."""
     if author.pk == request.user.pk:
         raise Http404("You can't report your own content.")
+    popup = _in_popup(request)
     already = Report.objects.filter(reporter=request.user, **{kind: target}).exists()
     if already:
+        if popup:
+            return render(
+                request, "reports/partials/report_sent.html", {"text": ALREADY}
+            )
         messages.info(request, ALREADY)
         return redirect(back)
 
@@ -47,21 +56,26 @@ def _report(request, *, kind, target, author, text, about, back):
         setattr(report, kind, target)
         report.content_text = text
         report.save()
+        if popup:
+            # Figma "Report Inappropriate Content Confirmation".
+            return render(
+                request, "reports/partials/report_sent.html", {"text": THANKS}
+            )
         messages.success(request, THANKS)
         return redirect(back)
 
-    return render(
-        request,
-        "reports/report_form.html",
-        {
-            "form": form,
-            "kind": kind,
-            "about": about,
-            "author_name": reviewer_name(author),
-            "text": text,
-            "back": back,
-        },
-    )
+    context = {
+        "form": form,
+        "kind": kind,
+        "about": about,
+        "author": person(author),
+        "text": text,
+        "back": back,
+        "action": request.path,
+    }
+    if popup:
+        return render(request, "reports/partials/report_card.html", context)
+    return render(request, "reports/report_form.html", context)
 
 
 @login_required

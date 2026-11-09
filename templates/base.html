@@ -52,7 +52,7 @@
         <details class="account-menu">
           <summary>
             <span class="account-role">{% if user.is_staff %}Admin{% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}Caregiver{% else %}Pet owner{% endif %}</span>
-            <span class="avatar{% if user.is_staff %} avatar-admin{% elif user.caregiver_profile or user.account_profile.role == "caregiver" %} avatar-caregiver{% endif %}">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+            <span class="avatar{% if user.is_staff %} avatar-admin{% elif user.caregiver_profile or user.account_profile.role == "caregiver" %} avatar-caregiver{% endif %}">{% if user.first_name and user.last_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% elif user.first_name %}{{ user.first_name|slice:":2"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
           </summary>
           <div class="account-dropdown">
                  {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}

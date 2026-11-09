@@ -82,7 +82,8 @@ class AdminReportListTests(AdminReportsTestData):
         self.assertEqual(response.context["reports"], [newer, older])
         self.assertEqual(response.context["selected"], newer)
         self.assertContains(response, "Rude or harassing")
-        self.assertContains(response, "Message from Chloe S.")
+        # Caregivers by full name, owners as "Kat W.", as in Messages and the Figma.
+        self.assertContains(response, "Message from Chloe Shih")
         self.assertContains(response, "Reported by Kat W.")
         self.assertContains(response, "Review from Kat W.")
         self.assertContains(

@@ -89,12 +89,13 @@ class ReportReviewTests(ReportTestData):
     def test_form_shows_the_review_and_the_reasons(self):
         self.client.force_login(self.owner)
         response = self.client.get(self.review_url(self.sitter_review))
-        self.assertContains(response, "Report this review")
-        self.assertContains(response, "Review from Chloe S.")
+        self.assertContains(response, "Report review")
+        self.assertContains(response, "Chloe Shih")
         self.assertContains(response, "Rude owner, never again.")
         for _, label in Report.Reason.choices:
             self.assertContains(response, label)
-        self.assertContains(response, "won't see who reported it")
+        # Figma "Report Message": no anonymity line, a Submit report button.
+        self.assertContains(response, "Submit report")
 
     def test_reporting_a_review_saves_an_open_report(self):
         self.client.force_login(self.owner)
@@ -204,8 +205,8 @@ class ReportMessageTests(ReportTestData):
     def test_form_shows_the_message(self):
         self.client.force_login(self.owner)
         response = self.client.get(self.message_url(self.their_message))
-        self.assertContains(response, "Report this message")
-        self.assertContains(response, "Message from Chloe S.")
+        self.assertContains(response, "Report message")
+        self.assertContains(response, "Chloe Shih")
         self.assertContains(response, "Send me money first.")
 
     def test_cannot_report_your_own_message(self):

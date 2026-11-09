@@ -1,46 +1,15 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Report {{ about }} · PawPal{% endblock %}
 
 {% block main_class %}page page-review{% endblock %}
 
 {% block content %}
-  <a class="back-link" href="{{ back }}">{% include "partials/chevron_left_icon.html" %} Back</a>
-
-  <form method="post" class="card form-card report-form" novalidate>
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ back }}">
-
-    <h1>Report this {{ about }}</h1>
-    <p class="muted">Our team will review it. {{ author_name }} won't see who reported it.</p>
-
-    <figure class="report-quote">
-      <figcaption>{% if kind == "review" %}Review{% else %}Message{% endif %} from {{ author_name }}</figcaption>
-      {% if text %}<blockquote>{{ text|linebreaksbr }}</blockquote>{% else %}<blockquote class="muted">(Rating only, no written review)</blockquote>{% endif %}
-    </figure>
-
-    <fieldset class="field{% if form.reason.errors %} has-error{% endif %}">
-      <legend>{{ form.reason.label }}</legend>
-      <div class="report-reasons">
-        {% for radio in form.reason %}
-          <label class="report-reason">{{ radio.tag }} <span>{{ radio.choice_label }}</span></label>
-        {% endfor %}
-      </div>
-      {% for error in form.reason.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </fieldset>
-
-    <div class="field{% if form.details.errors %} has-error{% endif %}">
-      <div class="review-label-row">
-        <label for="{{ form.details.id_for_label }}">{{ form.details.label }}</label>
-        <span class="tag">Optional</span>
-      </div>
-      {{ form.details }}
-      {% for error in form.details.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
-
-    <div class="form-actions">
-      <a class="btn btn-outline" href="{{ back }}">Cancel</a>
-      <button type="submit" class="btn btn-dark">Send report</button>
-    </div>
-  </form>
+  {# Reviews (and Messages without JavaScript) show the same card as the Messages pop-up. #}
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=5">
+  <div class="report-page">
+    {% include "reports/partials/report_card.html" %}
+  </div>
 {% endblock %}

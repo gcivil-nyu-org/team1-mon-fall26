@@ -1,0 +1,528 @@
+/* Reporting a message or review, and the admin Reports page, from Kat's
+   "PawPal - Report" Figma frames. Sizes are for a 1512px-wide window. */
+
+/* ---------- Report card (pop-up in Messages, page for reviews) ---------- */
+
+.report-dialog {
+  width: min(500px, calc(100vw - 32px));
+  max-width: none;
+  margin-top: 148px;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  overflow: visible;
+}
+
+.report-dialog::backdrop {
+  background: rgba(70, 50, 40, 0.45);
+}
+
+.report-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.report-page .report-card {
+  width: min(500px, 100%);
+}
+
+.report-card {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 32px 30px 30px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.report-card-title {
+  margin: 0 0 16px;
+  font-size: 28px;
+}
+
+.report-card-quote {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f8f1ee;
+  font-size: 15px;
+}
+
+.report-card-quote strong {
+  display: block;
+  font-size: 14px;
+}
+
+.report-card .report-card-avatar {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  font-size: 13px;
+}
+
+.report-card-field {
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.report-card-field legend,
+.report-card-label-row label {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.report-card-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report-card-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-card-reason {
+  position: relative;
+  cursor: pointer;
+}
+
+.report-card-reason input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.report-card-reason span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.report-card-reason input:checked + span {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--orange);
+}
+
+.report-card-reason input:focus-visible + span {
+  outline: 3px solid #e9a98d;
+  outline-offset: 2px;
+}
+
+.report-card textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 78px;
+  padding: 12px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 14px;
+  background: #fffcfa;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.report-card .has-error textarea {
+  border-color: #c6281d;
+}
+
+.report-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.report-card-actions .btn {
+  min-height: 50px;
+  font-size: 16px;
+}
+
+/* Red once a reason is picked; gray before, as in the Figma. */
+.report-card-submit {
+  border: 0;
+  background: #b4231a;
+  color: #fff;
+  box-shadow: 0 4px 0 #7f150f;
+}
+
+.report-card:not(:has(input[name="reason"]:checked)) .report-card-submit {
+  background: #ece5e1;
+  color: #a39893;
+  box-shadow: none;
+}
+
+.report-card-submit:disabled {
+  opacity: 0.7;
+}
+
+/* "Report sent" */
+.report-sent {
+  text-align: center;
+}
+
+.report-sent-check {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #cfeedd;
+  color: #14532d;
+}
+
+.report-sent p {
+  margin: 0 0 20px;
+  color: #6a5a54;
+  font-size: 16px;
+}
+
+.report-sent .btn {
+  min-height: 50px;
+  padding: 0 40px;
+  font-size: 16px;
+}
+
+/* ---------- Messages: the menu next to a message ---------- */
+
+.chat-bubble.is-menu-target {
+  cursor: context-menu;
+}
+
+.chat-bubble.is-menu-target.is-active,
+.chat-bubble.is-menu-target:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.chat-bubble.is-reported {
+  box-shadow: 0 0 0 1.5px #f0b7b0;
+}
+
+.bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bubble-menu {
+  position: fixed;
+  z-index: 30;
+  display: grid;
+  min-width: 170px;
+  padding: 6px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 10px 24px rgba(60, 30, 20, 0.12);
+}
+
+.bubble-menu[hidden] {
+  display: none;
+}
+
+.bubble-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bubble-menu button:hover,
+.bubble-menu button:focus-visible {
+  background: #faf5f2;
+  outline: none;
+}
+
+.bubble-menu .bubble-menu-report {
+  color: #b4231a;
+}
+
+.bubble-menu button:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.bubble-menu button:disabled:hover {
+  background: none;
+}
+
+/* ---------- Admin: Reports page ---------- */
+
+main.page-admin-reports {
+  max-width: 1225px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.page-admin-reports .admin-title {
+  margin: 12px 0 18px;
+  font-size: 44px;
+  letter-spacing: -0.5px;
+}
+
+.page-admin-reports .admin-tabs {
+  padding: 5px;
+  margin-bottom: 22px;
+}
+
+.page-admin-reports .admin-tab {
+  padding: 9px 18px;
+  font-size: 16px;
+}
+
+.page-admin-reports .admin-tab-count {
+  min-width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+
+.page-admin-reports .reports-layout {
+  grid-template-columns: minmax(0, 465px) minmax(0, 1fr);
+  gap: 21px;
+}
+
+.page-admin-reports .reports-list {
+  gap: 10px;
+  padding: 20px;
+  border-radius: 26px;
+}
+
+.page-admin-reports .report-row {
+  gap: 12px;
+  padding: 14px 12px;
+  border-width: 2px;
+  border-radius: 18px;
+}
+
+.page-admin-reports .report-row-text {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.page-admin-reports .report-row-text strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.page-admin-reports .report-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.page-admin-reports .report-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.page-admin-reports .report-icon-large {
+  width: 58px;
+  height: 58px;
+}
+
+.page-admin-reports .report-icon-large svg {
+  width: 24px;
+  height: 24px;
+}
+
+.page-admin-reports .report-status {
+  padding: 4px 11px;
+  font-size: 13px;
+}
+
+.page-admin-reports .report-detail {
+  gap: 18px;
+  padding: 28px 28px 30px;
+  border-radius: 26px;
+}
+
+.page-admin-reports .report-detail-head h2 {
+  font-size: 30px;
+}
+
+.page-admin-reports .report-detail-head p {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.page-admin-reports .report-detail h3 {
+  margin: 6px 0 -4px;
+  font-size: 19px;
+}
+
+.page-admin-reports .report-note {
+  padding: 14px 16px;
+  font-size: 15px;
+}
+
+.page-admin-reports .report-conversation,
+.page-admin-reports .report-review {
+  font-size: 15px;
+}
+
+.page-admin-reports .report-actions .btn {
+  min-height: 50px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+/* Remove buttons in the same red as Delete account. */
+.page-admin-reports .btn-danger {
+  border: 0;
+  background: #b4231a;
+  box-shadow: 0 4px 0 #7f150f;
+}
+
+.page-admin-reports .btn-danger:hover {
+  background: #9c1d15;
+}
+
+/* Bigger paws on the reported review (Figma). */
+.page-admin-reports .report-review .paws svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Resolved reports: who handled it, as a gray banner at the top (Figma). */
+.report-handled-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: #f3ebe7;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.report-check {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+}
+
+.page-admin-reports .report-done {
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+/* Remove / dismiss pop-up: wider and near the top, as in the Figma. */
+.page-admin-reports .modal-backdrop {
+  place-items: start center;
+  padding-top: 148px;
+}
+
+.page-admin-reports .modal-card {
+  width: min(100%, 462px);
+  gap: 12px;
+  padding: 30px 28px 26px;
+  border-radius: 28px;
+}
+
+.page-admin-reports .modal-card h2 {
+  font-size: 26px;
+}
+
+.page-admin-reports .modal-card p {
+  font-size: 15px;
+}
+
+.page-admin-reports .modal-icon {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+}
+
+.page-admin-reports .modal-actions .btn {
+  min-height: 50px;
+  font-size: 16px;
+}
+
+@media (max-width: 760px) {
+  .page-admin-reports .reports-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .page-admin-reports .admin-title {
+    font-size: 34px;
+  }
+
+  .report-dialog {
+    margin-top: auto;
+  }
+}
+
+/* Avatars in the admin pop-up, the same as in Messages (messaging.css isn't loaded here). */
+.modal-quote .chat-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--theme-bg, var(--peach));
+  color: var(--theme-ink, #7a3410);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modal-quote .chat-avatar.theme-peach { --theme-bg: var(--orange); --theme-ink: var(--ink); }
+.modal-quote .chat-avatar.theme-yellow { --theme-bg: var(--yellow); --theme-ink: var(--ink); }
+
+/* "Report sent" is narrower than the form, as in the Figma. */
+.report-dialog:has(.report-sent) {
+  width: min(443px, calc(100vw - 32px));
+}
+
+.report-check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.page-admin-reports .report-done.is-dismissed {
+  background: #f3ebe7;
+  color: var(--ink);
+}

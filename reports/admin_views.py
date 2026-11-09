@@ -126,6 +126,8 @@ def _render(request, tab, selected):
             }
         done = DONE.get(request.GET.get("done"))
         context["done"] = done and done.format(Kind=kind.capitalize())
+        # Figma: green after removing, gray after dismissing.
+        context["done_dismissed"] = request.GET.get("done") == "dismissed"
     return render(request, "reports/admin_reports.html", context)
 
 
@@ -141,6 +143,10 @@ def report_list(request):
 @staff_required
 def report_detail(request, pk):
     report = _get(pk)
+    # Right after Remove or Dismiss, stay on Open so the next report is one
+    # click away; the panel still shows the one just handled (Figma).
+    if request.GET.get("done") in DONE:
+        return _render(request, OPEN, report)
     return _render(request, _tab_for(report), report)
 
 
