@@ -97,7 +97,8 @@
   if (!mapElement || typeof L === "undefined") return;
 
   map = L.map(mapElement, {
-    scrollWheelZoom: false,
+    // Zoom with a trackpad pinch or the mouse wheel, as well as the +/- buttons.
+    scrollWheelZoom: true,
     zoomControl: false,
     attributionControl: false,
     zoomSnap: 0.5,
@@ -160,10 +161,10 @@
   });
 
   // Open at street level around where the owner searched from, as in the
-  // design: closer for 1 mi, further out for larger distances. Places outside
-  // the view are still in the list, and picking one moves the map to it.
-  // Half steps (zoomSnap below) to match the street spacing in the Figma frames.
-  var STREET_ZOOM = { 1: 15.5, 2: 14.5, 5: 13.5, 10: 12.5 };
+  // design: closest for 1 mi, a little further out for larger distances, but
+  // never so far that the streets disappear. Places outside the view are still
+  // in the list, and picking one moves the map to it.
+  var STREET_ZOOM = { 1: 16, 2: 15.5, 5: 15, 10: 14.5 };
   if (data.origin) {
     map.setView([data.origin.latitude, data.origin.longitude], STREET_ZOOM[data.distance] || 15);
   } else if (bounds.length > 1) {
