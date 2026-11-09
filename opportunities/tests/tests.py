@@ -876,3 +876,29 @@ class CareOpportunityFigmaDetailsTests(CareOpportunityTests):
         response = self.client.get(reverse("opportunities:list"))
         rating = response.context["interested_caregivers"][0].rating
         self.assertEqual((rating["average"], rating["count"]), (5, 1))
+
+
+class CarePostLocationSuggestionTests(CareOpportunityTests):
+    """The Location box suggests places as you type, like the Explore search."""
+
+    def test_new_post_form_has_location_suggestions(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:create"))
+        self.assertContains(response, "data-location-field")
+        self.assertContains(response, 'id="neighborhood-options"')
+        self.assertContains(response, "location_suggest.js")
+        labels = [o["label"] for o in response.context["neighborhood_options"]]
+        self.assertIn("Park Slope, Brooklyn", labels)
+
+    def test_edit_form_has_location_suggestions(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("opportunities:list"), {"post": self.opportunity.pk, "edit": "1"}
+        )
+        self.assertContains(response, "data-location-field")
+        self.assertTrue(response.context["neighborhood_options"])
+
+    def test_list_without_editing_skips_the_list(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("opportunities:list"))
+        self.assertEqual(response.context["neighborhood_options"], [])
