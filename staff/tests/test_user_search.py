@@ -28,7 +28,7 @@ class SearchTests(StaffTestData):
         self.assertContains(response, "1 account found")
         self.assertContains(response, f'href="{detail_url(self.owner)}?q=kat"')
         self.assertContains(response, 'value="kat"')
-        self.assertContains(response, f'href="{LIST_URL}">Clear</a>')
+        self.assertNotContains(response, ">Clear</a>")  # not in the Figma
 
     def test_message_when_nothing_matches(self):
         response, accounts = self.found("nobody")
@@ -41,7 +41,7 @@ class SearchTests(StaffTestData):
 
     def test_blank_search_lists_everyone(self):
         response, accounts = self.found("   ")
-        self.assertEqual(len(accounts), 5)
+        self.assertEqual(len(accounts), 4)
         self.assertNotContains(response, "accounts found")
         self.assertNotContains(response, ">Clear</a>")
 

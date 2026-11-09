@@ -2,41 +2,53 @@
    accounts on the left, the selected account on the right. It shares the
    admin title, tabs and list rows' look with the Reports page. */
 
-.page-staff { max-width: 1040px; }
+/* As wide as the Figma: 1176px of content, like the Reports page. */
+main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; padding-left: 24px; padding-right: 24px; }
+.page-staff .admin-title { margin: 12px 0 18px; font-size: 44px; letter-spacing: -0.5px; }
+.page-staff .admin-tabs { padding: 5px; margin-bottom: 20px; }
+.page-staff .admin-tab { gap: 6px; padding: 8px 18px; font-size: 16px; line-height: 24px; }
+.page-staff .admin-tab-count { min-width: 22px; height: 20px; font-size: 12px; }
 
 /* #90: the search box sits at the top of the accounts list. */
-.staff-search { position: relative; margin-bottom: 12px; }
+.staff-search { position: relative; margin-bottom: 10px; }
 .staff-search input {
   width: 100%;
-  min-height: 42px;
-  padding: 8px 16px 8px 40px;
+  min-height: 53px;
+  padding: 10px 18px 10px 48px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--input-bg);
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
 }
-.staff-search-icon { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-.staff-clear { margin-left: 6px; color: var(--ink); font-weight: 700; }
+.staff-search-icon { position: absolute; left: 16px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+/* Keep the Figma look while typing: no focus ring or glow, blue fill or ×. */
+.staff-search input { -webkit-appearance: none; appearance: none; }
+.staff-search input::-webkit-search-cancel-button,
+.staff-search input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.staff-search input:focus { outline: none; box-shadow: none; background: var(--input-bg); }
+.staff-search input:autofill,
+.staff-search input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px var(--input-bg) inset; -webkit-text-fill-color: var(--ink); }
 
 .staff-layout {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) 1fr;
+  grid-template-columns: minmax(0, 464px) minmax(0, 1fr);
   align-items: start;
-  gap: 18px;
+  gap: 22px;
 }
 
 /* ---------- Accounts list ---------- */
 
-.staff-list { padding: 14px; }
-.staff-count { margin: 0 0 10px; font-size: 12px; }
+.staff-list { padding: 22px; }
+.staff-count { margin: 4px 0 12px; font-size: 13px; }
 .staff-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 
 .staff-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  min-height: 71px;
+  padding: 10px 12px;
   border: 1.5px solid transparent;
   border-radius: 16px;
   background: var(--bg);
@@ -47,11 +59,13 @@
 .staff-row:hover { border-color: var(--line-strong); }
 .staff-row.is-selected { border-color: var(--ink); background: #fff; }
 
-.staff-row-text { display: grid; flex: 1; gap: 2px; min-width: 0; font-size: 12px; }
-.staff-row-text strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staff-row-text { display: grid; flex: 1; gap: 1px; min-width: 0; font-size: 14px; }
+.staff-row-text strong { font-size: 16px; font-weight: 600; }
+/* Name and "Caregiver · Prospect Heights" stay on one line each. */
+.staff-row-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.staff-empty { padding: 18px 14px; border-radius: 16px; background: var(--bg); text-align: center; font-size: 14px; }
-.staff-empty p { margin: 4px 0 0; font-size: 13px; }
+.staff-empty { padding: 22px 18px; border-radius: 16px; background: var(--bg); text-align: center; font-size: 15px; }
+.staff-empty p { margin: 4px 0 0; font-size: 14px; }
 
 .staff-pages { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; font-size: 13px; }
 
@@ -61,18 +75,18 @@
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: 36px;
-  height: 36px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   background: var(--peach);
   color: #7a3b12;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .staff-avatar-caregiver { background: var(--mint); color: var(--success-ink); }
 .staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
-.staff-avatar-large { width: 52px; height: 52px; font-size: 18px; }
+.staff-avatar-large { width: 64px; height: 64px; font-size: 22px; }
 
 /* ---------- Status ---------- */
 
@@ -81,9 +95,9 @@
   align-items: center;
   flex: none;
   gap: 6px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -95,53 +109,88 @@
 
 /* ---------- Selected account ---------- */
 
-.staff-account { padding: 22px; }
-.staff-account-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.staff-account-header h2 { margin: 0; font-size: 24px; line-height: 1.15; }
-.staff-account-header p { margin: 2px 0 0; font-size: 13px; }
+.staff-account { padding: 30px; }
+.staff-account-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.staff-account-header h2 { margin: 0; font-size: 28px; line-height: 1.18; }
+.staff-account-header p { margin: 2px 0 0; font-size: 14px; }
 .staff-account-header .account-status { margin-left: auto; }
 
-.staff-account h3 { margin: 20px 0 8px; font-size: 15px; }
+.staff-account h3 { margin: 18px 0 8px; font-size: 18px; }
 
-.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0; }
-.staff-facts > div { padding: 10px 12px; border-radius: 14px; background: var(--bg); }
-.staff-facts dt { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
-.staff-facts dd { margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-.staff-fact-wide { grid-column: 1 / -1; }
+/* After restricting or reinstating (Figma). */
+.staff-banner { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; padding: 10px 14px; border-radius: 14px; font-size: 15px; font-weight: 700; }
+.staff-banner-restricted { background: var(--error-bg); color: var(--error); }
+.staff-banner-reinstated { background: var(--success-bg); color: var(--success-ink); }
+.staff-banner-check { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; }
+.staff-banner-check svg { width: 13px; height: 13px; }
 
-.staff-services { list-style: none; margin: 0; padding: 0; }
-.staff-services .tag { font-size: 12px; padding: 4px 10px; }
+/* "Restricted since Today" with the reason. */
+.staff-restricted { margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: #fff3f1; font-size: 15px; }
+.staff-restricted strong { color: var(--error); font-size: 16px; }
+.staff-restricted p { margin: 4px 0 0; }
+
+.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
+.staff-facts > div { padding: 12px 14px; border-radius: 14px; background: var(--bg); }
+.staff-facts dt { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.staff-facts dd { margin: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+
+/* Pets: cards side by side, as in the Figma. */
+.staff-pets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.staff-pet { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; border-radius: 14px; background: var(--bg); }
+.staff-pet > span:last-child { display: grid; min-width: 0; font-size: 13px; }
+.staff-pet strong { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staff-pet.is-deleted { opacity: 0.65; }
+.staff-pet-initial { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--theme-bg); color: var(--theme-ink); font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+
 
 .staff-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.staff-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--bg); }
-.staff-item > span:first-child { display: grid; flex: 1; gap: 1px; min-width: 0; font-size: 13px; }
-.staff-item .muted { font-size: 12px; }
-.staff-item.is-deleted { opacity: 0.65; }
+.staff-item { display: flex; align-items: center; gap: 12px; min-height: 65px; padding: 10px 14px; border-radius: 14px; background: var(--bg); }
+.staff-item > span:first-child { display: grid; flex: 1; gap: 1px; min-width: 0; font-size: 15px; }
+.staff-item strong { font-weight: 600; }
+.staff-item .muted { font-size: 13px; }
+.staff-item .status-pill { font-size: 13px; }
 
-.staff-none, .staff-more { margin: 0; font-size: 13px; }
+.staff-none, .staff-more { margin: 0; font-size: 14px; }
 .staff-more { margin-top: 6px; }
 
 /* The latest report about the account, as in the Figma. */
-.staff-report { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: #fff4d9; }
-.staff-report > span { display: grid; gap: 2px; font-size: 13px; }
-.staff-report strong { font-size: 13px; }
+.staff-report { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 73px; margin-top: 18px; padding: 12px 14px; border-radius: 14px; background: #fff4d9; color: #6b4a08; }
+.staff-report > span { display: grid; gap: 1px; font-size: 15px; color: var(--ink); }
+.staff-report strong { font-size: 16px; font-weight: 600; color: #6b4a08; }
+.staff-report .text-link { color: #6b4a08; font-size: 14px; font-weight: 700; }
 
-.staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 20px; }
-/* #92: the restrict popup reuses the Reports page's modal styles. */
-.staff-confirm-label { justify-self: start; font-size: 13px; font-weight: 700; }
+.staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin-top: 18px; }
+.staff-actions .btn { min-height: 50px; padding: 12px 26px; font-size: 16px; font-weight: 700; }
+
+/* #92: the restrict popup, sized like the Figma (and the Reports popups). */
+.page-staff .modal-backdrop { place-items: start center; padding-top: 148px; }
+.page-staff .modal-card { width: min(100%, 460px); gap: 12px; padding: 30px; border-radius: 28px; }
+.page-staff .modal-card h2 { font-size: 26px; }
+.page-staff .modal-card > p { font-size: 15px; line-height: 1.6; }
+.page-staff .modal-icon { width: 56px; height: 56px; font-size: 26px; }
+.page-staff .modal-actions .btn { min-height: 50px; font-size: 16px; }
+.staff-confirm .btn-danger { background: var(--error); border-color: var(--error); box-shadow: 0 3px 0 #7d1810; }
+.staff-confirm-field { display: grid; gap: 8px; width: 100%; margin-top: 4px; text-align: left; }
+.staff-confirm-label { font-size: 15px; font-weight: 700; }
+.staff-required { color: var(--error); }
 .staff-confirm textarea {
   width: 100%;
-  min-height: 64px;
-  padding: 10px 14px;
+  min-height: 80px;
+  padding: 14px 18px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   background: var(--input-bg);
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   resize: vertical;
 }
+.staff-confirm .has-error textarea { border-color: var(--error); background: var(--error-input-bg); }
+.staff-confirm .field-error { margin: 0; }
 
 @media (max-width: 760px) {
+  .page-staff .admin-title { font-size: 34px; }
+  .page-staff .modal-backdrop { padding-top: 16px; place-items: center; }
+  .staff-account { padding: 20px; }
   .staff-layout { grid-template-columns: 1fr; }
   .staff-account-header { flex-wrap: wrap; }
   .staff-account-header .account-status { margin-left: 0; }

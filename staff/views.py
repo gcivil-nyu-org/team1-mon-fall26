@@ -3,12 +3,12 @@
 
 from functools import wraps
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.restriction import is_restricted, reinstate, restrict
@@ -38,8 +38,12 @@ def staff_required(view):
     return wrapper
 
 
+# After restricting or reinstating, the account page shows a banner (?done=).
+DONE_STATUS = {"restricted": "restricted", "reinstated": "active"}
+
+
 @staff_required
-def user_list(request, pk=None):
+def user_list(request, pk=None, restrict_form=None):
     """The Users page, laid out like Kat's Figma: accounts on the left, the
     selected account on the right. Without a selection, the first account in
     the list is shown.
@@ -82,14 +86,20 @@ def user_list(request, pk=None):
         "selected": selected,
     }
     if selected is not None:
+        done = request.GET.get("done")
         context.update(
             details(selected),
             can_restrict=can_restrict(request.user, selected),
-            restrict_form=RestrictForm(),
+            restrict_form=restrict_form or RestrictForm(),
             # Restrict asks for confirmation in a popup first (?confirm=restrict).
-            confirm=request.GET.get("confirm") == "restrict"
+            # The popup opens again when the reason was left empty.
+            confirm=(
+                request.GET.get("confirm") == "restrict" or restrict_form is not None
+            )
             and can_restrict(request.user, selected)
             and selected.status_key != "restricted",
+            # The banner only shows while the account is still in that state.
+            done=done if DONE_STATUS.get(done) == selected.status_key else "",
         )
     return render(request, "staff/user_list.html", context)
 
@@ -107,28 +117,30 @@ def _restrictable(request, pk):
     return account
 
 
+def _done(account, action):
+    url = reverse("staff:user_detail", args=[account.pk])
+    return redirect(f"{url}?done={action}")
+
+
 @require_POST
 @staff_required
 def restrict_user(request, pk):
     account = _restrictable(request, pk)
+    if is_restricted(account):
+        return redirect("staff:user_detail", pk=account.pk)
     form = RestrictForm(request.POST)
-    if not is_restricted(account) and form.is_valid():
-        restrict(account, form.cleaned_data["reason"])
-        messages.success(
-            request,
-            f"{account.get_full_name() or account.username}'s account is restricted.",
-        )
-    return redirect("staff:user_detail", pk=account.pk)
+    if not form.is_valid():
+        # Show the popup again with the error.
+        return user_list(request, pk=account.pk, restrict_form=form)
+    restrict(account, form.cleaned_data["reason"])
+    return _done(account, "restricted")
 
 
 @require_POST
 @staff_required
 def reinstate_user(request, pk):
     account = _restrictable(request, pk)
-    if is_restricted(account):
-        reinstate(account)
-        messages.success(
-            request,
-            f"{account.get_full_name() or account.username}'s account is reinstated.",
-        )
-    return redirect("staff:user_detail", pk=account.pk)
+    if not is_restricted(account):
+        return redirect("staff:user_detail", pk=account.pk)
+    reinstate(account)
+    return _done(account, "reinstated")

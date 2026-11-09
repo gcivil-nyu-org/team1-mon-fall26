@@ -44,6 +44,14 @@ def when_long(value):
 
 
 @register.filter
+def since_day(value):
+    """Restricted banner: 'Today', 'Yesterday', else 'Nov 3, 2026'."""
+    if not value:
+        return ""
+    return _day(value) or date_format(timezone.localtime(value), "M j, Y")
+
+
+@register.filter
 def posted_ago(value):
     """Review card: 'Posted today', 'Posted yesterday', else 'Posted Nov 3'."""
     if not value:

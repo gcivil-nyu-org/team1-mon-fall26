@@ -23,7 +23,11 @@ class DetailTests(StaffTestData):
         cls.owner.account_profile.save()
         dog = PetType.objects.get_or_create(name="Dog")[0]
         cls.biscuit = Pet.objects.create(
-            owner=cls.owner, name="Biscuit", pet_type=dog, breed="Beagle"
+            owner=cls.owner,
+            name="Biscuit",
+            pet_type=dog,
+            breed="Beagle",
+            date_of_birth=timezone.localdate() - timedelta(days=4 * 366),
         )
         cls.old_pet = Pet.objects.create(
             owner=cls.owner, name="Pepper", pet_type=dog, deleted_at=timezone.now()
@@ -59,7 +63,8 @@ class DetailTests(StaffTestData):
         for text in (
             "Pet owner · Park Slope",
             "Biscuit",
-            "Dog · Beagle",
+            'class="staff-pet-initial theme-',
+            "Dog · 4 yrs",
             "Pepper",
             "Deleted ",
             "Biscuit · Dog walking",
@@ -69,7 +74,7 @@ class DetailTests(StaffTestData):
             self.assertContains(response, text)
         self.assertNotContains(response, "View public profile")
 
-    def test_caregiver_sees_profile_services_and_bookings(self):
+    def test_caregiver_sees_profile_and_bookings(self):
         self.book(-3, Booking.Status.COMPLETED)
         response = self.client.get(detail_url(self.sitter))
         self.assertContains(response, "Caregiver · Park Slope")
@@ -78,8 +83,9 @@ class DetailTests(StaffTestData):
             f'href="{reverse("caregiver", args=[self.sitter.caregiver_profile.pk])}"',
         )
         self.assertContains(response, "View public profile")
-        self.assertContains(response, "Dog walking · $25.00 per walk")
-        self.assertNotContains(response, "Drop-in visit")  # inactive service
+        # Services are on the public profile, not here (Figma).
+        self.assertNotContains(response, "<h3>Services</h3>", html=True)
+        self.assertNotContains(response, "$25.00")
         self.assertContains(response, "with Kat W")
         self.assertContains(response, "Completed")
         self.assertNotContains(response, "<h3>Pets</h3>", html=True)
@@ -88,11 +94,6 @@ class DetailTests(StaffTestData):
         response = self.client.get(detail_url(self.new))
         self.assertContains(response, "No pet profiles.")
         self.assertContains(response, "No bookings yet.")
-
-    def test_caregiver_without_services(self):
-        CaregiverService.objects.filter(caregiver__user=self.sitter).delete()
-        response = self.client.get(detail_url(self.sitter))
-        self.assertContains(response, "No services listed.")
 
     def test_only_the_most_recent_bookings(self):
         bookings = [self.book(day) for day in range(1, RECENT_BOOKINGS + 3)]
