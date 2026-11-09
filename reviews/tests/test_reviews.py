@@ -167,7 +167,8 @@ class CaregiverReviewTests(ReviewTestData):
         )
         self.login(self.owner)
         response = self.client.get(self.pet.get_absolute_url())
-        self.assertContains(response, "Notes from caregivers")
+        self.assertContains(response, '<h2 id="reviews-heading">Reviews</h2>')
+        self.assertNotContains(response, "Notes from caregivers")
         self.assertContains(response, "Sweet dog, pulls on the leash")
 
     def test_next_caregiver_sees_it_on_a_new_request(self):

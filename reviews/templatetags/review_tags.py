@@ -60,7 +60,7 @@ def pet_reviews(context, pet):
     return {
         "reviews": reviews,
         "summary": rating_summary(reviews),
-        "title": "Notes from caregivers",
+        "title": "Reviews",
         "empty": f"No caregiver has reviewed {pet.name} yet.",
         "show": "caregiver",
         **_viewer(context),

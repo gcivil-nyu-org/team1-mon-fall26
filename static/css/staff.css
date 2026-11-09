@@ -114,6 +114,11 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-account-header h2 { margin: 0; font-size: 28px; line-height: 1.18; }
 .staff-account-header p { margin: 2px 0 0; font-size: 14px; }
 .staff-account-header .account-status { margin-left: auto; }
+/* Long names wrap inside the card instead of pushing the page sideways. */
+.staff-account-header { flex-wrap: wrap; }
+.staff-account-header > div { flex: 1 1 180px; min-width: 0; }
+.staff-account-header h2 { overflow-wrap: break-word; }
+.staff-account { min-width: 0; }
 
 .staff-account h3 { margin: 18px 0 8px; font-size: 18px; }
 

@@ -33,7 +33,7 @@ def _in_popup(request):
     return request.headers.get("X-Requested-With") == "fetch"
 
 
-def _report(request, *, kind, target, author, text, about, back):
+def _report(request, *, kind, target, author, text, about, back, review=None):
     """Show the report form for one review or message, and save it."""
     if author.pk == request.user.pk:
         raise Http404("You can't report your own content.")
@@ -70,6 +70,8 @@ def _report(request, *, kind, target, author, text, about, back):
         "about": about,
         "author": person(author),
         "text": text,
+        # A review shows its paws and booking too, so it's clear which one it is.
+        "review": review,
         "back": back,
         "action": request.path,
     }
@@ -81,7 +83,10 @@ def _report(request, *, kind, target, author, text, about, back):
 @login_required
 def report_review(request, pk):
     review = get_object_or_404(
-        Review.objects.visible().select_related("author", "booking__caregiver"), pk=pk
+        Review.objects.visible().select_related(
+            "author", "booking__caregiver", "booking__pet", "booking__service_type"
+        ),
+        pk=pk,
     )
     fallback = reverse("caregiver", args=[review.booking.caregiver_id])
     return _report(
@@ -92,6 +97,7 @@ def report_review(request, pk):
         text=review.comment,
         about="review",
         back=_next_url(request, fallback),
+        review=review,
     )
 
 

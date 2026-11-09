@@ -56,7 +56,11 @@
       {% endif %}
 
       {% include "pets/partials/care_info.html" with is_owner=False show_contacts=show_contacts %}
-      {% pet_reviews pet %}
     </div>
   </article>
+
+  {# Reviews in their own card, like on the caregiver profile. #}
+  <section class="card reviews-card">
+    {% pet_reviews pet %}
+  </section>
 {% endblock %}

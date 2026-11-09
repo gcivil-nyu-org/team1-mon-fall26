@@ -2,17 +2,25 @@
   The "Report message" / "Report review" card from Kat's Figma "Report Message"
   and "Report Reason" frames. Used as a pop-up in Messages and as a page for reviews.
 {% endcomment %}
+{% load review_tags %}
 <form method="post" action="{{ action }}" class="report-card" data-report-form novalidate>
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ back }}">
 
   <h2 class="report-card-title" id="report-card-title">Report {{ about }}</h2>
 
-  <div class="report-card-quote">
+  <div class="report-card-quote{% if review %} is-review{% endif %}">
     <span class="chat-avatar report-card-avatar theme-{{ author.theme }}" aria-hidden="true">{{ author.initials }}</span>
-    <span>
+    <span class="report-card-quote-text">
       <strong>{{ author.name }}</strong>
-      {% if text %}<span>“{{ text|truncatechars:160 }}”</span>{% else %}<span class="muted">(Rating only, no written review)</span>{% endif %}
+      {% if review %}
+        {# Which review: the visit it's about and its paws, then its text. #}
+        <span class="report-card-review-meta">
+          <span class="muted">{{ review.booking.pet.name }} · {{ review.booking.service_type.name }} · {{ review.booking.start_time|date:"M j" }}</span>
+          <span class="report-card-paws">{% paws review.rating %}</span>
+        </span>
+      {% endif %}
+      {% if text %}<span>“{{ text|truncatechars:160 }}”</span>{% elif review %}<span class="muted">No written review, rating only.</span>{% else %}<span class="muted">(Rating only, no written review)</span>{% endif %}
     </span>
   </div>
 
