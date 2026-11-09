@@ -1,0 +1,12 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}This link has expired | PawPal{% endblock %}
+
+{% block auth_body %}
+<h1 id="auth-title">This link has expired</h1>
+<p class="auth-subtitle">
+    Links to confirm a new email work for 24 hours, and only until your email changes. Enter the new email on your profile again and we'll send a new link.
+</p>
+
+<p class="auth-footer"><a href="{% url 'edit_profile' %}">Edit your profile</a></p>
+{% endblock %}

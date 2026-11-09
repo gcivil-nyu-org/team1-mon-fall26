@@ -1,0 +1,8 @@
+{% autoescape off %}Hi {{ user.first_name|default:user.username }},
+
+The email on your PawPal account ({{ user.username }}) was changed from {{ old_email }} to {{ user.email }}. We won't send emails to {{ old_email }} anymore.
+
+If you didn't make this change, reply to this email so we can help.
+
+The PawPal team
+{% endautoescape %}

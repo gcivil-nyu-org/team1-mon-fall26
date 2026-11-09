@@ -16,8 +16,12 @@ from .forms import (
 )
 from .models import AccountProfile
 from .verification import (
+    email_change_from_token,
+    email_taken,
     mark_verified,
     needs_verification,
+    send_change_email,
+    send_email_changed_notice,
     send_verification_email,
     user_from_token,
 )
@@ -181,6 +185,13 @@ def edit_profile_view(request):
     )
     if request.method == "POST" and form.is_valid():
         form.save()
+        if form.new_email:
+            send_change_email(request, request.user, form.new_email)
+            messages.info(
+                request,
+                f"We sent a link to {form.new_email}. Your email changes "
+                "once you click it.",
+            )
         if form.geocoding_unavailable:
             messages.warning(
                 request,
@@ -191,6 +202,26 @@ def edit_profile_view(request):
             messages.success(request, "Your profile is saved.")
         return redirect("my_profile")
     return render(request, "accounts/edit_profile.html", {"form": form})
+
+
+def confirm_email_change_view(request, token):
+    """#47: the link sent to a new email. Clicking it switches the account to it."""
+    change = email_change_from_token(token)
+    if change is not None:
+        user, old_email, new_email = change
+        if user.email == new_email:
+            messages.success(request, f"Your email is already {new_email}.")
+            return redirect("my_profile")
+        if user.email == old_email and not email_taken(new_email, user):
+            user.email = new_email
+            user.save(update_fields=["email"])
+            # They just showed the new email is theirs.
+            mark_verified(user)
+            if old_email:
+                send_email_changed_notice(user, old_email)
+            messages.success(request, f"Your email is now {new_email}.")
+            return redirect("my_profile")
+    return render(request, "accounts/email_change_invalid.html")
 
 
 @login_required

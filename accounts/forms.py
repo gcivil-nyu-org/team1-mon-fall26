@@ -11,7 +11,7 @@ from caregivers.geocoding import GeocodingUnavailable, geocode
 
 from .models import AccountProfile
 from .restriction import RESTRICTED_MESSAGE, is_restricted
-from .verification import mark_verified, needs_verification
+from .verification import email_taken, mark_verified, needs_verification
 
 
 class SignUpForm(UserCreationForm):
@@ -133,10 +133,10 @@ class LoginForm(AuthenticationForm):
 
 
 class PersonalInfoForm(forms.Form):
-    """#47: a pet owner's name and address, from Kat's "Edit your profile" Figma.
+    """#47: a pet owner's name, email and address, from Kat's "Edit your profile" Figma.
 
-    The email is shown on the page but can't be changed here yet: a new email
-    has to be confirmed first, and that step is being added separately.
+    A new email isn't saved here: the view emails a link to it (new_email) and
+    the account switches to it once the link is clicked.
     The address is looked up with NYC GeoSearch so caregivers can see the
     neighborhood (e.g. "Park Slope, Brooklyn"), never the address itself.
     """
@@ -146,6 +146,12 @@ class PersonalInfoForm(forms.Form):
     )
     last_name = forms.CharField(
         max_length=150, error_messages={"required": "Enter your last name."}
+    )
+    email = forms.EmailField(
+        error_messages={
+            "required": "Enter your email.",
+            "invalid": "Enter a valid email address.",
+        },
     )
     address = forms.CharField(
         max_length=255,
@@ -161,6 +167,7 @@ class PersonalInfoForm(forms.Form):
             {
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "email": user.email,
                 "address": self.profile.address,
             },
         )
@@ -168,12 +175,25 @@ class PersonalInfoForm(forms.Form):
         self.location = None
         # Set when GeoSearch can't be reached: the address still saves.
         self.geocoding_unavailable = False
+        # The email to confirm, when it's different from the current one.
+        self.new_email = None
 
     def clean_first_name(self):
         return self.cleaned_data["first_name"].strip()
 
     def clean_last_name(self):
         return self.cleaned_data["last_name"].strip()
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if email == self.user.email.lower():
+            return self.user.email
+        if email_taken(email, self.user):
+            raise forms.ValidationError(
+                "This email already has an account.", code="email_taken"
+            )
+        self.new_email = email
+        return email
 
     def clean_address(self):
         address = self.cleaned_data["address"].strip()
