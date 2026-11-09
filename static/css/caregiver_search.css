@@ -1,7 +1,9 @@
 /* Find caregivers page, matching the Figma "Search Caregivers" frames.
    Builds on style.css (cards, buttons, tags, alerts). */
 
-/* Same width as the Figma frame: 1200px page, 1136px of content. */
+/* 1200px page, 1136px of content, as in the Figma "Search Caregivers" and
+   Home frames. Explore places uses it too, so switching "Looking for"
+   doesn't make the page jump. */
 .page-search { max-width: 1200px; padding: 16px 32px 64px; }
 
 /* ---------- Purple search card ---------- */
