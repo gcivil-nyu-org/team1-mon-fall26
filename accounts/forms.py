@@ -14,6 +14,10 @@ from .restriction import RESTRICTED_MESSAGE, is_restricted
 from .verification import email_taken, mark_verified, needs_verification
 
 
+# Same limit as pet and caregiver photos.
+MAX_PHOTO_MB = 5
+
+
 class SignUpForm(UserCreationForm):
     error_messages = {
         **UserCreationForm.error_messages,
@@ -158,6 +162,11 @@ class PersonalInfoForm(forms.Form):
         error_messages={"required": "Enter your address."},
         widget=forms.TextInput(attrs={"placeholder": "e.g. 215 6th Ave, Brooklyn"}),
     )
+    photo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={"accept": "image/jpeg,image/png"}),
+        error_messages={"invalid_image": "Upload a JPG or PNG photo."},
+    )
 
     def __init__(self, *args, user, **kwargs):
         self.user = user
@@ -211,6 +220,14 @@ class PersonalInfoForm(forms.Form):
             )
         return address
 
+    def clean_photo(self):
+        photo = self.cleaned_data.get("photo")
+        if photo and photo.size > MAX_PHOTO_MB * 1024 * 1024:
+            raise forms.ValidationError(
+                f"Photo must be smaller than {MAX_PHOTO_MB} MB."
+            )
+        return photo
+
     def save(self):
         self.user.first_name = self.cleaned_data["first_name"]
         self.user.last_name = self.cleaned_data["last_name"]
@@ -226,7 +243,13 @@ class PersonalInfoForm(forms.Form):
         elif self.geocoding_unavailable:
             # Don't keep showing the old address's neighborhood.
             self.profile.neighborhood = ""
-        self.profile.save(update_fields=["address", "neighborhood"])
+        fields = ["address", "neighborhood"]
+        if self.cleaned_data.get("photo"):
+            if self.profile.photo:
+                self.profile.photo.delete(save=False)
+            self.profile.photo = self.cleaned_data["photo"]
+            fields.append("photo")
+        self.profile.save(update_fields=fields)
         return self.profile
 
 

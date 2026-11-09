@@ -16,10 +16,11 @@ class CaregiverProfileForm(forms.ModelForm):
     # Saved together as the profile's `name`.
     first_name = forms.CharField(max_length=50, label="First name")
     last_name = forms.CharField(max_length=50, label="Last name")
+    # Required, as in the Figma (red *): owners can only request these.
     selected_services = forms.ModelMultipleChoiceField(
         queryset=ServiceType.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=False,
+        error_messages={"required": "Pick at least one service."},
     )
     # Shown as a dropdown of ranges; any whole number is accepted and saved as
     # the start of its range (e.g. 4 is saved as 3, "3–5 years").
@@ -46,7 +47,6 @@ class CaregiverProfileForm(forms.ModelForm):
             "service_radius_miles",
             "profile_photo",
             "special_skills",
-            "certifications",
             "supported_pet_types",
             "pet_care_skills",
             "accepting_new_bookings",
@@ -57,7 +57,6 @@ class CaregiverProfileForm(forms.ModelForm):
             ),
             "bio": forms.Textarea(attrs={"rows": 3}),
             "special_skills": forms.Textarea(attrs={"rows": 3}),
-            "certifications": forms.Textarea(attrs={"rows": 3}),
             "address": forms.TextInput(
                 attrs={"placeholder": "e.g. 70 Washington Square South"}
             ),
@@ -72,6 +71,11 @@ class CaregiverProfileForm(forms.ModelForm):
         # Required for new entries; the model allows blank so older profiles
         # without an address still load.
         self.fields["address"].required = True
+        # Required too (red * in the Figma), so requests can be matched.
+        self.fields["supported_pet_types"].required = True
+        self.fields["supported_pet_types"].error_messages[
+            "required"
+        ] = "Pick at least one pet type."
         if self.instance.pk and self.instance.name:
             first, _, last = self.instance.name.partition(" ")
             self.initial.setdefault("first_name", first)

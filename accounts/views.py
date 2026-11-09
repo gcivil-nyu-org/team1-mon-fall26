@@ -181,7 +181,9 @@ def edit_profile_view(request):
     if elsewhere is not None:
         return elsewhere
     form = PersonalInfoForm(
-        request.POST if request.method == "POST" else None, user=request.user
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
+        user=request.user,
     )
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -201,7 +203,11 @@ def edit_profile_view(request):
         else:
             messages.success(request, "Your profile is saved.")
         return redirect("my_profile")
-    return render(request, "accounts/edit_profile.html", {"form": form})
+    return render(
+        request,
+        "accounts/edit_profile.html",
+        {"form": form, "profile": request.user.account_profile},
+    )
 
 
 def confirm_email_change_view(request, token):
@@ -226,14 +232,26 @@ def confirm_email_change_view(request, token):
 
 @login_required
 def delete_account_view(request):
-    """Story #48: confirm with the password, then the account is deleted."""
+    """Story #48: confirm with the password, then the account is deleted.
+
+    The profile pages show this as a pop-up that sends the form in the
+    background; for those requests a wrong password returns just the card.
+    """
     if request.method == "POST":
         form = DeleteAccountForm(request.POST, user=request.user)
         if form.is_valid():
             delete_account(request.user)
             logout(request)
-            messages.success(request, "Your PawPal account has been deleted.")
-            return redirect("login")
+            return redirect("account_deleted")
+        if request.headers.get("X-Requested-With") == "fetch":
+            return render(
+                request, "accounts/partials/delete_account_card.html", {"form": form}
+            )
     else:
         form = DeleteAccountForm(user=request.user)
     return render(request, "accounts/delete_account.html", {"form": form})
+
+
+def account_deleted_view(request):
+    """Figma "Delete Account Confirmation": shown once the account is gone."""
+    return render(request, "accounts/account_deleted.html")

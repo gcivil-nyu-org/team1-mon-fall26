@@ -7,8 +7,8 @@
 
 {% block content %}
   {# #47: Kat's "Update Personal Information (Pet owner)" Figma. The form styles come from the caregiver profile form. #}
-  <link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=5">
-  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=7">
+  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=3">
 
   <div class="caregiver-heading">
     <span class="caregiver-eyebrow">Pet owner profile</span>
@@ -16,10 +16,27 @@
     <p><span class="required">*</span> Required</p>
   </div>
 
-  <form method="post" novalidate>
+  <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <section class="caregiver-section">
       <h2>Personal info</h2>
+      <div class="field{% if form.photo.errors %} has-error{% endif %}">
+        <div class="caregiver-photo-row">
+          <div class="caregiver-photo-placeholder" id="photo-preview" aria-hidden="true">
+            {% if profile.photo %}<img src="{{ profile.photo.url }}" alt="">{% else %}{% include "partials/camera_icon.html" %}{% endif %}
+          </div>
+          <div class="caregiver-photo-controls">
+            <div class="label-row-inline"><span class="field-label">Profile photo</span><span class="optional-tag">Optional</span></div>
+            <label class="caregiver-upload" for="{{ form.photo.id_for_label }}">
+              {% include "partials/camera_icon.html" %}
+              <span>{% if profile.photo %}Change photo{% else %}Upload photo{% endif %}</span>
+            </label>
+            <div class="caregiver-photo-input">{{ form.photo }}</div>
+            <p class="caregiver-hint">JPG or PNG, up to 5 MB</p>
+            {{ form.photo.errors }}
+          </div>
+        </div>
+      </div>
       <div class="caregiver-two-fields">
         <div class="field{% if form.first_name.errors %} has-error{% endif %}">
           <label for="{{ form.first_name.id_for_label }}">First name <span class="required">*</span></label>
@@ -36,9 +53,8 @@
           <label for="{{ form.email.id_for_label }}">Email <span class="required">*</span></label>
           <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see email &amp; address</span>
         </div>
+        {# A new email only takes effect once the link sent to it is clicked; the page says so after saving. #}
         {{ form.email }}
-        {# A new email only takes effect once the link sent to it is clicked. #}
-        <p class="caregiver-hint">If you change it, we'll email a link to the new address to confirm it.</p>
         {{ form.email.errors }}
       </div>
 
@@ -46,7 +62,6 @@
         <label for="{{ form.address.id_for_label }}">Address <span class="required">*</span></label>
         {{ form.address }}
         <datalist id="address-suggestions"></datalist>
-        <p class="caregiver-hint">Caregivers only see your neighborhood.</p>
         {{ form.address.errors }}
       </div>
     </section>
@@ -58,6 +73,22 @@
   </form>
 
   <script>
+    // Show the picked photo right away, like the caregiver profile form.
+    (() => {
+      const upload = document.getElementById('{{ form.photo.id_for_label }}');
+      if (!upload) return;
+      upload.addEventListener('change', () => {
+        const file = upload.files && upload.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(file);
+        const img = document.createElement('img');
+        img.alt = '';
+        img.onload = () => URL.revokeObjectURL(url);
+        img.src = url;
+        document.getElementById('photo-preview').replaceChildren(img);
+      });
+    })();
+
     // NYC address suggestions while typing, like the caregiver profile form.
     (() => {
       const lookup = document.querySelector('[data-address-lookup]');

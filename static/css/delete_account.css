@@ -1,29 +1,202 @@
-/* Delete account page (#48). */
+/* Delete account (#48), from Kat's "Delete Account … Warning" and
+   "Delete Account Confirmation" Figma frames: a centered card, as a pop-up
+   over the profile page or on its own page. */
 
-.delete-account { padding: 30px; }
-.delete-account h1 { margin: 10px 0 8px; font-size: 30px; }
-.delete-account-icon {
-  display: inline-grid;
+.delete-dialog {
+  width: min(462px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  overflow: visible;
+}
+
+.delete-dialog::backdrop {
+  background: rgba(70, 50, 40, 0.45);
+}
+
+.delete-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 32px 30px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.delete-card-icon {
+  display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  background: var(--error-bg);
-  color: var(--error);
+  background: #fde4e1;
+  color: #c6281d;
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
 }
-.delete-account-list { margin: 8px 0 14px; padding-left: 20px; line-height: 1.7; }
-.delete-account .small { margin-bottom: 18px; }
-.delete-account .field input {
+
+.delete-card-title {
+  margin: 16px 0 0;
+  font-size: 28px;
+}
+
+.delete-card-lead {
+  margin: 14px 0 12px;
+  color: #6a5a54;
+  font-size: 16px;
+}
+
+.delete-card-list {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 22px;
+  padding: 12px 18px 12px 34px;
+  border-radius: 14px;
+  background: #fff4f2;
+  color: #5b4a44;
+  font-size: 15px;
+  line-height: 1.75;
+  text-align: left;
+}
+
+.delete-card-form {
+  width: 100%;
+  text-align: left;
+}
+
+.delete-card-form .field {
+  margin-bottom: 16px;
+}
+
+.delete-card-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.delete-card-form input {
   display: block;
   width: 100%;
-  padding: 11px 13px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--input-bg);
+  box-sizing: border-box;
+  min-height: 50px;
+  padding: 12px 16px;
+  border: 2px solid #ead3c9;
+  border-radius: 14px;
+  background: #fffcfa;
+  color: var(--ink);
   font: inherit;
+  font-size: 16px;
+}
+
+.delete-card-form .has-error input {
+  border-color: #c6281d;
+  background: #fff4f3;
+}
+
+.delete-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.delete-card-actions .btn {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+.delete-card-submit {
+  border: 0;
+  background: #b4231a;
+  color: #fff;
+  box-shadow: 0 4px 0 #7f150f;
+}
+
+.delete-card-submit:hover {
+  background: #9c1d15;
+}
+
+.delete-card-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* On its own page (no JavaScript, and "Account deleted"). */
+.page-delete-account {
+  max-width: 560px;
+}
+
+.delete-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.delete-page .delete-card {
+  width: min(462px, 100%);
+}
+
+/* Figma puts the Account deleted card lower down the page. */
+.deleted-page {
+  padding-top: 150px;
+}
+
+.deleted-card {
+  width: min(480px, 100%);
+  padding: 40px 32px 38px;
+}
+
+.deleted-card-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f8e2da;
+  color: #5b2f22;
+}
+
+.deleted-card-icon .paw-icon {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+}
+
+.deleted-card h1 {
+  margin: 20px 0 0;
+  font-size: 32px;
+}
+
+.deleted-card p {
+  margin: 16px 0 22px;
+  color: #6a5a54;
+  font-size: 16px;
+}
+
+.deleted-card .btn {
+  min-height: 52px;
+  padding: 0 38px;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  .deleted-page {
+    padding-top: 40px;
+  }
+
+  .delete-card {
+    padding: 26px 20px 24px;
+  }
+
+  .delete-card-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* "Account deleted" note on the login page. */

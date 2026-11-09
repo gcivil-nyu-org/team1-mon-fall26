@@ -3,7 +3,7 @@
   Pass heading="…" for the page title.
 {% endcomment %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'css/caregiver_profile.css' %}?v=7">
 
 <div class="caregiver-heading">
   <span class="caregiver-eyebrow">Caregiver profile</span>
@@ -72,17 +72,13 @@
           <div class="label-row"><label for="{{ form.special_skills.id_for_label }}">Tell owners about your experience</label><span class="optional-tag">Optional</span></div>
           {{ form.special_skills }}{{ form.special_skills.errors }}
         </div>
-        <div class="field">
-          <div class="label-row"><label for="{{ form.certifications.id_for_label }}">Certifications</label><span class="optional-tag">Optional</span></div>
-          {{ form.certifications }}{{ form.certifications.errors }}
-        </div>
       </section>
 
       <section class="caregiver-section">
         <div class="caregiver-section-heading">
           <span class="step-dot step-mint">3</span>
           <div>
-            <h2>Services you provide</h2>
+            <h2>Services you provide <span class="required">*</span></h2>
             <p class="caregiver-note">Select all that apply. Owners can only request these.</p>
           </div>
         </div>
@@ -103,7 +99,7 @@
         <div class="caregiver-section-heading">
           <span class="step-dot step-blue">4</span>
           <div>
-            <h2>Pets you're comfortable with</h2>
+            <h2>Pets you're comfortable with <span class="required">*</span></h2>
             <p class="caregiver-note">We'll match you with requests for these pet types.</p>
           </div>
         </div>
@@ -134,7 +130,10 @@
         </div>
       </section>
 
-      <div class="form-actions"><button class="btn btn-dark caregiver-save" type="submit">Save profile</button></div>
+      <div class="form-actions">
+        <a class="btn btn-outline caregiver-cancel" href="{% if form.instance.pk %}{% url 'caregiver' form.instance.pk %}{% else %}{% url 'home' %}{% endif %}">Cancel</a>
+        <button class="btn btn-dark caregiver-save" type="submit">Save profile</button>
+      </div>
     </div>
 
     <aside class="caregiver-preview-column">

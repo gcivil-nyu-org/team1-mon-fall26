@@ -1,0 +1,12 @@
+{% comment %}
+  Delete account as a pop-up over the profile page, as in the Figma.
+  The "Delete account" link in the "…" menu opens it. Without JavaScript the
+  link still goes to the /accounts/delete/ page, which shows the same card.
+{% endcomment %}
+{% load static account_tags %}
+<link rel="stylesheet" href="{% static 'css/delete_account.css' %}?v=3">
+<dialog class="delete-dialog" id="delete-account-dialog" aria-labelledby="delete-account-title">
+  {% delete_account_form as delete_form %}
+  {% include "accounts/partials/delete_account_card.html" with form=delete_form keep_url=request.path %}
+</dialog>
+<script src="{% static 'js/delete_account.js' %}?v=1"></script>

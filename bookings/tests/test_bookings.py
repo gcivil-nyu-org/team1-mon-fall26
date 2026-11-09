@@ -1,4 +1,5 @@
 from datetime import timedelta
+from caregivers.tests.profile_choices import required_choices
 from decimal import Decimal
 from unittest import mock
 
@@ -634,6 +635,7 @@ class CaregiverProfileOwnershipTests(TestCase):
                 "years_of_experience": 2,
                 "address": "1500 Unionport Rd, Bronx",
                 "service_radius_miles": 3,
+                **required_choices(),
             },
         )
         profile = CaregiverProfile.objects.get(name="Ana Diaz")

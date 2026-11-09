@@ -4,9 +4,11 @@ is deactivated, and they can't log in with it any more."""
 from datetime import timedelta
 
 import re
+import tempfile
 
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -76,8 +78,10 @@ class DeleteAccountTests(BookingTestData):
 
     def test_confirmed_deletion_deactivates_and_logs_out(self):
         response = self.delete(self.owner)
-        self.assertRedirects(response, LOGIN_URL)
-        self.assertContains(response, "Your PawPal account has been deleted.")
+        # Figma "Delete Account Confirmation" page, with a way back to log in.
+        self.assertRedirects(response, reverse("account_deleted"))
+        self.assertContains(response, "Account deleted", status_code=200)
+        self.assertContains(response, f'href="{LOGIN_URL}"')
         self.assertNotIn("_auth_user_id", self.client.session)
         self.owner.refresh_from_db()
         self.assertFalse(self.owner.is_active)
@@ -160,3 +164,59 @@ class DeleteAccountTests(BookingTestData):
         self.sitter.refresh_from_db()
         self.assertTrue(self.other_owner.is_active)
         self.assertTrue(self.sitter.is_active)
+
+
+class DeleteAccountPopupTests(DeleteAccountTests):
+    """The Figma pop-up on the profile pages, sent in the background."""
+
+    def test_profile_pages_include_the_popup(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("my_profile"))
+        self.assertContains(response, 'id="delete-account-dialog"')
+        self.assertContains(response, "Your pets and their profiles")
+        self.client.force_login(self.sitter)
+        response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
+        self.assertContains(response, 'id="delete-account-dialog"')
+        self.assertContains(response, "Your caregiver profile and services")
+
+    def test_wrong_password_in_the_popup_returns_just_the_card(self):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            DELETE_URL, {"password": "nope"}, headers={"X-Requested-With": "fetch"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "That password isn&#x27;t right.")
+        self.assertNotContains(response, "<html")
+        self.owner.refresh_from_db()
+        self.assertTrue(self.owner.is_active)
+
+    def test_deleted_page_is_public(self):
+        response = self.client.get(reverse("account_deleted"))
+        self.assertContains(response, "Sorry to see you go.")
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_owner_photo_is_removed(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from accounts.models import AccountProfile
+
+        profile, _ = AccountProfile.objects.get_or_create(user=self.owner)
+        profile.photo = SimpleUploadedFile("me.png", PNG, content_type="image/png")
+        profile.save()
+        self.delete(self.owner)
+        profile.refresh_from_db()
+        self.assertFalse(profile.photo)
+
+
+def _png():
+    """A tiny real PNG for photo tests."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    buffer = BytesIO()
+    Image.new("RGB", (2, 2), "orange").save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+PNG = _png()
