@@ -8,7 +8,7 @@
 {% block content %}
   {# #47: a pet owner's profile, from Kat's "Pet Owner Profile" Figma. The header card reuses the caregiver profile's styles. #}
   <link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=8">
-  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=3">
 
   <div class="owner-profile">
     <article class="caregiver-public-card caregiver-header-card">
@@ -23,7 +23,11 @@
         {% include "accounts/partials/profile_more_menu.html" %}
       </div>
       <div class="caregiver-avatar owner-avatar">
-        <span aria-hidden="true">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+        {% if profile.photo %}
+          <img src="{{ profile.photo.url }}" alt="Profile photo of {{ user.first_name|default:user.username }}">
+        {% else %}
+          <span aria-hidden="true">{% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}</span>
+        {% endif %}
       </div>
       <div class="caregiver-header-info">
         {# Others see a short name, like "Kat W.". #}

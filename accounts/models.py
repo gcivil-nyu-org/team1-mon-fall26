@@ -33,6 +33,9 @@ class AccountProfile(models.Model):
     # neighborhood above.
     address = models.CharField(max_length=255, blank=True)
 
+    # A pet owner's profile photo (Figma "Update Personal Information (Pet owner)").
+    photo = models.ImageField(upload_to="accounts/photos", blank=True, null=True)
+
     # #92: an admin can restrict an account (it can't log in or use the site)
     # and reinstate it later. Unlike deleting (#48), nothing else changes.
     restricted_at = models.DateTimeField(null=True, blank=True)

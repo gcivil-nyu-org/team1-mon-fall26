@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Account deleted · PawPal{% endblock %}
+
+{# Figma "Delete Account Confirmation": just the logo, no menu, since nobody is logged in. #}
+{% block site_header %}
+  <header class="site-header">
+    <a class="brand" href="{% url 'login' %}">
+      <span class="brand-mark">{% include "partials/paw_icon.html" %}</span>
+      <span class="brand-name">PawPal</span>
+    </a>
+  </header>
+{% endblock %}
+
+{% block main_class %}page page-delete-account{% endblock %}
+
+{% block messages %}{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/delete_account.css' %}?v=3">
+  <section class="delete-page deleted-page">
+    <div class="delete-card deleted-card">
+      <span class="deleted-card-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+      <h1>Account deleted</h1>
+      <p>Sorry to see you go. Thanks for being part of PawPal.</p>
+      <a class="btn btn-dark" href="{% url 'login' %}">Back to log in</a>
+    </div>
+  </section>
+{% endblock %}

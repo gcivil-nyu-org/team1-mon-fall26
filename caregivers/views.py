@@ -199,6 +199,16 @@ def delete_caregiver_service(request, pk, service_id):
     )
 
 
+@login_required
+@require_POST
+def set_accepting_requests(request, pk):
+    """The "Accepting new requests" switch on a caregiver's own profile."""
+    caregiver = get_object_or_404(CaregiverProfile, pk=pk, user=request.user)
+    caregiver.accepting_new_bookings = request.POST.get("accepting") == "1"
+    caregiver.save(update_fields=["accepting_new_bookings"])
+    return redirect("caregiver", pk=caregiver.pk)
+
+
 def caregiver_profile_detail(request, pk):
     caregiver = get_object_or_404(CaregiverProfile, pk=pk)
 

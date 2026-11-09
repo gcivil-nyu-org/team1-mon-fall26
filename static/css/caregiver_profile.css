@@ -67,14 +67,29 @@
   letter-spacing: -0.12px;
 }
 
+/* Sections 3 and 4 (Figma): the number sits beside the heading and its
+   one-line description, the * follows the heading text, and the chips start
+   16px below. */
 .caregiver-section-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
 }
 
-.caregiver-section-heading .step-dot {
-  margin-top: 2px;
+.caregiver-section-heading h2 {
+  display: block;
+  margin: 0;
+  line-height: 38px;
+}
+
+.caregiver-section-heading .caregiver-note {
+  margin: 0;
+  padding-top: 2px;
+  line-height: 24px;
+}
+
+.caregiver-section-heading + .caregiver-chips {
+  margin-top: -4px;
 }
 
 .caregiver-note {
@@ -340,6 +355,12 @@
   margin-top: 0;
 }
 
+.caregiver-cancel {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+}
+
 .caregiver-save {
   min-height: 50px;
   padding: 0 26px;
@@ -439,7 +460,6 @@
   border-radius: 28px;
   background: #fff;
   box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
-  transform: rotate(1deg);
 }
 
 .caregiver-preview-banner {

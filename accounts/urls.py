@@ -25,6 +25,7 @@ urlpatterns = [
     ),
     # Story #48: delete your own account.
     path("delete/", views.delete_account_view, name="delete_account"),
+    path("deleted/", views.account_deleted_view, name="account_deleted"),
     path("signup/success/", views.signup_success_view, name="signup_success"),
     # Sign-up email verification.
     path("verify-email/sent/", views.verify_email_sent_view, name="verify_email_sent"),
