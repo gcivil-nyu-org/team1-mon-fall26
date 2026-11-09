@@ -97,6 +97,18 @@ class ReportReviewTests(ReportTestData):
         # Figma "Report Message": no anonymity line, a Submit report button.
         self.assertContains(response, "Submit report")
 
+    def test_form_shows_which_review_it_is(self):
+        # The visit it's about and its paws, so a rating-only review is clear too.
+        self.sitter_review.comment = ""
+        self.sitter_review.save()
+        self.client.force_login(self.owner)
+        response = self.client.get(self.review_url(self.sitter_review))
+        when = timezone.localtime(self.booking.start_time).strftime("%b %-d")
+        self.assertContains(response, f"Miso · Drop-in visit · {when}")
+        self.assertContains(response, 'aria-label="Rated 1 out of 5"')
+        self.assertContains(response, "No written review, rating only.")
+        self.assertNotContains(response, "(Rating only, no written review)")
+
     def test_reporting_a_review_saves_an_open_report(self):
         self.client.force_login(self.owner)
         back = reverse("pets:detail", args=[self.pet.pk])
@@ -235,10 +247,10 @@ class ReportMessageTests(ReportTestData):
 
 
 class ReportFormAndModelTests(ReportTestData):
-    def test_something_else_needs_details(self):
-        form = ReportForm({"reason": "other", "details": "  "})
-        self.assertFalse(form.is_valid())
-        self.assertIn("Tell us a little about what's wrong.", form.errors["details"])
+    def test_details_are_optional_for_every_reason(self):
+        # "More details" says Optional, so it is, even for Something else.
+        for reason, _ in Report.Reason.choices:
+            self.assertTrue(ReportForm({"reason": reason, "details": ""}).is_valid())
         self.assertTrue(ReportForm({"reason": "other", "details": "Spam."}).is_valid())
 
     def test_details_have_a_length_limit(self):

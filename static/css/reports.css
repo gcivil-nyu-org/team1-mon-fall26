@@ -59,6 +59,14 @@
   font-size: 14px;
 }
 
+/* Report review: show which review (pet · service · date and its paws). */
+.report-card-quote.is-review { align-items: flex-start; }
+.report-card-quote-text { display: grid; gap: 3px; min-width: 0; }
+.report-card-review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; }
+.report-card-paws { display: inline-flex; }
+.report-card-paws .paws { gap: 2px; }
+.report-card-paws .paw svg { width: 15px; height: 15px; }
+
 .report-card .report-card-avatar {
   width: 36px;
   height: 36px;
