@@ -1,0 +1,42 @@
+{% comment %}
+  The "Report message" / "Report review" card from Kat's Figma "Report Message"
+  and "Report Reason" frames. Used as a pop-up in Messages and as a page for reviews.
+{% endcomment %}
+<form method="post" action="{{ action }}" class="report-card" data-report-form novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ back }}">
+
+  <h2 class="report-card-title" id="report-card-title">Report {{ about }}</h2>
+
+  <div class="report-card-quote">
+    <span class="chat-avatar report-card-avatar theme-{{ author.theme }}" aria-hidden="true">{{ author.initials }}</span>
+    <span>
+      <strong>{{ author.name }}</strong>
+      {% if text %}<span>“{{ text|truncatechars:160 }}”</span>{% else %}<span class="muted">(Rating only, no written review)</span>{% endif %}
+    </span>
+  </div>
+
+  <fieldset class="report-card-field{% if form.reason.errors %} has-error{% endif %}">
+    <legend>{{ form.reason.label }} <span class="required">*</span></legend>
+    <div class="report-card-reasons">
+      {% for radio in form.reason %}
+        <label class="report-card-reason">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+      {% endfor %}
+    </div>
+    {% for error in form.reason.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </fieldset>
+
+  <div class="report-card-field{% if form.details.errors %} has-error{% endif %}">
+    <div class="report-card-label-row">
+      <label for="{{ form.details.id_for_label }}">{{ form.details.label }}</label>
+      <span class="tag">Optional</span>
+    </div>
+    {{ form.details }}
+    {% for error in form.details.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="report-card-actions">
+    <a class="btn btn-outline" href="{{ back }}" data-close-report>Cancel</a>
+    <button type="submit" class="btn report-card-submit">Submit report</button>
+  </div>
+</form>

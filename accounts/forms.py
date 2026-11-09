@@ -7,8 +7,15 @@ from django.contrib.auth.forms import (
     UserCreationForm,
 )
 
+from caregivers.geocoding import GeocodingUnavailable, geocode
+
 from .models import AccountProfile
-from .verification import mark_verified, needs_verification
+from .restriction import RESTRICTED_MESSAGE, is_restricted
+from .verification import email_taken, mark_verified, needs_verification
+
+
+# Same limit as pet and caregiver photos.
+MAX_PHOTO_MB = 5
 
 
 class SignUpForm(UserCreationForm):
@@ -103,16 +110,24 @@ class LoginForm(AuthenticationForm):
     error_messages = {
         **AuthenticationForm.error_messages,
         "unverified": "Confirm your email before you log in.",
+        "restricted": RESTRICTED_MESSAGE,
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unverified_user = None
+        self.restricted = False
         self.fields["username"].widget.attrs["placeholder"] = "Your username"
         self.fields["password"].widget.attrs["placeholder"] = "Your password"
 
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
+        # #92: an admin restricted this account.
+        if is_restricted(user):
+            self.restricted = True
+            raise forms.ValidationError(
+                self.error_messages["restricted"], code="restricted"
+            )
         # The password was right, but the sign-up email isn't confirmed yet.
         if needs_verification(user):
             self.unverified_user = user
@@ -121,15 +136,121 @@ class LoginForm(AuthenticationForm):
             )
 
 
-class NeighborhoodForm(forms.ModelForm):
-    """A pet owner's neighborhood, for the Messages header caregivers see."""
+class PersonalInfoForm(forms.Form):
+    """#47: a pet owner's name, email and address, from Kat's "Edit your profile" Figma.
 
-    class Meta:
-        model = AccountProfile
-        fields = ["neighborhood"]
-        widgets = {
-            "neighborhood": forms.TextInput(attrs={"placeholder": "e.g. Park Slope"}),
-        }
+    A new email isn't saved here: the view emails a link to it (new_email) and
+    the account switches to it once the link is clicked.
+    The address is looked up with NYC GeoSearch so caregivers can see the
+    neighborhood (e.g. "Park Slope, Brooklyn"), never the address itself.
+    """
+
+    first_name = forms.CharField(
+        max_length=150, error_messages={"required": "Enter your first name."}
+    )
+    last_name = forms.CharField(
+        max_length=150, error_messages={"required": "Enter your last name."}
+    )
+    email = forms.EmailField(
+        error_messages={
+            "required": "Enter your email.",
+            "invalid": "Enter a valid email address.",
+        },
+    )
+    address = forms.CharField(
+        max_length=255,
+        error_messages={"required": "Enter your address."},
+        widget=forms.TextInput(attrs={"placeholder": "e.g. 215 6th Ave, Brooklyn"}),
+    )
+    photo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={"accept": "image/jpeg,image/png"}),
+        error_messages={"invalid_image": "Upload a JPG or PNG photo."},
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        self.profile = user.account_profile
+        kwargs.setdefault(
+            "initial",
+            {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "address": self.profile.address,
+            },
+        )
+        super().__init__(*args, **kwargs)
+        self.location = None
+        # Set when GeoSearch can't be reached: the address still saves.
+        self.geocoding_unavailable = False
+        # The email to confirm, when it's different from the current one.
+        self.new_email = None
+
+    def clean_first_name(self):
+        return self.cleaned_data["first_name"].strip()
+
+    def clean_last_name(self):
+        return self.cleaned_data["last_name"].strip()
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if email == self.user.email.lower():
+            return self.user.email
+        if email_taken(email, self.user):
+            raise forms.ValidationError(
+                "This email already has an account.", code="email_taken"
+            )
+        self.new_email = email
+        return email
+
+    def clean_address(self):
+        address = self.cleaned_data["address"].strip()
+        if address == self.profile.address:
+            return address  # Unchanged, so the neighborhood is still right.
+        try:
+            self.location = geocode(address)
+        except GeocodingUnavailable:
+            self.geocoding_unavailable = True
+            return address
+        if self.location is None:
+            raise forms.ValidationError(
+                "We couldn't find this address in New York City. "
+                "Check the house number and street name."
+            )
+        return address
+
+    def clean_photo(self):
+        photo = self.cleaned_data.get("photo")
+        if photo and photo.size > MAX_PHOTO_MB * 1024 * 1024:
+            raise forms.ValidationError(
+                f"Photo must be smaller than {MAX_PHOTO_MB} MB."
+            )
+        return photo
+
+    def save(self):
+        self.user.first_name = self.cleaned_data["first_name"]
+        self.user.last_name = self.cleaned_data["last_name"]
+        self.user.save(update_fields=["first_name", "last_name"])
+
+        self.profile.address = self.cleaned_data["address"]
+        if self.location is not None:
+            self.profile.neighborhood = ", ".join(
+                part
+                for part in (self.location.neighborhood, self.location.borough)
+                if part
+            )
+        elif self.geocoding_unavailable:
+            # Don't keep showing the old address's neighborhood.
+            self.profile.neighborhood = ""
+        fields = ["address", "neighborhood"]
+        if self.cleaned_data.get("photo"):
+            if self.profile.photo:
+                self.profile.photo.delete(save=False)
+            self.profile.photo = self.cleaned_data["photo"]
+            fields.append("photo")
+        self.profile.save(update_fields=fields)
+        return self.profile
 
 
 class ResendVerificationForm(forms.Form):

@@ -16,37 +16,54 @@ def booking_review_box(context, booking):
         "booking": booking,
         "review": mine,
         "can_review": booking.status == "completed" and mine is None,
+        "removed": mine is not None and mine.removed_at is not None,
         "is_caregiver": booking.caregiver.user_id == user.pk,
     }
 
 
-@register.inclusion_tag("reviews/partials/review_list.html")
-def caregiver_reviews(caregiver):
+def _viewer(context):
+    """Who's looking, and the page to come back to after reporting a review (#117)."""
+    request = context.get("request")
+    user = getattr(request, "user", None)
+    return {
+        "viewer": user if user is not None and user.is_authenticated else None,
+        "back": request.get_full_path() if request is not None else "",
+    }
+
+
+@register.inclusion_tag("reviews/partials/review_list.html", takes_context=True)
+def caregiver_reviews(context, caregiver):
     """Owners' ratings and reviews of this caregiver (#62, #63)."""
-    reviews = Review.objects.filter(
-        booking__caregiver=caregiver, role=Review.Role.OWNER
-    ).select_related("author", "booking__pet", "booking__service_type")
+    reviews = (
+        Review.objects.visible()
+        .filter(booking__caregiver=caregiver, role=Review.Role.OWNER)
+        .select_related("author", "booking__pet", "booking__service_type")
+    )
     return {
         "reviews": reviews,
         "summary": rating_summary(reviews),
         "title": "Reviews",
         "empty": f"{caregiver.name} has no reviews yet.",
         "show": "pet",
+        **_viewer(context),
     }
 
 
-@register.inclusion_tag("reviews/partials/review_list.html")
-def pet_reviews(pet):
+@register.inclusion_tag("reviews/partials/review_list.html", takes_context=True)
+def pet_reviews(context, pet):
     """Caregivers' ratings and reviews of this owner and pet (#66)."""
-    reviews = Review.objects.filter(
-        booking__pet=pet, role=Review.Role.CAREGIVER
-    ).select_related("author", "booking__caregiver", "booking__service_type")
+    reviews = (
+        Review.objects.visible()
+        .filter(booking__pet=pet, role=Review.Role.CAREGIVER)
+        .select_related("author", "booking__caregiver", "booking__service_type")
+    )
     return {
         "reviews": reviews,
         "summary": rating_summary(reviews),
         "title": "Notes from caregivers",
         "empty": f"No caregiver has reviewed {pet.name} yet.",
         "show": "caregiver",
+        **_viewer(context),
     }
 
 
@@ -103,5 +120,7 @@ def owner_can_rate(booking):
 @register.inclusion_tag("reviews/partials/pet_rating_line.html")
 def pet_rating_line(pet):
     """One line for the request panel: how earlier caregivers rated this owner and pet."""
-    reviews = Review.objects.filter(booking__pet=pet, role=Review.Role.CAREGIVER)
+    reviews = Review.objects.visible().filter(
+        booking__pet=pet, role=Review.Role.CAREGIVER
+    )
     return {"pet": pet, "summary": rating_summary(reviews), "latest": reviews.first()}

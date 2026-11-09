@@ -1,0 +1,33 @@
+{% comment %}
+  The "Delete your account?" card from Kat's "Delete Account … Warning" Figma frames.
+  Used in the pop-up on the profile pages and on the /accounts/delete/ page.
+  Needs `form` (DeleteAccountForm); `user` comes from the request.
+{% endcomment %}
+<div class="delete-card">
+  <span class="delete-card-icon" aria-hidden="true">!</span>
+  <h2 class="delete-card-title" id="delete-account-title">Delete your account?</h2>
+  <p class="delete-card-lead">This can’t be undone. You’ll lose:</p>
+  <ul class="delete-card-list">
+    {% if user.caregiver_profile or user.account_profile.role == "caregiver" %}
+      <li>Your caregiver profile and services</li>
+      <li>Your bookings and availability</li>
+    {% else %}
+      <li>Your pets and their profiles</li>
+      <li>Your booking requests and care posts</li>
+    {% endif %}
+    <li>Your messages and reviews</li>
+  </ul>
+
+  <form method="post" action="{% url 'delete_account' %}" class="delete-card-form" data-delete-account-form novalidate>
+    {% csrf_token %}
+    <div class="field{% if form.password.errors %} has-error{% endif %}">
+      <label for="{{ form.password.id_for_label }}">Enter your password to confirm</label>
+      {{ form.password }}
+      {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="delete-card-actions">
+      <a class="btn btn-outline" href="{{ keep_url|default:'/' }}" data-close-dialog>Keep my account</a>
+      <button type="submit" class="btn delete-card-submit">Delete account</button>
+    </div>
+  </form>
+</div>

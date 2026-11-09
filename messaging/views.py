@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from bookings.models import Booking
 from caregivers.models import CaregiverProfile
 
+from reports.models import Report
 from .inbox import by_day, conversations_for, counterpart, describe, inbox
 from .models import MAX_MESSAGE_LENGTH, Conversation, Message
 
@@ -44,7 +45,13 @@ def conversation_view(request, pk):
 
 
 def _show(request, conversations, selected):
-    history = list(selected.messages.select_related("sender"))
+    history = list(selected.messages.visible().select_related("sender"))
+    # Messages this user already reported get a "Reported" tag (Figma).
+    reported_ids = set(
+        Report.objects.filter(
+            reporter=request.user, message__in=[m.pk for m in history]
+        ).values_list("message_id", flat=True)
+    )
     # Opening a conversation is what counts as reading it.
     selected.mark_read(request.user)
     selected.unread = False
@@ -56,6 +63,7 @@ def _show(request, conversations, selected):
             "conversations": conversations,
             "selected": selected,
             "days": by_day(history),
+            "reported_ids": reported_ids,
             "latest_id": history[-1].pk if history else 0,
             "max_length": MAX_MESSAGE_LENGTH,
             "can_reply": selected.other_can_receive(request.user),
@@ -97,7 +105,7 @@ def send_message(request, pk):
 def latest_message(request, pk):
     """The newest message id, so an open conversation can refresh when one arrives."""
     conversation = get_object_or_404(conversations_for(request.user), pk=pk)
-    newest = conversation.messages.order_by("-created_at", "-pk").first()
+    newest = conversation.messages.visible().order_by("-created_at", "-pk").first()
     return JsonResponse({"latest_id": newest.pk if newest else 0})
 
 

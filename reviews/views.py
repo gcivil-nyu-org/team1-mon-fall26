@@ -71,7 +71,7 @@ def review_create(request, booking_pk):
 def review_thanks(request, pk):
     """Figma "Thanks" screen: shows the review you just left."""
     review = get_object_or_404(
-        Review.objects.select_related(
+        Review.objects.visible().select_related(
             "author",
             "booking__pet",
             "booking__service_type",

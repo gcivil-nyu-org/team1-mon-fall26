@@ -17,6 +17,11 @@ urlpatterns = [
     ),
     path("<int:pk>/edit/", views.edit_caregiver_profile, name="edit_caregiver_profile"),
     path(
+        "<int:pk>/accepting/",
+        views.set_accepting_requests,
+        name="set_accepting_requests",
+    ),
+    path(
         "<int:pk>/services/<int:service_id>/edit/",
         views.edit_caregiver_service,
         name="edit_caregiver_service",

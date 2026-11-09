@@ -6,7 +6,7 @@
 {% block main_class %}page page-messages{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/messaging.css' %}?v=5">
 
   <h1 class="messages-title">Messages</h1>
 
@@ -96,8 +96,17 @@
             <p class="chat-day">{{ day.label }}</p>
             {% for message in day.messages %}
               <div class="bubble-row {% if message.sender_id == user.pk %}is-mine{% else %}is-theirs{% endif %}"{% if forloop.last and forloop.parentloop.last %} id="latest"{% endif %}>
-                <p class="chat-bubble">{{ message.body|linebreaksbr }}</p>
-                <time class="bubble-time" datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>
+                {% if message.sender_id == user.pk %}
+                  <p class="chat-bubble">{{ message.body|linebreaksbr }}</p>
+                {% else %}
+                  {# Right-clicking someone else's message (or Enter on it) opens Copy text / Report message (Figma "Report Inappropriate Content"). #}
+                  <p class="chat-bubble is-menu-target{% if message.pk in reported_ids %} is-reported{% endif %}" tabindex="0" role="button" aria-haspopup="menu" data-report-url="{% url 'reports:message' message.pk %}?next={{ request.path|urlencode }}"{% if message.pk in reported_ids %} data-reported{% endif %}>{{ message.body|linebreaksbr }}</p>
+                {% endif %}
+                <span class="bubble-meta">
+                  <time class="bubble-time" datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"g:i A" }}</time>
+                  {% if message.pk in reported_ids %}<span class="report-tag">{% include "reports/partials/flag_icon.html" %} Reported</span>{% endif %}
+                </span>
+                {% if message.sender_id != user.pk and message.pk not in reported_ids %}<noscript><a class="report-link" href="{% url 'reports:message' message.pk %}">Report</a></noscript>{% endif %}
               </div>
             {% endfor %}
           {% empty %}
@@ -123,6 +132,20 @@
       {% endif %}
     </div>
     {% endwith %}
+    {# The menu next to a clicked message, and the report pop-up it opens. #}
+    <div class="bubble-menu" id="bubble-menu" role="menu" hidden>
+      <button type="button" role="menuitem" data-copy-text>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+        <span>Copy text</span>
+      </button>
+      <button type="button" role="menuitem" class="bubble-menu-report" data-report-message>
+        {% include "reports/partials/flag_icon.html" %}
+        <span>Report message</span>
+      </button>
+    </div>
+    <dialog class="report-dialog" id="report-dialog" aria-labelledby="report-card-title"></dialog>
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=5">
     <script src="{% static 'js/messaging.js' %}?v=1"></script>
+    <script src="{% static 'js/report_message.js' %}?v=4"></script>
   {% endif %}
 {% endblock %}

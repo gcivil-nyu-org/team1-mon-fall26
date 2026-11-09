@@ -1,50 +1,56 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}My requests · PawPal{% endblock %}
-
-{% block main_class %}page page-my-requests{% endblock %}
+{% block main_class %}page page-my-requests co-wide{% endblock %}
 
 {% block content %}
-  {# No visible title: the nav already says My requests. Kept for screen readers. #}
-  <h1 class="visually-hidden">My requests</h1>
+<link href="{% static 'css/opportunities.css' %}?v=2" rel="stylesheet">
+
+<div class="co-page">
+
+  <header class="co-header">
+    <h1>My requests</h1>
+    <a class="btn btn-dark co-header-btn" href="{% url 'bookings:booking_create' %}">
+      {% include "partials/plus_icon.html" %} New request
+    </a>
+  </header>
+
+  <nav class="co-toggle" aria-label="Request type">
+    <a href="{% url 'bookings:booking_list' %}" class="active" aria-current="page">Bookings</a>
+    <a href="{% url 'opportunities:list' %}">Care posts</a>
+  </nav>
 
   {% if active or history %}
-    <section class="booking-section">
-      <div class="booking-section-header">
-        <h2>Active</h2>
-        <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}"><span aria-hidden="true">+</span> New request</a>
-      </div>
-      {% if active %}
-        <div class="card booking-list-card">
-          <div class="booking-rows">
-            {% for booking in active %}
-              {% include "bookings/partials/booking_row.html" %}
-            {% endfor %}
-          </div>
-        </div>
-      {% else %}
-        <p class="muted">No pending or upcoming care right now.</p>
-      {% endif %}
+
+    <section class="co-booking-section">
+      <h2 class="co-label">Active</h2>
+      {% for booking in active %}
+        {% include "bookings/partials/owner_booking_row.html" %}
+      {% empty %}
+        <p class="co-empty">No pending or upcoming care right now.</p>
+      {% endfor %}
     </section>
 
     {% if history %}
-      <section class="booking-section">
-        <h2>History</h2>
-        <div class="card booking-list-card">
-          <div class="booking-rows">
-            {% for booking in history %}
-              {% include "bookings/partials/booking_row.html" %}
-            {% endfor %}
-          </div>
-        </div>
+      <section class="co-booking-section">
+        <h2 class="co-label">History</h2>
+        {% for booking in history %}
+          {% include "bookings/partials/owner_booking_row.html" %}
+        {% endfor %}
       </section>
     {% endif %}
+
   {% else %}
-    <div class="card empty-state">
-      <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+
+    <section class="co-panel co-no-match">
+      <span class="co-no-match-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
       <h2>No requests yet</h2>
-      <p class="muted">Choose a caregiver and send a request when your pet needs care.</p>
-      <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}">Request care</a>
-    </div>
+      <p>Choose a caregiver and send a request when your pet needs care.</p>
+      <a class="btn btn-dark co-btn" href="{% url 'bookings:booking_create' %}">Request care</a>
+    </section>
+
   {% endif %}
+
+</div>
 {% endblock %}

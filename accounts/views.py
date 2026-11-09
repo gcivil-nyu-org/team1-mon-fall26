@@ -5,17 +5,23 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from pets.models import Pet
+
 from .deletion import delete_account
 from .forms import (
     DeleteAccountForm,
-    NeighborhoodForm,
+    PersonalInfoForm,
     ResendVerificationForm,
     SignUpForm,
 )
 from .models import AccountProfile
 from .verification import (
+    email_change_from_token,
+    email_taken,
     mark_verified,
     needs_verification,
+    send_change_email,
+    send_email_changed_notice,
     send_verification_email,
     user_from_token,
 )
@@ -25,10 +31,13 @@ RESET_SENT_TO = "password_reset_sent_to"
 
 
 def home_view(request):
-    """Send people to their own start page: log in, My pets, or caregiver requests."""
+    """Send people to their own start page: log in, Users (admins), My pets, or
+    caregiver requests."""
     user = request.user
     if not user.is_authenticated:
         return redirect("login")
+    if user.is_staff:
+        return redirect("staff:user_list")
     profile = getattr(user, "account_profile", None)
     if hasattr(user, "caregiver_profile") or (profile and profile.role == "caregiver"):
         return redirect("bookings:caregiver_requests")
@@ -136,33 +145,113 @@ class ResetSentView(auth_views.PasswordResetDoneView):
         return context
 
 
-@login_required
-def neighborhood_view(request):
-    """A pet owner sets the neighborhood caregivers see in Messages."""
-    profile, _ = AccountProfile.objects.get_or_create(user=request.user)
-    if (
-        hasattr(request.user, "caregiver_profile")
-        or profile.role == AccountProfile.Role.CAREGIVER
-    ):
+def _other_profile_page(user):
+    """#47's profile pages are for pet owners. Send admins home and caregivers
+    to their caregiver profile (or to make one). None means stay."""
+    if user.is_staff:
         return redirect("home")
-    form = NeighborhoodForm(request.POST or None, instance=profile)
+    caregiver = getattr(user, "caregiver_profile", None)
+    if caregiver is not None:
+        return redirect("caregiver", caregiver.pk)
+    if user.account_profile.role == AccountProfile.Role.CAREGIVER:
+        return redirect("create_caregiver_profile")
+    return None
+
+
+@login_required
+def my_profile_view(request):
+    """#47: a pet owner's profile with their personal info (Kat's Figma)."""
+    AccountProfile.objects.get_or_create(user=request.user)
+    elsewhere = _other_profile_page(request.user)
+    if elsewhere is not None:
+        return elsewhere
+    pet_count = Pet.objects.active().filter(owner=request.user).count()
+    return render(
+        request,
+        "accounts/my_profile.html",
+        {"profile": request.user.account_profile, "pet_count": pet_count},
+    )
+
+
+@login_required
+def edit_profile_view(request):
+    """#47: a pet owner updates their name and address."""
+    AccountProfile.objects.get_or_create(user=request.user)
+    elsewhere = _other_profile_page(request.user)
+    if elsewhere is not None:
+        return elsewhere
+    form = PersonalInfoForm(
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
+        user=request.user,
+    )
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Your neighborhood is saved.")
-        return redirect("neighborhood")
-    return render(request, "accounts/neighborhood.html", {"form": form})
+        if form.new_email:
+            send_change_email(request, request.user, form.new_email)
+            messages.info(
+                request,
+                f"We sent a link to {form.new_email}. Your email changes "
+                "once you click it.",
+            )
+        if form.geocoding_unavailable:
+            messages.warning(
+                request,
+                "Your profile was saved, but we couldn't look up your "
+                "neighborhood right now. Please save your profile again later.",
+            )
+        else:
+            messages.success(request, "Your profile is saved.")
+        return redirect("my_profile")
+    return render(
+        request,
+        "accounts/edit_profile.html",
+        {"form": form, "profile": request.user.account_profile},
+    )
+
+
+def confirm_email_change_view(request, token):
+    """#47: the link sent to a new email. Clicking it switches the account to it."""
+    change = email_change_from_token(token)
+    if change is not None:
+        user, old_email, new_email = change
+        if user.email == new_email:
+            messages.success(request, f"Your email is already {new_email}.")
+            return redirect("my_profile")
+        if user.email == old_email and not email_taken(new_email, user):
+            user.email = new_email
+            user.save(update_fields=["email"])
+            # They just showed the new email is theirs.
+            mark_verified(user)
+            if old_email:
+                send_email_changed_notice(user, old_email)
+            messages.success(request, f"Your email is now {new_email}.")
+            return redirect("my_profile")
+    return render(request, "accounts/email_change_invalid.html")
 
 
 @login_required
 def delete_account_view(request):
-    """Story #48: confirm with the password, then the account is deleted."""
+    """Story #48: confirm with the password, then the account is deleted.
+
+    The profile pages show this as a pop-up that sends the form in the
+    background; for those requests a wrong password returns just the card.
+    """
     if request.method == "POST":
         form = DeleteAccountForm(request.POST, user=request.user)
         if form.is_valid():
             delete_account(request.user)
             logout(request)
-            messages.success(request, "Your PawPal account has been deleted.")
-            return redirect("login")
+            return redirect("account_deleted")
+        if request.headers.get("X-Requested-With") == "fetch":
+            return render(
+                request, "accounts/partials/delete_account_card.html", {"form": form}
+            )
     else:
         form = DeleteAccountForm(user=request.user)
     return render(request, "accounts/delete_account.html", {"form": form})
+
+
+def account_deleted_view(request):
+    """Figma "Delete Account Confirmation": shown once the account is gone."""
+    return render(request, "accounts/account_deleted.html")

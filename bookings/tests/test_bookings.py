@@ -1,4 +1,5 @@
 from datetime import timedelta
+from caregivers.tests.profile_choices import required_choices
 from decimal import Decimal
 from unittest import mock
 
@@ -421,7 +422,8 @@ class IncomingRequestsViewTests(CaregiverTestData):
         self.client.force_login(self.sitter)
         response = self.client.get(self.url)
         self.assertContains(response, ">Requests</a>")
-        self.assertContains(response, ">My profile</a>")
+        self.assertContains(response, 'class="account-link"')
+        self.assertContains(response, "My profile</a>")
         self.assertContains(response, "Caregiver")
         self.assertNotContains(response, ">My pets</a>")
 
@@ -633,6 +635,7 @@ class CaregiverProfileOwnershipTests(TestCase):
                 "years_of_experience": 2,
                 "address": "1500 Unionport Rd, Bronx",
                 "service_radius_miles": 3,
+                **required_choices(),
             },
         )
         profile = CaregiverProfile.objects.get(name="Ana Diaz")

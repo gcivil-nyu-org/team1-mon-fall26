@@ -32,13 +32,22 @@
         </p>
 
         {% for message in messages %}
-            <p class="auth-success-note" role="status"><span aria-hidden="true">✓</span>{{ message }}</p>
+            {% if message.level_tag == "error" %}
+                <div class="auth-error-summary" role="alert"><span aria-hidden="true">!</span><p>{{ message }}</p></div>
+            {% else %}
+                <p class="auth-success-note" role="status"><span aria-hidden="true">✓</span>{{ message }}</p>
+            {% endif %}
         {% endfor %}
 
         <form method="post" novalidate>
             {% csrf_token %}
 
-            {% if form.unverified_user %}
+            {% if form.restricted %}
+                <div class="auth-error-summary" role="alert">
+                    <span aria-hidden="true">!</span>
+                    <p>{{ form.non_field_errors|join:" " }}</p>
+                </div>
+            {% elif form.unverified_user %}
                 <div class="auth-error-summary" role="alert">
                     <span aria-hidden="true">!</span>
                     <p>Confirm your email before you log in. We sent a link to {{ form.unverified_user.email }}. <a href="{% url 'verify_email_sent' %}">Send a new link</a></p>
@@ -50,7 +59,7 @@
                 </div>
             {% endif %}
 
-            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
+            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user and not form.restricted %} auth-form-field--error{% endif %}">
                 <label for="{{ form.username.id_for_label }}">Username</label>
                 {{ form.username }}
 
@@ -59,7 +68,7 @@
                 {% endfor %}
             </div>
 
-            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user %} auth-form-field--error{% endif %}">
+            <div class="auth-form-field{% if form.non_field_errors and not form.unverified_user and not form.restricted %} auth-form-field--error{% endif %}">
                 <div class="auth-label-row">
                     <label for="{{ form.password.id_for_label }}">Password</label>
                     <a class="auth-forgot" href="{% url 'password_reset' %}">Forgot password?</a>

@@ -1,0 +1,148 @@
+/* Admin Users page (/manage/users/), laid out like Kat's 11/7 Figma:
+   accounts on the left, the selected account on the right. It shares the
+   admin title, tabs and list rows' look with the Reports page. */
+
+.page-staff { max-width: 1040px; }
+
+/* #90: the search box sits at the top of the accounts list. */
+.staff-search { position: relative; margin-bottom: 12px; }
+.staff-search input {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 16px 8px 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--input-bg);
+  font: inherit;
+  font-size: 14px;
+}
+.staff-search-icon { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.staff-clear { margin-left: 6px; color: var(--ink); font-weight: 700; }
+
+.staff-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  align-items: start;
+  gap: 18px;
+}
+
+/* ---------- Accounts list ---------- */
+
+.staff-list { padding: 14px; }
+.staff-count { margin: 0 0 10px; font-size: 12px; }
+.staff-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+
+.staff-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.staff-row:hover { border-color: var(--line-strong); }
+.staff-row.is-selected { border-color: var(--ink); background: #fff; }
+
+.staff-row-text { display: grid; flex: 1; gap: 2px; min-width: 0; font-size: 12px; }
+.staff-row-text strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.staff-empty { padding: 18px 14px; border-radius: 16px; background: var(--bg); text-align: center; font-size: 14px; }
+.staff-empty p { margin: 4px 0 0; font-size: 13px; }
+
+.staff-pages { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; font-size: 13px; }
+
+/* ---------- Avatar ---------- */
+
+.staff-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: #7a3b12;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.staff-avatar-caregiver { background: var(--mint); color: var(--success-ink); }
+.staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
+.staff-avatar-large { width: 52px; height: 52px; font-size: 18px; }
+
+/* ---------- Status ---------- */
+
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.account-status-active { background: var(--success-bg); color: var(--success-ink); }
+.account-status-unverified { background: #ffe9b8; color: #6b4500; }
+.account-status-deleted { background: #efe9e6; color: #5a4038; }
+.account-status-restricted { background: #fdecea; color: var(--error); }
+
+/* ---------- Selected account ---------- */
+
+.staff-account { padding: 22px; }
+.staff-account-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.staff-account-header h2 { margin: 0; font-size: 24px; line-height: 1.15; }
+.staff-account-header p { margin: 2px 0 0; font-size: 13px; }
+.staff-account-header .account-status { margin-left: auto; }
+
+.staff-account h3 { margin: 20px 0 8px; font-size: 15px; }
+
+.staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0; }
+.staff-facts > div { padding: 10px 12px; border-radius: 14px; background: var(--bg); }
+.staff-facts dt { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+.staff-facts dd { margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.staff-fact-wide { grid-column: 1 / -1; }
+
+.staff-services { list-style: none; margin: 0; padding: 0; }
+.staff-services .tag { font-size: 12px; padding: 4px 10px; }
+
+.staff-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.staff-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--bg); }
+.staff-item > span:first-child { display: grid; flex: 1; gap: 1px; min-width: 0; font-size: 13px; }
+.staff-item .muted { font-size: 12px; }
+.staff-item.is-deleted { opacity: 0.65; }
+
+.staff-none, .staff-more { margin: 0; font-size: 13px; }
+.staff-more { margin-top: 6px; }
+
+/* The latest report about the account, as in the Figma. */
+.staff-report { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: #fff4d9; }
+.staff-report > span { display: grid; gap: 2px; font-size: 13px; }
+.staff-report strong { font-size: 13px; }
+
+.staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 20px; }
+/* #92: the restrict popup reuses the Reports page's modal styles. */
+.staff-confirm-label { justify-self: start; font-size: 13px; font-weight: 700; }
+.staff-confirm textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+@media (max-width: 760px) {
+  .staff-layout { grid-template-columns: 1fr; }
+  .staff-account-header { flex-wrap: wrap; }
+  .staff-account-header .account-status { margin-left: 0; }
+}

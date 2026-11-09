@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find pets · PawPal{% endblock %}
+
+{% block main_class %}page co-wide{% endblock %}
+
+{% block content %}
+<link href="{% static 'css/opportunities.css' %}?v=1" rel="stylesheet">
+
+{% with owner_first=selected.owner_first %}
+<div class="co-page co-find">
+  <h1 class="co-find-title">Find pets</h1>
+  <p class="co-find-sub">Pets{% if caregiver_neighborhood %} near {{ caregiver_neighborhood }}{% endif %} who need care.</p>
+
+  <div class="co-filter" aria-label="Filter care opportunities">
+    <details class="co-dropdown {% if selected_pet_type %}has-selection{% endif %}">
+      <summary><span>Pet:</span><span class="co-filter-value">{% if selected_pet_type %}{% for pet_type in pet_types %}{% if selected_pet_type == pet_type.pk|stringformat:'s' %}{{ pet_type.name }}{% endif %}{% endfor %}{% else %}All{% endif %}</span><svg class="co-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <nav class="co-dropdown-menu" aria-label="Pet type options">
+        <a href="{% url 'opportunities:browse' %}?service={{ selected_service|urlencode }}" {% if not selected_pet_type %}aria-current="true"{% endif %}><span>All pets</span><span class="co-option-check" aria-hidden="true">{% if not selected_pet_type %}✓{% endif %}</span></a>
+        {% for pet_type in pet_types %}
+          <a href="{% url 'opportunities:browse' %}?pet_type={{ pet_type.pk }}&amp;service={{ selected_service|urlencode }}" {% if selected_pet_type == pet_type.pk|stringformat:'s' %}aria-current="true"{% endif %}><span>{{ pet_type.name }}</span><span class="co-option-check" aria-hidden="true">{% if selected_pet_type == pet_type.pk|stringformat:'s' %}✓{% endif %}</span></a>
+        {% endfor %}
+      </nav>
+    </details>
+    <details class="co-dropdown {% if selected_service %}has-selection{% endif %}">
+      <summary><span>Service:</span><span class="co-filter-value">{% if selected_service %}{% for service in services %}{% if selected_service == service.pk|stringformat:'s' %}{{ service.name }}{% endif %}{% endfor %}{% else %}All{% endif %}</span><svg class="co-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <nav class="co-dropdown-menu" aria-label="Service options">
+        <a href="{% url 'opportunities:browse' %}?pet_type={{ selected_pet_type|urlencode }}" {% if not selected_service %}aria-current="true"{% endif %}><span>All services</span><span class="co-option-check" aria-hidden="true">{% if not selected_service %}✓{% endif %}</span></a>
+        {% for service in services %}
+          <a href="{% url 'opportunities:browse' %}?service={{ service.pk }}&amp;pet_type={{ selected_pet_type|urlencode }}" {% if selected_service == service.pk|stringformat:'s' %}aria-current="true"{% endif %}><span>{{ service.name }}</span><span class="co-option-check" aria-hidden="true">{% if selected_service == service.pk|stringformat:'s' %}✓{% endif %}</span></a>
+        {% endfor %}
+      </nav>
+    </details>
+    <a class="co-filter-clear" href="{% url 'opportunities:browse' %}">Clear</a>
+  </div>
+
+  {% if not posts %}
+    <section class="co-panel co-no-match" aria-label="No matching care opportunities">
+      <span class="co-no-match-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
+      {% if selected_pet_type or selected_service %}
+        <h2>No pets match yet</h2>
+        <p>Try another pet or service.</p>
+        <a class="btn btn-dark co-btn" href="{% url 'opportunities:browse' %}">Clear filters</a>
+      {% else %}
+        <h2>No care opportunities yet</h2>
+        <p>Check back soon for pets who need care.</p>
+      {% endif %}
+    </section>
+  {% else %}
+  <div class="co-layout">
+    <section class="co-panel co-list" aria-label="Open opportunities">
+      <h2 class="co-label">{{ posts|length }} open near you</h2>
+      {% for post in posts %}
+        <a class="co-item {% if selected.pk == post.pk %}selected{% endif %}" href="?post={{ post.pk }}&amp;service={{ selected_service }}&amp;pet_type={{ selected_pet_type }}">
+          <span class="co-avatar theme-{{ post.pet.theme }}">{{ post.pet.name|first|upper }}</span>
+          <span class="co-item-copy">
+            <strong>{{ post.pet.name }} · {{ post.service_type.name }}</strong>
+            <small>{{ post.start_time|date:'D, M j · g:i A' }}</small>
+            <small>{% if post.distance is not None %}{{ post.place_name }} · {{ post.distance }} mi{% else %}{{ post.location }}{% endif %}</small>
+          </span>
+          {% if post.caregiver_interested %}<span class="co-badge interested">Interested</span>{% endif %}
+        </a>
+      {% endfor %}
+    </section>
+
+    <section class="co-panel co-detail" aria-label="Opportunity details">
+      {% if selected %}
+        <div class="co-detail-heading">
+          <span class="co-avatar co-avatar-lg theme-{{ selected.pet.theme }}">{{ selected.pet.name|first|upper }}</span>
+          <div class="co-detail-title">
+            <h2 class="co-pet-name">{{ selected.pet.name }}</h2>
+            <p>{{ selected.pet.pet_type.name }}{% if selected.pet.age_short %} · {{ selected.pet.age_short }}{% endif %} · Owner: {{ selected.owner_label }}</p>
+          </div>
+        </div>
+
+        <div class="co-facts co-facts-color">
+          <div class="co-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
+          <div class="co-fact"><small>When</small><strong>{{ selected.start_time|date:'D, M j · g:i A' }}</strong></div>
+          <div class="co-fact"><small>Where</small><strong>{{ selected.location }}</strong></div>
+        </div>
+
+        {% if selected.pet.has_temperament_info %}
+          <div class="co-info-row">
+            <span class="co-info-icon co-info-lavender" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9.3 9.8h.01M14.7 9.8h.01"/></svg></span>
+            <div><strong>Temperament</strong><p>{% for trait in selected.pet.temperament_labels %}{{ trait }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if selected.pet.behavior_notes %}{% if selected.pet.temperament_labels %} · {% endif %}{{ selected.pet.behavior_notes }}{% endif %}</p></div>
+          </div>
+        {% endif %}
+        {% if selected.pet.has_feeding_info %}
+          <div class="co-info-row">
+            <span class="co-info-icon co-info-peach" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M9 7.5c0-1 .8-1.5.8-2.5M13 7.5c0-1 .8-1.5.8-2.5"/></svg></span>
+            <div><strong>Feeding</strong><p>{{ selected.pet.feeding_summary }}{% if selected.pet.feeding_instructions %} {{ selected.pet.feeding_instructions }}{% endif %}</p></div>
+          </div>
+        {% endif %}
+        {% if selected.pet.has_medication_info or selected.pet.special_care_instructions %}
+          <div class="co-info-row">
+            <span class="co-info-icon co-info-pink" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)"/><path d="M9.5 9.5l5 5"/></svg></span>
+            <div><strong>Medication &amp; special care</strong><p>{{ selected.pet.medication_summary }}{% if selected.pet.special_care_instructions %} {{ selected.pet.special_care_instructions }}{% endif %}</p></div>
+          </div>
+        {% endif %}
+        {% if selected.notes %}
+          <div class="co-note"><strong>Note from {{ owner_first }}</strong><p>{{ selected.notes }}</p></div>
+        {% endif %}
+
+        {% if interest_added and selected.caregiver_interested %}
+          {% include "opportunities/partials/status_banner.html" with lead=owner_first|add:" can now see you’re interested." %}
+        {% endif %}
+        {% if interest_withdrawn and not selected.caregiver_interested %}
+          {% include "opportunities/partials/status_banner.html" with tone="peach" lead="Interest withdrawn." rest="You can send it again anytime." %}
+        {% endif %}
+
+        <div class="co-find-actions">
+          <div class="co-actions">
+            {% if selected.caregiver_interested %}
+              <span class="btn co-btn co-btn-muted co-interested-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                You’re interested
+              </span>
+            {% else %}
+              <form method="post" action="{% url 'opportunities:interest' selected.pk %}">{% csrf_token %}<button class="btn btn-dark co-btn" type="submit">I’m interested</button></form>
+            {% endif %}
+            <a class="btn btn-outline co-btn" href="{% url 'opportunities:message_owner' selected.pk %}">{% include "opportunities/partials/message_icon.html" %} Message {{ owner_first }}</a>
+          </div>
+          {% if selected.caregiver_interested %}
+            <a href="#withdraw-confirm" class="co-link co-withdraw-link">Not interested anymore</a>
+            <div id="withdraw-confirm" class="co-confirm co-confirm-target">
+              <div><strong>Withdraw your interest?</strong><p>{{ owner_first }} won’t see you as interested anymore.</p></div>
+              <div class="co-confirm-actions">
+                <a class="btn btn-outline co-btn" href="#">Cancel</a>
+                <form method="post" action="{% url 'opportunities:withdraw_interest' selected.pk %}">{% csrf_token %}<button class="btn btn-dark co-btn" type="submit">Withdraw</button></form>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="co-empty">Choose a care opportunity to see its details.</p>
+      {% endif %}
+    </section>
+  </div>
+  {% endif %}
+</div>
+{% endwith %}
+{% endblock %}

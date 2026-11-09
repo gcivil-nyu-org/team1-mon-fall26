@@ -123,11 +123,18 @@ class CaregiverProfileFormTests(CaregiverTestData):
         self.assertFalse(form.is_valid())
         self.assertIn("years_of_experience", form.errors)
 
-    def test_services_and_pet_types_are_optional(self):
+    def test_services_and_pet_types_are_required(self):
+        # Red * on both in the Figma "Update Personal Information (Caregiver)".
         form = CaregiverProfileForm(
             data=self.profile_data(selected_services=[], supported_pet_types=[])
         )
-        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["selected_services"], ["Pick at least one service."]
+        )
+        self.assertEqual(
+            form.errors["supported_pet_types"], ["Pick at least one pet type."]
+        )
 
 
 class CreateCaregiverProfileViewTests(CaregiverTestData):

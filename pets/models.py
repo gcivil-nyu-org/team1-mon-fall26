@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
-
 # Pet colors (avatars and cards). Each pet gets one from its id, so pets look
 # varied but keep the same color on every page.
 PET_THEMES = ("peach", "mint", "pink", "yellow", "blue", "lavender")

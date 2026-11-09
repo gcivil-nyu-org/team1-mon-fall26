@@ -289,3 +289,6 @@
   .bubble-row { max-width: 85%; }
   .chat-composer { padding: 12px 14px 14px; }
 }
+
+/* Report a message you received (#117). */
+.bubble-report { font-size: 11px; }

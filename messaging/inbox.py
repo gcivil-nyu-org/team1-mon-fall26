@@ -43,9 +43,11 @@ def with_unread(conversations, user):
         ),
         NEVER,
     )
-    newer = Message.objects.filter(
-        conversation=OuterRef("pk"), created_at__gt=OuterRef("my_read_at")
-    ).exclude(sender=user)
+    newer = (
+        Message.objects.visible()
+        .filter(conversation=OuterRef("pk"), created_at__gt=OuterRef("my_read_at"))
+        .exclude(sender=user)
+    )
     return conversations.annotate(my_read_at=read_at).annotate(unread=Exists(newer))
 
 
@@ -56,8 +58,10 @@ def unread_count(user):
 
 def inbox(user):
     """The user's conversations that have messages, newest first, ready to show."""
-    latest = Message.objects.filter(conversation=OuterRef("pk")).order_by(
-        "-created_at", "-pk"
+    latest = (
+        Message.objects.visible()
+        .filter(conversation=OuterRef("pk"))
+        .order_by("-created_at", "-pk")
     )
     conversations = (
         with_unread(conversations_for(user), user)
@@ -81,6 +85,24 @@ def describe(conversation, user):
         mine = conversation.last_sender_id == user.pk
         conversation.preview = f"You: {body}" if mine else body
     return conversation
+
+
+def person(user):
+    """How someone is named and drawn across Messages and Reports: caregivers by
+    their full name ("Jeff Oakden"), pet owners as "Kat W."."""
+    caregiver = getattr(user, "caregiver_profile", None)
+    if caregiver is not None and caregiver.name:
+        return {
+            "name": caregiver.name,
+            "initials": initials(caregiver.name),
+            "theme": avatar_theme(caregiver),
+        }
+    full = user.get_full_name() or user.username
+    return {
+        "name": owner_name(user),
+        "initials": initials(full),
+        "theme": OWNER_THEMES[user.pk % len(OWNER_THEMES)],
+    }
 
 
 def counterpart(conversation, user):

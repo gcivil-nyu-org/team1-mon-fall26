@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Care post created · PawPal{% endblock %}
+
+{% block main_class %}page page-my-requests co-wide{% endblock %}
+
+{% block content %}
+<link href="{% static 'css/opportunities.css' %}?v=1" rel="stylesheet">
+
+<div class="co-page co-narrow">
+  <a class="co-back" href="{% url 'opportunities:list' %}">{% include "partials/chevron_left_icon.html" %} My requests</a>
+
+  <section class="co-panel co-done">
+    <div class="co-done-check" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h1>Your care post is live!</h1>
+    <p class="co-done-sub">Caregivers nearby can now see it and offer to help.</p>
+
+    <div class="co-done-summary">
+      <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
+      <span class="co-item-copy">
+        <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
+        <small>{{ opportunity.start_time|date:"D, M j · g:i A" }} · {{ opportunity.location }}</small>
+      </span>
+      <span class="co-badge {{ opportunity.status }}">{{ opportunity.get_status_display }}</span>
+    </div>
+
+    <div class="co-actions co-actions-center">
+      <a class="btn btn-dark co-btn" href="{% url 'opportunities:list' %}?post={{ opportunity.pk }}">View my care posts</a>
+      <a class="btn btn-outline co-btn" href="{% url 'opportunities:create' %}">Add another post</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -50,3 +50,59 @@ def send_verification_email(request, user):
     subject = render_to_string("accounts/emails/verify_email_subject.txt", context)
     body = render_to_string("accounts/emails/verify_email.txt", context)
     send_mail(subject.strip(), body, None, [user.email])
+
+
+# Changing the email (#47). The new email only replaces the old one once the
+# link we send to the new address is clicked, so nobody can put an email they
+# don't own on their account. The link carries the old email too, so it stops
+# working once the email has changed (or changed again).
+
+CHANGE_SALT = "accounts.change-email"
+
+
+def make_change_token(user, new_email):
+    return signing.dumps(
+        {"u": user.pk, "old": user.email, "new": new_email}, salt=CHANGE_SALT
+    )
+
+
+def email_change_from_token(token):
+    """(user, old email, new email) for a good link, or None if it's bad or expired."""
+    try:
+        data = signing.loads(
+            token, salt=CHANGE_SALT, max_age=settings.EMAIL_VERIFICATION_TIMEOUT
+        )
+    except signing.BadSignature:  # includes SignatureExpired
+        return None
+    user = get_user_model().objects.filter(pk=data.get("u"), is_active=True).first()
+    if user is None or not data.get("new"):
+        return None
+    return user, data.get("old"), data["new"]
+
+
+def email_taken(email, user):
+    """Another account already uses this email."""
+    return (
+        get_user_model()
+        .objects.filter(email__iexact=email)
+        .exclude(pk=user.pk)
+        .exists()
+    )
+
+
+def send_change_email(request, user, new_email):
+    link = request.build_absolute_uri(
+        reverse("confirm_email_change", args=[make_change_token(user, new_email)])
+    )
+    context = {"user": user, "link": link, "new_email": new_email}
+    subject = render_to_string("accounts/emails/change_email_subject.txt", context)
+    body = render_to_string("accounts/emails/change_email.txt", context)
+    send_mail(subject.strip(), body, None, [new_email])
+
+
+def send_email_changed_notice(user, old_email):
+    """Tell the old address, in case someone else changed it."""
+    context = {"user": user, "old_email": old_email}
+    subject = render_to_string("accounts/emails/email_changed_subject.txt", context)
+    body = render_to_string("accounts/emails/email_changed.txt", context)
+    send_mail(subject.strip(), body, None, [old_email])

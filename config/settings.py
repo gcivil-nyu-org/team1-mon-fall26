@@ -65,6 +65,9 @@ INSTALLED_APPS = [
     "bookings",
     "reviews",
     "messaging",
+    "staff",
+    "reports",
+    "places",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +78,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    # Logs restricted accounts out (#92); needs the user and messages above.
+    "accounts.middleware.RestrictedAccountMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -181,10 +186,17 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
 
+# CARTO Voyager map tiles on the Explore map (free key for non-commercial use:
+# https://carto.com/basemaps/apikey). Without one the map falls back to a
+# light gray Esri map. The key is sent to browsers in tile URLs, as CARTO intends.
+CARTO_BASEMAPS_KEY = os.environ.get("CARTO_BASEMAPS_KEY", "")
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-# Password reset emails (#46). Locally they are printed in the terminal. On a
+# Password reset emails (#46). Locally they are printed in the terminal as
+# plain text, so the links in them can be copied (accounts/console_mail.py). On a
 # server, set EMAIL_HOST (and EMAIL_HOST_USER / EMAIL_HOST_PASSWORD) to send
 # them through an SMTP service such as Gmail or Amazon SES.
 if os.environ.get("EMAIL_HOST"):
@@ -203,7 +215,7 @@ if os.environ.get("EMAIL_HOST"):
 else:
     MAILERS = {
         "default": {
-            "BACKEND": "django.core.mail.backends.console.EmailBackend",
+            "BACKEND": "accounts.console_mail.EmailBackend",
         },
     }
 

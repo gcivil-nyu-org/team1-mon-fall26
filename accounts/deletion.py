@@ -38,8 +38,15 @@ def delete_account(user):
         profile.accepting_new_bookings = False
         profile.save(update_fields=["accepting_new_bookings"])
 
-    # Caregivers they messaged shouldn't keep seeing where they live.
-    AccountProfile.objects.filter(user=user).update(neighborhood="")
+    # Caregivers they messaged shouldn't keep seeing where they live, and the
+    # address on their profile (#47) isn't kept either.
+    AccountProfile.objects.filter(user=user).update(neighborhood="", address="")
+    # Their profile photo goes too.
+    owner = AccountProfile.objects.filter(user=user).first()
+    if owner is not None and owner.photo:
+        owner.photo.delete(save=False)
+        owner.photo = None
+        owner.save(update_fields=["photo"])
 
     # Free the email so it can be used for a new account, and lock the login.
     user.is_active = False

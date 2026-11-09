@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% load static review_tags %}
+{% load static review_tags caregiver_tags %}
 
 {% block title %}{{ caregiver.name }} | PawPal
 {% endblock %}
 {% block main_class %}page page-wide page-caregiver-profile{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'css/caregiver_public.css' %}?v=8">
+{% if is_own %}<link rel="stylesheet" href="{% static 'css/my_profile.css' %}?v=3">{% endif %}
 
 
 <style>
@@ -50,7 +51,7 @@
 
 {% if not is_own %}<a class="caregiver-back" href="{% url 'caregiver_list' %}">{% include "partials/chevron_left_icon.html" %} Back to caregivers</a>{% endif %}
 
-{# On a caregiver's own profile there's no request card, so the profile sits in the middle. #}
+{# On a caregiver's own profile, their private Personal info takes the request card's place. #}
 <div class="caregiver-public-grid{% if is_own %} is-own-profile{% endif %}">
   <div class="caregiver-public-main">
     <article class="caregiver-public-card caregiver-header-card">
@@ -61,8 +62,11 @@
         {% include "partials/paw_icon.html" with class="cover-paw" %}
       </div>
       {% if is_own %}
-        {# Same white pencil button as the pet profile. #}
-        <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+        {# Same white pencil button as the pet profile, plus the "…" menu with Delete account (#47). #}
+        <div class="profile-actions">
+          <a href="{% url 'edit_caregiver_profile' caregiver.pk %}" class="btn btn-light caregiver-edit-button">{% include "partials/pencil_icon.html" %} Edit profile</a>
+          {% include "accounts/partials/profile_more_menu.html" %}
+        </div>
       {% endif %}
       <div class="caregiver-avatar">
         {% if caregiver.profile_photo %}
@@ -128,8 +132,8 @@
       <section class="caregiver-public-card caregiver-card-body">
         <h2>Happy to care for</h2>
         <div class="caregiver-tags">
-          {% for pet_type in caregiver.supported_pet_types.all %}
-            <span class="caregiver-tag tag-pet">{{ pet_type.name }}</span>
+          {% for pet in caregiver.supported_pet_types.all|pet_tags %}
+            <span class="caregiver-tag tag-pet">{{ pet }}</span>
           {% empty %}
             <p class="caregiver-text muted">Pet types haven't been added yet.</p>
           {% endfor %}
@@ -177,6 +181,28 @@
     {% if caregiver.user.is_active and not user.caregiver_profile %}
       <a href="{% url 'messaging:message_caregiver' caregiver.pk %}" class="caregiver-message-button">Message {{ caregiver.first_name }}</a>
     {% endif %}
+  </aside>
+  {% else %}
+  {# #47: only the caregiver sees their email and address, as in Kat's Figma. #}
+  <aside class="caregiver-private">
+    {# The same switch as on the edit form, so it can be flipped from here. #}
+    <form method="post" action="{% url 'set_accepting_requests' caregiver.pk %}" class="caregiver-public-card accepting-card">
+      {% csrf_token %}
+      <input type="hidden" name="accepting" value="{% if caregiver.accepting_new_bookings %}0{% else %}1{% endif %}">
+      <span class="accepting-text">
+        <strong>Accepting new requests</strong>
+        <span>Owners can send you booking requests.</span>
+      </span>
+      <button type="submit" class="accepting-switch{% if caregiver.accepting_new_bookings %} is-on{% endif %}" role="switch" aria-checked="{% if caregiver.accepting_new_bookings %}true{% else %}false{% endif %}" aria-label="Accepting new requests"></button>
+    </form>
+    <section class="caregiver-public-card caregiver-card-body personal-info">
+      <h2>Personal info</h2>
+      <span class="private-pill">{% include "partials/lock_icon.html" %} Only you can see this</span>
+      <dl class="info-tiles is-stacked">
+        <div class="info-tile"><dt>Email</dt><dd>{{ user.email|default:"Not added yet" }}</dd></div>
+        <div class="info-tile"><dt>Address</dt><dd>{{ caregiver.address|default:"Not added yet" }}</dd></div>
+      </dl>
+    </section>
   </aside>
   {% endif %}
 </div>

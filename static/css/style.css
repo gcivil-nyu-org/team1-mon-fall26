@@ -221,9 +221,7 @@ a {
   margin-bottom: 6px;
 }
 
-/* Delete account (#48), above Log out in the account menu. */
-.account-dropdown .account-link,
-.account-dropdown .delete-account-link {
+.account-dropdown .account-link {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
@@ -258,14 +256,6 @@ a {
 
 .page-wide {
   max-width: 1000px;
-}
-
-.neighborhood-card {
-  padding: 30px;
-}
-
-.neighborhood-card form {
-  margin-top: 16px;
 }
 
 .back-link {
@@ -3541,4 +3531,576 @@ img.pet-initial-large {
   font-weight: 800;
   line-height: 1;
   vertical-align: 1px;
+}
+
+
+/* My requests: Bookings / Care posts */
+
+.requests-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.requests-page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.requests-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+    margin-bottom: 22px;
+    background: #f3e8e3;
+    border-radius: 999px;
+}
+
+.requests-toggle-link {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: #3c3330;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.15s ease;
+}
+
+.requests-toggle-link:hover {
+    background: #fff8f5;
+}
+
+.requests-toggle-link.active {
+    background: #ffffff;
+    color: #211e1e;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 600px) {
+    .requests-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* ---------- Report content (#117) ---------- */
+
+.report-link {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.report-link:hover {
+  color: var(--error);
+}
+
+.review-card .report-link {
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.report-form.form-card {
+  padding: 32px;
+}
+
+.report-form h1 {
+  margin: 0 0 6px;
+}
+
+.report-quote {
+  margin: 20px 0 24px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.report-quote figcaption {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-quote blockquote {
+  margin: 0;
+  font-size: 14px;
+}
+
+.report-reasons {
+  display: grid;
+  gap: 8px;
+}
+
+.report-reasons .report-reason {
+  display: flex;
+  margin: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.report-reasons .report-reason input {
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.report-reasons .report-reason:has(input:checked) {
+  border-color: var(--ink);
+  background: var(--bg);
+}
+
+/* ---------- Admin: Reports page (#95, Kat's Figma) ---------- */
+
+.admin-badge {
+  margin-left: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.avatar.avatar-admin {
+  background: var(--lavender);
+  color: var(--purple-dark);
+}
+
+.page-admin-reports {
+  max-width: 1040px;
+}
+
+.admin-title {
+  margin: 0 0 14px;
+}
+
+.admin-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--tag-bg);
+}
+
+.admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-tab.is-active {
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  color: var(--ink);
+}
+
+.admin-tab-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-tab.is-active .admin-tab-count {
+  background: var(--tag-bg);
+}
+
+.reports-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  align-items: start;
+  gap: 18px;
+}
+
+.reports-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.report-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.report-row:hover {
+  border-color: var(--line-strong);
+}
+
+.report-row.is-selected {
+  border-color: var(--ink);
+  background: #fff;
+}
+
+.report-row-text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.report-row-text .nowrap {
+  white-space: nowrap;
+}
+
+.report-row-text strong {
+  font-size: 14px;
+}
+
+.report-icon {
+  display: inline-grid;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--tag-bg);
+  color: var(--ink);
+}
+
+.report-icon-large {
+  width: 48px;
+  height: 48px;
+}
+
+.report-icon-large svg {
+  width: 22px;
+  height: 22px;
+}
+
+.report-status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-status .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.report-status-open {
+  background: var(--yellow-soft);
+  color: #6b4a08;
+}
+
+.report-status-dismissed {
+  background: var(--tag-bg);
+  color: var(--muted);
+}
+
+.report-status-resolved {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.reports-empty {
+  margin: 8px 4px;
+}
+
+.report-detail {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.report-detail-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.report-detail-head > div {
+  flex: 1;
+}
+
+.report-detail-head h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.report-detail-head p {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+.report-detail h3 {
+  margin: 4px 0 -6px;
+  font-size: 16px;
+}
+
+.report-note {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fdf1cf;
+  font-size: 14px;
+}
+
+.report-note strong {
+  color: #6b4a08;
+}
+
+.report-note p {
+  margin: 2px 0 0;
+}
+
+.report-review,
+.report-chat {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg);
+  font-size: 14px;
+}
+
+.report-review p {
+  margin: 10px 0;
+}
+
+.report-review-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-review-who {
+  display: grid;
+  flex: 1;
+  font-size: 13px;
+}
+
+.report-review-who .muted {
+  font-size: 11px;
+}
+
+.report-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--error-bg);
+  color: var(--error);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.report-chat-name {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.report-bubble {
+  display: inline-block;
+  margin: 0;
+  padding: 9px 14px;
+  border: 1.5px solid #f0b7b0;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.report-chat-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .reports-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Admin: dismiss / remove a report (#98, #97) ---------- */
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.report-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.report-done svg {
+  width: 16px;
+  height: 16px;
+}
+
+.report-handled {
+  margin: 0;
+  font-size: 13px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(28 26 26 / 0.45);
+}
+
+.modal-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(100%, 420px);
+  padding: 28px 24px 24px;
+  border-radius: 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.modal-card h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.modal-card p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.modal-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--error-bg);
+  color: var(--error);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.modal-quote {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--bg);
+  font-size: 13px;
+  text-align: left;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.modal-actions .btn {
+  justify-content: center;
+}
+
+.report-review p.is-removed,
+.report-bubble.is-removed {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* ---------- Admin: reported conversation (#96) ---------- */
+
+.report-conversation {
+  display: grid;
+  gap: 10px;
+  max-height: 460px;
+  margin: 0;
+  padding: 16px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--bg);
+  font-size: 14px;
+  list-style: none;
+}
+
+.report-line {
+  display: grid;
+  justify-items: start;
+}
+
+.report-line .report-bubble {
+  border-color: var(--line-strong);
+}
+
+.report-line.is-reporter {
+  justify-items: end;
+}
+
+.report-line.is-reporter .report-bubble {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.report-line.is-reported .report-bubble {
+  border-color: #f0b7b0;
+  box-shadow: 0 0 0 3px var(--error-bg);
+}
+
+.report-line .report-bubble.is-removed {
+  border-color: var(--line-strong);
+  background: #fff;
+  color: var(--muted);
 }

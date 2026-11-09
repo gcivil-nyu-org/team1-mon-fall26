@@ -3,6 +3,7 @@ and the geocode_caregivers command. GeoSearch is always mocked."""
 
 import io
 import json
+from caregivers.tests.profile_choices import required_choices
 from decimal import Decimal
 from unittest import mock
 from urllib.error import URLError
@@ -138,6 +139,7 @@ class LocationFormTests(TestCase):
             "address": "70 Washington Square South",
             "service_radius_miles": 3,
             "accepting_new_bookings": "on",
+            **required_choices(),
         }
         data.update(overrides)
         return data
@@ -234,6 +236,7 @@ class LocationViewTests(TestCase):
             "address": "70 Washington Square South",
             "service_radius_miles": 4,
             "accepting_new_bookings": "on",
+            **required_choices(),
         }
         data.update(overrides)
         return self.client.post(reverse("create_caregiver_profile"), data, follow=True)
@@ -250,7 +253,11 @@ class LocationViewTests(TestCase):
         self.assertEqual(caregiver.service_radius_miles, 4)
 
     def test_public_profile_never_shows_the_address(self):
-        response = self.post_profile()
+        self.post_profile()
+        caregiver = CaregiverProfile.objects.get(user=self.user)
+        # #47: only the caregiver sees it, in their private Personal info.
+        self.client.force_login(get_user_model().objects.create_user("owner"))
+        response = self.client.get(reverse("caregiver", args=[caregiver.pk]))
         self.assertNotContains(response, "70 Washington Square South")
 
     def test_outage_shows_a_warning(self):
@@ -269,6 +276,7 @@ class LocationViewTests(TestCase):
             "years_of_experience": 2,
             "address": "7th Ave and 9th St, Brooklyn",
             "service_radius_miles": 4,
+            **required_choices(),
         }
         response = self.client.post(
             reverse("edit_caregiver_profile", args=[caregiver.pk]), data, follow=True
@@ -385,6 +393,7 @@ class LocationConfirmationTests(TestCase):
                 "years_of_experience": 1,
                 "address": "70 Washington Square South",
                 "service_radius_miles": 3,
+                **required_choices(),
             },
             follow=True,
         )
