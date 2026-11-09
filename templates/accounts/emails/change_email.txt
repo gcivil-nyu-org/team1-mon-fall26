@@ -1,0 +1,10 @@
+{% autoescape off %}Hi {{ user.first_name|default:user.username }},
+
+You asked to change the email on your PawPal account ({{ user.username }}) to {{ new_email }}. Confirm it's yours:
+
+{{ link }}
+
+The link works for 24 hours. Until you click it, we keep using your old email. If you didn't ask for this, you can ignore this email.
+
+The PawPal team
+{% endautoescape %}

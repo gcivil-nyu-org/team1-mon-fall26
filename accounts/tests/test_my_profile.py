@@ -68,6 +68,7 @@ class MyProfileTestData(TestCase):
         data = {
             "first_name": "Kat",
             "last_name": "Wongsrisoontorn",
+            "email": "kat@example.com",
             "address": "215 6th Ave, Brooklyn",
         }
         data.update(overrides)
@@ -147,17 +148,12 @@ class MyProfilePageTests(MyProfileTestData):
 
 
 class EditProfileTests(MyProfileTestData):
-    def test_form_is_filled_in_and_email_is_read_only(self):
+    def test_form_is_filled_in(self):
         response = self.client.get(EDIT_URL)
         self.assertContains(response, "Edit your profile")
         self.assertContains(response, 'value="Wongsrisoontorn"')
+        self.assertContains(response, 'value="kat@example.com"')
         self.assertContains(response, 'value="215 6th Ave, Brooklyn"')
-        self.assertContains(
-            response,
-            '<input type="email" id="owner-email" value="kat@example.com" readonly '
-            'aria-describedby="owner-email-hint">',
-            html=True,
-        )
         self.assertContains(response, "Only you can see email &amp; address")
 
     @mock.patch("accounts.forms.geocode", return_value=PARK_SLOPE)
@@ -183,11 +179,6 @@ class EditProfileTests(MyProfileTestData):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.neighborhood, "Park Slope, Brooklyn")
 
-    def test_email_cannot_be_changed_here(self):
-        self.save(email="new@example.com")
-        self.owner.refresh_from_db()
-        self.assertEqual(self.owner.email, "kat@example.com")
-
     @mock.patch("accounts.forms.geocode", return_value=None)
     def test_address_outside_nyc_is_rejected(self, geocode):
         response = self.save(first_name="Kathy", address="1 Main St, Boston")
@@ -210,6 +201,8 @@ class EditProfileTests(MyProfileTestData):
         self.assertContains(response, "Enter your first name.")
         self.assertContains(response, "Enter your last name.")
         self.assertContains(response, "Enter your address.")
+        response = self.save(email="")
+        self.assertContains(response, "Enter your email.")
 
     def test_cancel_goes_back_to_my_profile(self):
         self.assertContains(self.client.get(EDIT_URL), f'href="{PROFILE_URL}"')
