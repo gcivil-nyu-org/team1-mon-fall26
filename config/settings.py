@@ -188,7 +188,8 @@ LOGOUT_REDIRECT_URL = "home"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-# Password reset emails (#46). Locally they are printed in the terminal. On a
+# Password reset emails (#46). Locally they are printed in the terminal as
+# plain text, so the links in them can be copied (accounts/console_mail.py). On a
 # server, set EMAIL_HOST (and EMAIL_HOST_USER / EMAIL_HOST_PASSWORD) to send
 # them through an SMTP service such as Gmail or Amazon SES.
 if os.environ.get("EMAIL_HOST"):
@@ -207,7 +208,7 @@ if os.environ.get("EMAIL_HOST"):
 else:
     MAILERS = {
         "default": {
-            "BACKEND": "django.core.mail.backends.console.EmailBackend",
+            "BACKEND": "accounts.console_mail.EmailBackend",
         },
     }
 

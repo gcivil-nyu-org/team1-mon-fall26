@@ -122,9 +122,7 @@ class EmailSettingsTests(SimpleTestCase):
 
     def test_emails_are_printed_locally(self):
         mail = load_settings()["mail"]
-        self.assertEqual(
-            mail["BACKEND"], "django.core.mail.backends.console.EmailBackend"
-        )
+        self.assertEqual(mail["BACKEND"], "accounts.console_mail.EmailBackend")
 
     def test_smtp_when_email_host_is_set(self):
         mail = load_settings(
