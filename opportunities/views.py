@@ -5,13 +5,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from caregivers.geocoding import distance_miles
-from caregivers.search import find_neighborhood
+from caregivers.search import find_neighborhood, neighborhoods
 from messaging.models import Conversation
 from reviews.models import Review, rating_summary
 
 from .forms import CareOpportunityForm
 from .models import CareOpportunity, CareOpportunityInterest
 from django.urls import reverse
+
+
+def _neighborhood_options():
+    """NYC neighborhoods for the Location box's suggestions, as on Explore."""
+    return [{"label": f"{n['name']}, {n['borough']}"} for n in neighborhoods()]
 
 
 def _render_opportunity_list(
@@ -72,6 +77,7 @@ def _render_opportunity_list(
             "selected": selected,
             "editing": bool(selected and editing),
             "edit_form": edit_form,
+            "neighborhood_options": _neighborhood_options() if editing else [],
             "active_requests_tab": "care_posts",
             "interested_caregivers": interested_caregivers,
             # In-panel feedback after closing, reopening or saving a post.
@@ -135,6 +141,7 @@ def opportunity_create(request):
         "opportunities/opportunity_form.html",
         {
             "form": form,
+            "neighborhood_options": _neighborhood_options(),
             "active_requests_tab": "care_posts",
         },
     )
