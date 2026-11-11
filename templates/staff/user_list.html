@@ -84,10 +84,10 @@
 
           {% if done %}
             {# After restricting or reinstating, as in the Figma. #}
-            <p class="staff-banner staff-banner-{{ done }}" role="status">
+            <p class="staff-banner staff-banner-{% if done == 'deleted' %}restricted{% else %}{{ done }}{% endif %}" role="status">
               <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
               {% with first=account.first_name|default:account.username %}
-                {% if done == "restricted" %}Account restricted. {{ first }} can’t use PawPal until you reinstate it.{% else %}Account reinstated. {{ first }} has full access again.{% endif %}
+                {% if done == "restricted" %}Account restricted. {{ first }} can’t use PawPal until you reinstate it.{% elif done == "deleted" %}Account deleted. {{ first }} can’t log in anymore.{% else %}Account reinstated. {{ first }} has full access again.{% endif %}
               {% endwith %}
             </p>
           {% endif %}
@@ -180,6 +180,8 @@
               {% else %}
                 <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=restrict">Restrict account</a>
               {% endif %}
+              {# #93: delete the account, after a confirm popup. #}
+              <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=delete">Delete account</a>
             {% endif %}
           </div>
         </article>
@@ -203,6 +205,22 @@
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
           <button type="submit" class="btn btn-danger" autofocus>Restrict</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if confirm_delete %}
+    {# #93: confirm before deleting an account. #}
+    <div class="modal-backdrop">
+      <form method="post" action="{% url 'staff:delete_user' selected.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="delete-title">Delete {{ selected.first_name|default:selected.username }}’s account?</h2>
+        <p class="muted">They’ll be logged out and can’t log in again. Their open bookings are cancelled, and their address and photo are removed. Past bookings and reviews stay. This can’t be undone.</p>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+          <button type="submit" class="btn btn-danger">Delete account</button>
         </div>
       </form>
     </div>
