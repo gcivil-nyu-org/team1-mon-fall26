@@ -119,6 +119,19 @@ def details(user):
     }
 
 
+def _about(user):
+    """Reviews about this account: owners review the caregiver, and caregivers
+    review the owner and pet."""
+    return Q(role=Review.Role.OWNER, booking__caregiver__user=user) | Q(
+        role=Review.Role.CAREGIVER, booking__owner=user
+    )
+
+
+def history_reviews(user):
+    """Every review in the account's history (#100), written or received."""
+    return Review.objects.filter(Q(author=user) | _about(user))
+
+
 def review_history(user):
     """#100: the reviews this account wrote and the reviews about it, newest
     first. Removed reviews (#97) are listed too, marked, so admins see the
@@ -131,11 +144,7 @@ def review_history(user):
         "booking__service_type",
     ).order_by("-created_at", "-pk")
     written = reviews.filter(author=user)
-    # Owners review the caregiver; caregivers review the owner and pet.
-    received = reviews.filter(
-        Q(role=Review.Role.OWNER, booking__caregiver__user=user)
-        | Q(role=Review.Role.CAREGIVER, booking__owner=user)
-    )
+    received = reviews.filter(_about(user))
     return {
         "reviews_written": written[:RECENT_REVIEWS],
         "reviews_written_count": written.count(),

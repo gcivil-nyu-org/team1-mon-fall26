@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.restriction import is_restricted, reinstate, restrict
+from reports import moderation
 
 from .accounts import (
     PER_PAGE,
@@ -19,6 +20,7 @@ from .accounts import (
     can_restrict,
     describe,
     details,
+    history_reviews,
     restricted,
     search,
 )
@@ -40,6 +42,8 @@ def staff_required(view):
 
 # After restricting or reinstating, the account page shows a banner (?done=).
 DONE_STATUS = {"restricted": "restricted", "reinstated": "active"}
+# After removing a review from the history (#99).
+REVIEW_REMOVED = "review_removed"
 
 
 @staff_required
@@ -100,6 +104,9 @@ def user_list(request, pk=None, restrict_form=None):
             and selected.status_key != "restricted",
             # The banner only shows while the account is still in that state.
             done=done if DONE_STATUS.get(done) == selected.status_key else "",
+            review_removed=done == REVIEW_REMOVED,
+            # #99: removing a review asks for confirmation first (?remove_review=<pk>).
+            confirm_review=_review_to_confirm(request, selected),
         )
     return render(request, "staff/user_list.html", context)
 
@@ -115,6 +122,20 @@ def _restrictable(request, pk):
     if not can_restrict(request.user, account):
         raise PermissionDenied
     return account
+
+
+def _review_to_confirm(request, account):
+    """The review the Remove popup is about, if it's in this account's
+    history and still up."""
+    pk = request.GET.get("remove_review", "")
+    if not pk.isdigit():
+        return None
+    return (
+        history_reviews(account)
+        .filter(pk=pk, removed_at__isnull=True)
+        .select_related("author", "booking__pet", "booking__service_type")
+        .first()
+    )
 
 
 def _done(account, action):
@@ -144,3 +165,16 @@ def reinstate_user(request, pk):
         return redirect("staff:user_detail", pk=account.pk)
     reinstate(account)
     return _done(account, "reinstated")
+
+
+@require_POST
+@staff_required
+def remove_review(request, pk, review_pk):
+    """#99: remove an inappropriate review from the account's review history
+    (#100). It's hidden from everyone like a review removed after a report."""
+    account = get_object_or_404(all_accounts(), pk=pk)
+    review = get_object_or_404(history_reviews(account), pk=review_pk)
+    if review.removed_at is not None:
+        return redirect("staff:user_detail", pk=account.pk)
+    moderation.remove_review(review, request.user)
+    return _done(account, REVIEW_REMOVED)

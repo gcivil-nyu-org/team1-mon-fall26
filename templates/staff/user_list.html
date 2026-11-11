@@ -6,7 +6,7 @@
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=11">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=12">
 
   <h1 class="admin-title">Users</h1>
 
@@ -89,6 +89,14 @@
               {% with first=account.first_name|default:account.username %}
                 {% if done == "restricted" %}Account restricted. {{ first }} can’t use PawPal until you reinstate it.{% else %}Account reinstated. {{ first }} has full access again.{% endif %}
               {% endwith %}
+            </p>
+          {% endif %}
+
+          {% if review_removed %}
+            {# #99: after removing a review from the history. #}
+            <p class="staff-banner staff-banner-restricted" role="status">
+              <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+              Review removed. Users won’t see it anymore.
             </p>
           {% endif %}
 
@@ -195,6 +203,25 @@
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
           <button type="submit" class="btn btn-danger" autofocus>Restrict</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if confirm_review %}
+    {# #99: confirm before removing a review, like the Reports page's Remove popup (#97). #}
+    <div class="modal-backdrop">
+      <form method="post" action="{% url 'staff:remove_review' selected.pk confirm_review.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="remove-review-title">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="remove-review-title">Remove this review?</h2>
+        <p class="muted">Users won’t see it anymore, and it won’t count in ratings. Any open reports about it will close as Removed.</p>
+        <div class="modal-quote">
+          <span><strong>{{ confirm_review.author.get_full_name|default:confirm_review.author.username }}</strong> · {{ confirm_review.booking.pet.name }} · {{ confirm_review.booking.service_type.name }}<br>{% if confirm_review.comment %}“{{ confirm_review.comment|truncatechars:160 }}”{% else %}Rating only, no written review.{% endif %}</span>
+        </div>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+          <button type="submit" class="btn btn-danger" autofocus>Remove</button>
         </div>
       </form>
     </div>
