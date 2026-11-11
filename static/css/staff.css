@@ -192,6 +192,15 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-confirm .has-error textarea { border-color: var(--error); background: var(--error-input-bg); }
 .staff-confirm .field-error { margin: 0; }
 
+/* #100: review history. Removed reviews (#97) stay listed, faded and crossed out. */
+.staff-count-pill { display: inline-grid; place-items: center; min-width: 24px; height: 22px; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--bg); font-size: 13px; font-weight: 700; vertical-align: 2px; }
+.staff-review { align-items: flex-start; }
+.staff-review > span:first-child { gap: 4px; }
+.staff-review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.staff-review-text { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.staff-review.is-removed .staff-review-text { color: var(--muted); text-decoration: line-through; }
+.staff-removed-tag { flex: none; background: #fdecea; color: var(--error); font-size: 12px; font-weight: 700; }
+
 @media (max-width: 760px) {
   .page-staff .admin-title { font-size: 34px; }
   .page-staff .modal-backdrop { padding-top: 16px; place-items: center; }

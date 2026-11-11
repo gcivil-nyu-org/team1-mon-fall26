@@ -1,0 +1,35 @@
+{% load review_tags %}
+{% comment %}
+  #100: one list of reviews in an account's review history, written or received.
+  A review an admin removed (#97) stays in the list, marked "Removed".
+{% endcomment %}
+{% if reviews %}
+  <ul class="staff-items staff-reviews">
+    {% for review in reviews %}
+      <li class="staff-item staff-review{% if review.removed_at %} is-removed{% endif %}">
+        <span>
+          <strong>
+            {% if written %}
+              {% if review.role == "owner" %}About {{ review.booking.caregiver.name }}{% else %}About {{ review.booking.owner.get_full_name|default:review.booking.owner.username }} &amp; {{ review.booking.pet.name }}{% endif %}
+            {% else %}
+              From {{ review.author.get_full_name|default:review.author.username }}
+            {% endif %}
+          </strong>
+          <span class="staff-review-meta">
+            {% paws review.rating %}
+            <span class="muted">{{ review.booking.pet.name }} · {{ review.booking.service_type.name }} · {{ review.created_at|date:"M j, Y" }}</span>
+          </span>
+          {% if review.comment %}
+            <span class="staff-review-text">“{{ review.comment|truncatechars:160 }}”</span>
+          {% else %}
+            <span class="muted staff-review-text">Rating only, no written review.</span>
+          {% endif %}
+        </span>
+        {% if review.removed_at %}<span class="tag staff-removed-tag">Removed</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% if count > reviews|length %}<p class="muted staff-more">The {{ reviews|length }} most recent of {{ count }}.</p>{% endif %}
+{% else %}
+  <p class="muted staff-none">{{ empty }}</p>
+{% endif %}
