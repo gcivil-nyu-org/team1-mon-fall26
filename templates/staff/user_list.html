@@ -6,7 +6,7 @@
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=11">
 
   <h1 class="admin-title">Users</h1>
 
@@ -142,6 +142,13 @@
           {% else %}
             <p class="muted staff-none">No bookings yet.</p>
           {% endif %}
+
+          {# #100: the account's review history, written and received. #}
+          <h3>Reviews written <span class="staff-count-pill">{{ reviews_written_count }}</span></h3>
+          {% include "staff/partials/review_list.html" with reviews=reviews_written count=reviews_written_count written=True empty="No reviews written yet." %}
+
+          <h3>Reviews received <span class="staff-count-pill">{{ reviews_received_count }}</span></h3>
+          {% include "staff/partials/review_list.html" with reviews=reviews_received count=reviews_received_count written=False empty="No reviews about this account yet." %}
 
           {% if latest_report %}
             {# The latest report about this account, linked to the Reports page (#95). #}

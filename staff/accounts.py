@@ -7,9 +7,11 @@ from accounts.restriction import is_restricted
 from bookings.models import Booking
 from pets.models import Pet
 from reports.models import Report
+from reviews.models import Review
 
 PER_PAGE = 25
 RECENT_BOOKINGS = 5
+RECENT_REVIEWS = 5
 
 
 def account_type(user):
@@ -93,7 +95,8 @@ def details(user):
 
     Pets (a deleted pet is listed but marked), the caregiver profile (its
     services are on the public profile), the latest bookings the account took part in, either as the
-    pet owner or as the caregiver, and how often it has been reported.
+    pet owner or as the caregiver, how often it has been reported, and its
+    review history (#100).
     """
     caregiver = getattr(user, "caregiver_profile", None)
     reports = Report.objects.filter(reported_user=user).order_by("-created_at", "-pk")
@@ -112,6 +115,32 @@ def details(user):
         # Reports other people made about this account (#95), newest first.
         "report_count": reports.count(),
         "latest_report": reports.first(),
+        **review_history(user),
+    }
+
+
+def review_history(user):
+    """#100: the reviews this account wrote and the reviews about it, newest
+    first. Removed reviews (#97) are listed too, marked, so admins see the
+    whole history."""
+    reviews = Review.objects.select_related(
+        "author",
+        "booking__owner",
+        "booking__caregiver",
+        "booking__pet",
+        "booking__service_type",
+    ).order_by("-created_at", "-pk")
+    written = reviews.filter(author=user)
+    # Owners review the caregiver; caregivers review the owner and pet.
+    received = reviews.filter(
+        Q(role=Review.Role.OWNER, booking__caregiver__user=user)
+        | Q(role=Review.Role.CAREGIVER, booking__owner=user)
+    )
+    return {
+        "reviews_written": written[:RECENT_REVIEWS],
+        "reviews_written_count": written.count(),
+        "reviews_received": received[:RECENT_REVIEWS],
+        "reviews_received_count": received.count(),
     }
 
 
