@@ -1,7 +1,8 @@
 {% load review_tags %}
 {% comment %}
   #100: one list of reviews in an account's review history, written or received.
-  A review an admin removed (#97) stays in the list, marked "Removed".
+  A review an admin removed (#97, #99) stays in the list, marked "Removed";
+  the others have a Remove button (#99).
 {% endcomment %}
 {% if reviews %}
   <ul class="staff-items staff-reviews">
@@ -25,7 +26,12 @@
             <span class="muted staff-review-text">Rating only, no written review.</span>
           {% endif %}
         </span>
-        {% if review.removed_at %}<span class="tag staff-removed-tag">Removed</span>{% endif %}
+        {% if review.removed_at %}
+          <span class="tag staff-removed-tag">Removed</span>
+        {% else %}
+          {# #99: remove an inappropriate review, after a confirm popup. #}
+          <a class="btn btn-outline-danger staff-review-remove" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}remove_review={{ review.pk }}">Remove<span class="visually-hidden"> this review</span></a>
+        {% endif %}
       </li>
     {% endfor %}
   </ul>
