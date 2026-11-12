@@ -30,9 +30,10 @@ def role(user):
     return "Pet owner"
 
 
-def describe(post):
-    """Add author_name, author_initials and author_role for the templates."""
-    post.author_name = short_name(post.author)
-    post.author_initials = initials(post.author)
-    post.author_role = role(post.author)
-    return post
+def describe(item):
+    """Add author_name, author_initials and author_role to a post or comment
+    for the templates."""
+    item.author_name = short_name(item.author)
+    item.author_initials = initials(item.author)
+    item.author_role = role(item.author)
+    return item

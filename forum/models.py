@@ -6,6 +6,7 @@ from django.db import models
 
 TITLE_LENGTH = 120
 BODY_LENGTH = 5000
+COMMENT_LENGTH = 1000
 
 
 class Post(models.Model):
@@ -23,3 +24,22 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    """#69 Comment on Forum Posts: replies under a post, oldest first."""
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="forum_comments",
+    )
+    body = models.TextField(max_length=COMMENT_LENGTH)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"Comment by {self.author} on {self.post}"
