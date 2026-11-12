@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from accounts.deletion import delete_account
 from accounts.restriction import is_restricted, reinstate, restrict
 from reports import moderation
 
@@ -41,7 +42,11 @@ def staff_required(view):
 
 
 # After restricting or reinstating, the account page shows a banner (?done=).
-DONE_STATUS = {"restricted": "restricted", "reinstated": "active"}
+DONE_STATUS = {
+    "restricted": "restricted",
+    "reinstated": "active",
+    "deleted": "deleted",  # #93
+}
 # After removing a review from the history (#99).
 REVIEW_REMOVED = "review_removed"
 
@@ -105,6 +110,9 @@ def user_list(request, pk=None, restrict_form=None):
             # The banner only shows while the account is still in that state.
             done=done if DONE_STATUS.get(done) == selected.status_key else "",
             review_removed=done == REVIEW_REMOVED,
+            # #93: deleting an account asks for confirmation first (?confirm=delete).
+            confirm_delete=request.GET.get("confirm") == "delete"
+            and can_restrict(request.user, selected),
             # #99: removing a review asks for confirmation first (?remove_review=<pk>).
             confirm_review=_review_to_confirm(request, selected),
         )
@@ -178,3 +186,18 @@ def remove_review(request, pk, review_pk):
         return redirect("staff:user_detail", pk=account.pk)
     moderation.remove_review(review, request.user)
     return _done(account, REVIEW_REMOVED)
+
+
+@require_POST
+@staff_required
+def delete_user(request, pk):
+    """#93: an admin removes an account, for example after serious reports.
+
+    It's the same as users deleting their own account (#48): they can't log
+    in anymore, their open bookings close, and their address and photo are
+    removed. Bookings and reviews other people can see stay. The account
+    stays in the list, marked Deleted.
+    """
+    account = _restrictable(request, pk)
+    delete_account(account)
+    return _done(account, "deleted")
