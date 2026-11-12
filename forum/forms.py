@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import BODY_LENGTH, TITLE_LENGTH, Post
+from .models import BODY_LENGTH, COMMENT_LENGTH, TITLE_LENGTH, Comment, Post
 
 
 class PostForm(forms.ModelForm):
@@ -34,6 +34,32 @@ class PostForm(forms.ModelForm):
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()
+
+    def clean_body(self):
+        return self.cleaned_data["body"].strip()
+
+
+class CommentForm(forms.ModelForm):
+    """#69 Comment on Forum Posts."""
+
+    class Meta:
+        model = Comment
+        fields = ["body"]
+        labels = {"body": "Add a comment"}
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Ask a question or share what you know.",
+                }
+            )
+        }
+        error_messages = {
+            "body": {
+                "required": "Write a comment first.",
+                "max_length": f"Keep your comment under {COMMENT_LENGTH} characters.",
+            }
+        }
 
     def clean_body(self):
         return self.cleaned_data["body"].strip()

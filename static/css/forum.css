@@ -41,3 +41,19 @@ a.forum-post-card:hover { border-color: var(--line-strong); }
 .forum-form > .muted { font-size: 13px; margin-bottom: 20px; }
 .forum-form .alert { margin-bottom: 20px; }
 .forum-form textarea { min-height: 180px; }
+
+/* ---------- Comments (#69) ---------- */
+
+.forum-post-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.forum-comment-count { flex: none; color: var(--muted); font-size: 13px; font-weight: 600; }
+
+.forum-comments { margin-top: 18px; padding: 22px 26px; }
+.forum-comments h2 { font-size: 19px; margin-bottom: 14px; }
+.forum-comment-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 12px; }
+.forum-comment { padding: 14px 16px; border-radius: var(--radius); background: #fbf4f0; scroll-margin-top: 24px; }
+.forum-comment:target { box-shadow: 0 0 0 2px var(--orange); }
+.forum-comment-body { margin-top: 10px; font-size: 14px; overflow-wrap: anywhere; }
+.forum-comment-body p + p { margin-top: 8px; }
+.forum-comments > .muted { margin-bottom: 18px; font-size: 14px; }
+.forum-comment-form .field { margin-bottom: 12px; }
+.forum-comment-form .form-actions { margin-top: 0; }

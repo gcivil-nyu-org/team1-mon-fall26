@@ -6,7 +6,7 @@
 {% block main_class %}page page-medium page-forum{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=3">
 
   <a class="back-link" href="{% url 'forum:list' %}">{% include "partials/chevron_left_icon.html" %} Back to forum</a>
 
@@ -15,4 +15,47 @@
     {% include "forum/partials/post_author.html" %}
     <div class="forum-body">{{ post.body|linebreaks }}</div>
   </article>
+
+  {# #69 Comment on Forum Posts #}
+  <section class="card forum-comments" id="comments" aria-labelledby="comments-title">
+    <h2 id="comments-title">{{ comments|length }} comment{{ comments|length|pluralize }}</h2>
+
+    {% if comments %}
+      <ol class="forum-comment-list">
+        {% for comment in comments %}
+          <li class="forum-comment" id="comment-{{ comment.pk }}">
+            {% include "forum/partials/post_author.html" with post=comment %}
+            <div class="forum-comment-body">{{ comment.body|linebreaks }}</div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="muted">No comments yet. Start the conversation.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'forum:comment' post.pk %}" class="forum-comment-form" novalidate>
+      {% csrf_token %}
+      <div class="field{% if form.body.errors %} has-error{% endif %}">
+        <label for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>
+        {{ form.body }}
+        <p class="char-count" data-char-count>{{ form.body.value|default:""|length }}/{{ comment_length }}</p>
+        {% for error in form.body.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-dark">Post comment</button>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    // Live "0/1000" counter under the comment box.
+    (function () {
+      var box = document.getElementById("{{ form.body.id_for_label }}");
+      var count = document.querySelector("[data-char-count]");
+      if (!box || !count) return;
+      box.addEventListener("input", function () {
+        count.textContent = box.value.length + "/{{ comment_length }}";
+      });
+    })();
+  </script>
 {% endblock %}
