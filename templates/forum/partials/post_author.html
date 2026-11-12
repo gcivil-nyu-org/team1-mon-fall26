@@ -1,0 +1,8 @@
+{# Who wrote a post and when: avatar, short name, Pet owner / Caregiver, date. #}
+<div class="forum-author">
+  <span class="forum-avatar{% if post.author_role == 'Caregiver' %} forum-avatar-caregiver{% endif %}" aria-hidden="true">{{ post.author_initials }}</span>
+  <span>
+    <strong>{{ post.author_name }}</strong>
+    <span class="muted">{{ post.author_role }} · <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M j, Y" }}</time></span>
+  </span>
+</div>

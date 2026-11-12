@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} · Forum · PawPal{% endblock %}
+
+{% block main_class %}page page-medium page-forum{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=2">
+
+  <a class="back-link" href="{% url 'forum:list' %}">{% include "partials/chevron_left_icon.html" %} Back to forum</a>
+
+  <article class="card forum-post">
+    <h1>{{ post.title }}</h1>
+    {% include "forum/partials/post_author.html" %}
+    <div class="forum-body">{{ post.body|linebreaks }}</div>
+  </article>
+{% endblock %}
