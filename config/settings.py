@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "staff",
     "reports",
     "places",
+    "forum",
 ]
 
 MIDDLEWARE = [

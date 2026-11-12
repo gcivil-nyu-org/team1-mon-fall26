@@ -39,11 +39,13 @@
           <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' or request.resolver_match.url_name == 'edit_availability' %}active{% endif %}">Availability</a>
         {% endif %}
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        <a href="{% url 'forum:list' %}" class="{% if section == 'forum' %}active{% endif %}">Forum</a>
       {% else %}
         <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
         <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Explore</a>
         <a href="{{ my_requests_url|default:'#' }}" class="{% if section == 'bookings' and request.resolver_match.url_name != 'booking_create' or section == 'opportunities' %}active{% endif %}">My requests</a>
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
+        <a href="{% url 'forum:list' %}" class="{% if section == 'forum' %}active{% endif %}">Forum</a>
       {% endif %}
     </nav>
 

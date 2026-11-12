@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Forum · PawPal{% endblock %}
+
+{% block main_class %}page page-wide page-forum{% endblock %}
+
+{% block content %}
+  {# #68 Browse Forum Posts. No Figma for the forum yet, so this reuses the site's cards. #}
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=1">
+
+  <div class="page-heading">
+    <div>
+      <h1>Forum</h1>
+      <p class="muted">Tips, questions and pet-friendly finds from pet owners and caregivers.</p>
+    </div>
+  </div>
+
+  {% if page.object_list %}
+    <ul class="forum-posts">
+      {% for post in page %}
+        <li>
+          <a class="card forum-post-card" href="{% url 'forum:detail' post.pk %}">
+            <h2>{{ post.title }}</h2>
+            <p class="forum-excerpt">{{ post.body|truncatechars:180 }}</p>
+            {% include "forum/partials/post_author.html" %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if page.has_other_pages %}
+      <nav class="forum-pages" aria-label="Pages">
+        {% if page.has_previous %}<a class="btn btn-outline btn-small" href="?page={{ page.previous_page_number }}">Newer posts</a>{% endif %}
+        <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="btn btn-outline btn-small" href="?page={{ page.next_page_number }}">Older posts</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="card empty-state">
+      <h2>No posts yet</h2>
+      <p class="muted">Posts from pet owners and caregivers will show up here.</p>
+    </div>
+  {% endif %}
+{% endblock %}
