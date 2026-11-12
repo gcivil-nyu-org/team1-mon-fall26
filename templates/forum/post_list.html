@@ -7,13 +7,14 @@
 
 {% block content %}
   {# #68 Browse Forum Posts. No Figma for the forum yet, so this reuses the site's cards. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=2">
 
   <div class="page-heading">
     <div>
       <h1>Forum</h1>
       <p class="muted">Tips, questions and pet-friendly finds from pet owners and caregivers.</p>
     </div>
+    <a class="btn btn-dark" href="{% url 'forum:create' %}">New post</a>
   </div>
 
   {% if page.object_list %}
@@ -39,7 +40,8 @@
   {% else %}
     <div class="card empty-state">
       <h2>No posts yet</h2>
-      <p class="muted">Posts from pet owners and caregivers will show up here.</p>
+      <p class="muted">Be the first to share a tip or ask a question.</p>
+      <a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>
     </div>
   {% endif %}
 {% endblock %}

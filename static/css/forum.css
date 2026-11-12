@@ -34,3 +34,10 @@ a.forum-post-card:hover { border-color: var(--line-strong); }
 .forum-post h1 { font-size: 28px; line-height: 1.2; margin-bottom: 14px; overflow-wrap: anywhere; }
 .forum-body { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
 .forum-body p + p { margin-top: 10px; }
+
+/* ---------- New post (#67) ---------- */
+
+.forum-form h1 { font-size: 28px; margin-bottom: 4px; }
+.forum-form > .muted { font-size: 13px; margin-bottom: 20px; }
+.forum-form .alert { margin-bottom: 20px; }
+.forum-form textarea { min-height: 180px; }
