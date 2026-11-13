@@ -7,7 +7,7 @@
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=6">
 
   <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
 
@@ -22,6 +22,14 @@
       <a class="forum-chip{% if item.active %} is-active{% endif %}" href="{% url 'forum:list' %}{% if item.value %}?topic={{ item.value }}{% endif %}"{% if item.active %} aria-current="true"{% endif %}>{{ item.label }}</a>
     {% endfor %}
   </nav>
+
+  {% if just_posted and selected.pk == just_posted %}
+    {# Figma "Create Forum Post Confirmation" #}
+    <div class="alert alert-success forum-posted" role="status">
+      <span class="alert-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
+      <span><strong>Posted!</strong> Others can now see and comment.</span>
+    </div>
+  {% endif %}
 
   {% if page.object_list %}
     <div class="forum-layout">
@@ -38,6 +46,7 @@
                   <span class="forum-row-meta">
                     {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
                     <span class="forum-count">{% include "forum/partials/comment_icon.html" %} {{ post.comment_count }}<span class="visually-hidden"> comment{{ post.comment_count|pluralize }}</span></span>
+                    {% if post.pk == just_posted %}<span class="forum-new-badge">New</span>{% endif %}
                   </span>
                 </span>
               </a>
@@ -63,5 +72,9 @@
       <p class="muted">Know a great pet-friendly spot? Be the first to share it.</p>
       <a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>
     </div>
+  {% endif %}
+
+  {% if post_form %}
+    {% include "forum/partials/new_post_popup.html" with form=post_form %}
   {% endif %}
 {% endblock %}

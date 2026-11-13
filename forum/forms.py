@@ -4,33 +4,45 @@ from .models import BODY_LENGTH, COMMENT_LENGTH, TITLE_LENGTH, Comment, Post
 
 
 class PostForm(forms.ModelForm):
-    """#67 Create Forum Post: a title and the post itself, both required."""
+    """#67 Create Forum Post, as in the Figma "New post" popup: a title, a
+    topic and the details, all required."""
+
+    topic = forms.ChoiceField(
+        label="Topic",
+        choices=Post.Topic.choices,
+        widget=forms.RadioSelect,
+        error_messages={"required": "Pick a topic.", "invalid_choice": "Pick a topic."},
+    )
 
     class Meta:
         model = Post
-        fields = ["title", "body"]
-        labels = {"title": "Title", "body": "Post"}
+        fields = ["title", "topic", "body"]
+        labels = {"title": "Title", "body": "Details"}
         widgets = {
-            "title": forms.TextInput(
-                attrs={"placeholder": "e.g. Best cafes that welcome dogs"}
-            ),
+            "title": forms.TextInput(attrs={"placeholder": "What\u2019s it about?"}),
             "body": forms.Textarea(
                 attrs={
-                    "rows": 8,
-                    "placeholder": "Share a tip, a question or a pet-friendly find.",
+                    "rows": 4,
+                    "placeholder": "Share a spot, a tip, or ask a question",
                 }
             ),
         }
         error_messages = {
             "title": {
-                "required": "Enter a title.",
+                "required": "Add a title.",
                 "max_length": f"Keep the title under {TITLE_LENGTH} characters.",
             },
             "body": {
-                "required": "Write your post.",
-                "max_length": f"Keep your post under {BODY_LENGTH} characters.",
+                "required": "Add some details.",
+                "max_length": f"Keep it under {BODY_LENGTH} characters.",
             },
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # No topic is picked until the person picks one (the model's default
+        # is only for posts written before topics existed).
+        self.initial.pop("topic", None)
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()

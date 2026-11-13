@@ -6,7 +6,6 @@ the right.
 #67 Create Forum Post: a form that publishes a post to the forum.
 #69 Comment on Forum Posts: comments under the selected post."""
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -16,7 +15,7 @@ from django.views.decorators.http import require_POST
 
 from .authors import describe, initials
 from .forms import CommentForm, PostForm
-from .models import BODY_LENGTH, TITLE_LENGTH, Post
+from .models import Post
 
 PER_PAGE = 20
 
@@ -32,7 +31,10 @@ def post_url(post):
     return f"{reverse('forum:list')}?post={post.pk}"
 
 
-def _forum(request, selected=None, form=None):
+POSTED = "forum_just_posted"
+
+
+def _forum(request, selected=None, form=None, post_form=None):
     topic = request.GET.get("topic", "")
     if topic not in Post.Topic.values:
         topic = ""
@@ -66,6 +68,8 @@ def _forum(request, selected=None, form=None):
         ]
 
     new_comment = request.GET.get("new_comment", "")
+    # Right after publishing: the "Posted!" banner and a NEW badge.
+    just_posted = request.session.pop(POSTED, None)
     topics = [{"value": "", "label": "All", "active": not topic}] + [
         {"value": value, "label": label, "active": value == topic}
         for value, label in Post.Topic.choices
@@ -82,6 +86,8 @@ def _forum(request, selected=None, form=None):
             "form": form or CommentForm(),
             "new_comment": int(new_comment) if new_comment.isdigit() else None,
             "my_initials": initials(request.user),
+            "just_posted": just_posted,
+            "post_form": post_form,
         },
     )
 
@@ -114,15 +120,12 @@ def add_comment(request, pk):
 
 @login_required
 def post_create(request):
+    """The "New post" popup over the Forum page (Figma "Create Forum Post")."""
     form = PostForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
         post.save()
-        messages.success(request, "Your post is published.")
+        request.session[POSTED] = post.pk
         return redirect(post_url(post))
-    return render(
-        request,
-        "forum/post_form.html",
-        {"form": form, "title_length": TITLE_LENGTH, "body_length": BODY_LENGTH},
-    )
+    return _forum(request, post_form=form)
