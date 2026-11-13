@@ -1,8 +1,11 @@
-"""#68 Browse Forum Posts: the newest posts first, and a page for each post.
-#67 Create Forum Post: a form that publishes a post to the forum.
-#69 Comment on Forum Posts: comments under each post."""
+"""Community forum, laid out as in Kat's 11/12 Figma: the Forum page lists
+recent posts on the left and shows the selected post with its comments on
+the right.
 
-from django.contrib import messages
+#68 Browse Forum Posts: recent posts, filtered by topic, and the whole post.
+#67 Create Forum Post: a form that publishes a post to the forum.
+#69 Comment on Forum Posts: comments under the selected post."""
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -10,9 +13,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .authors import describe
+from .authors import describe, initials
 from .forms import CommentForm, PostForm
-from .models import BODY_LENGTH, COMMENT_LENGTH, TITLE_LENGTH, Post
+from .models import Post
 
 PER_PAGE = 20
 
@@ -23,42 +26,81 @@ def _posts():
     )
 
 
-@login_required
-def post_list(request):
+def post_url(post):
+    """The Forum page with this post open."""
+    return f"{reverse('forum:list')}?post={post.pk}"
+
+
+POSTED = "forum_just_posted"
+
+
+def _forum(request, selected=None, form=None, post_form=None):
+    topic = request.GET.get("topic", "")
+    if topic not in Post.Topic.values:
+        topic = ""
     # Meta.ordering isn't used once posts are grouped to count comments.
     posts = (
         _posts()
         .annotate(comment_count=Count("comments"))
         .order_by("-created_at", "-pk")
     )
+    if topic:
+        posts = posts.filter(topic=topic)
     page = Paginator(posts, PER_PAGE).get_page(request.GET.get("page"))
     for post in page:
         describe(post)
-    return render(request, "forum/post_list.html", {"page": page})
 
+    if selected is None:
+        wanted = request.GET.get("post", "")
+        if wanted.isdigit():
+            selected = _posts().filter(pk=wanted).first()
+        if selected is None and page.object_list:
+            selected = page.object_list[0]
 
-def _detail(request, post, form):
-    comments = [
-        describe(comment)
-        for comment in post.comments.select_related(
-            "author", "author__account_profile", "author__caregiver_profile"
-        )
+    comments = []
+    if selected is not None:
+        describe(selected)
+        comments = [
+            describe(comment)
+            for comment in selected.comments.select_related(
+                "author", "author__account_profile", "author__caregiver_profile"
+            )
+        ]
+
+    new_comment = request.GET.get("new_comment", "")
+    # Right after publishing: the "Posted!" banner and a NEW badge.
+    just_posted = request.session.pop(POSTED, None)
+    topics = [{"value": "", "label": "All", "active": not topic}] + [
+        {"value": value, "label": label, "active": value == topic}
+        for value, label in Post.Topic.choices
     ]
     return render(
         request,
-        "forum/post_detail.html",
+        "forum/forum.html",
         {
-            "post": describe(post),
+            "page": page,
+            "topic": topic,
+            "topics": topics,
+            "selected": selected,
             "comments": comments,
-            "form": form,
-            "comment_length": COMMENT_LENGTH,
+            "form": form or CommentForm(),
+            "new_comment": int(new_comment) if new_comment.isdigit() else None,
+            "my_initials": initials(request.user),
+            "just_posted": just_posted,
+            "post_form": post_form,
         },
     )
 
 
 @login_required
+def post_list(request):
+    return _forum(request)
+
+
+@login_required
 def post_detail(request, pk):
-    return _detail(request, get_object_or_404(_posts(), pk=pk), CommentForm())
+    """Old links to a post open it on the Forum page."""
+    return redirect(post_url(get_object_or_404(Post, pk=pk)))
 
 
 @require_POST
@@ -67,25 +109,23 @@ def add_comment(request, pk):
     post = get_object_or_404(_posts(), pk=pk)
     form = CommentForm(request.POST)
     if not form.is_valid():
-        return _detail(request, post, form)
+        return _forum(request, selected=post, form=form)
     comment = form.save(commit=False)
     comment.post = post
     comment.author = request.user
     comment.save()
-    return redirect(reverse("forum:detail", args=[post.pk]) + f"#comment-{comment.pk}")
+    # The new comment is highlighted, as in the "Comment posted" frame.
+    return redirect(f"{post_url(post)}&new_comment={comment.pk}#comment-{comment.pk}")
 
 
 @login_required
 def post_create(request):
+    """The "New post" popup over the Forum page (Figma "Create Forum Post")."""
     form = PostForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
         post.save()
-        messages.success(request, "Your post is published.")
-        return redirect("forum:detail", pk=post.pk)
-    return render(
-        request,
-        "forum/post_form.html",
-        {"form": form, "title_length": TITLE_LENGTH, "body_length": BODY_LENGTH},
-    )
+        request.session[POSTED] = post.pk
+        return redirect(post_url(post))
+    return _forum(request, post_form=form)

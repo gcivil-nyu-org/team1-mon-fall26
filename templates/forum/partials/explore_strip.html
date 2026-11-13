@@ -1,0 +1,34 @@
+{% load forum_tags %}
+{# "From the forum" on Explore, from Kat's 11/12 Figma. #}
+<section class="forum-strip" aria-labelledby="forum-strip-title">
+  <div class="forum-strip-head">
+    <h2 id="forum-strip-title">From the forum</h2>
+    {% if posts %}<a class="forum-see-all" href="{% url 'forum:list' %}">See all <span aria-hidden="true">&rarr;</span></a>{% endif %}
+  </div>
+  {% if posts %}
+    <ul class="forum-strip-cards">
+      {% for post in posts %}
+        <li>
+          <a class="forum-strip-card" href="{% url 'forum:list' %}?post={{ post.pk }}">
+            <span class="forum-strip-who">{% include "forum/partials/avatar.html" with person=post tiny=True %} {{ post.author_name }} · {{ post.created_at|ago }}</span>
+            <strong>{{ post.title }}</strong>
+            <span class="forum-row-meta">
+              {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
+              <span class="forum-count">{% include "forum/partials/comment_icon.html" %} {{ post.comment_count }}<span class="visually-hidden"> comment{{ post.comment_count|pluralize }}</span></span>
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {# Figma "Explore (No post)" #}
+    <div class="forum-strip-empty">
+      <span class="forum-strip-icon" aria-hidden="true">{% include "forum/partials/comment_icon.html" %}</span>
+      <span class="forum-strip-empty-text">
+        <strong>No posts yet</strong>
+        <span class="muted">Know a great pet-friendly spot? Be the first to share it.</span>
+      </span>
+      <a class="btn btn-dark btn-small forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} Create a post</a>
+    </div>
+  {% endif %}
+</section>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static caregiver_tags %}
+{% load static caregiver_tags forum_tags %}
 
 {% block title %}Explore places · PawPal{% endblock %}
 
@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=7">
   <link rel="stylesheet" href="{% static 'css/places.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=5">
 
   <div class="search-page">
     {# Same form as the caregiver search, so caregiver_search.js adds location suggestions and "Use my current location". #}
@@ -66,6 +67,8 @@
         <a class="filter-chip{% if chip.active %} is-active{% endif %}" href="?{{ chip.query }}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}</a>
       {% endfor %}
     </nav>
+
+    {% forum_strip %}
 
     {% if notice %}
       <div class="alert alert-info" role="status"><span class="alert-icon" aria-hidden="true">!</span><span>{{ notice }}</span></div>
