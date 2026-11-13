@@ -37,17 +37,17 @@
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
         <a href="{% url 'bookings:caregiver_requests' %}" class="{% if section == 'bookings' %}active{% endif %}">Requests</a>
         <a href="{% url 'opportunities:browse' %}" class="{% if section == 'opportunities' and request.resolver_match.url_name == 'browse' %}active{% endif %}">Find pets</a>
+        {# Kat's 11/12 Figma gives caregivers Explore too, for pet-friendly places and the forum. #}
+        <a href="{% url 'places:explore' %}" class="{% if section == 'places' or section == 'forum' %}active{% endif %}">Explore</a>
         {% if user.caregiver_profile %}
           <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' or request.resolver_match.url_name == 'edit_availability' %}active{% endif %}">Availability</a>
         {% endif %}
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
-        <a href="{% url 'forum:list' %}" class="{% if section == 'forum' %}active{% endif %}">Forum</a>
       {% else %}
         <a href="{% url 'pets:list' %}" class="{% if section == 'pets' %}active{% endif %}">My pets</a>
-        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Explore</a>
+        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' or section == 'forum' or request.resolver_match.url_name == 'caregiver_list' or request.resolver_match.url_name == 'caregiver' or request.resolver_match.url_name == 'booking_create' %}active{% endif %}">Explore</a>
         <a href="{{ my_requests_url|default:'#' }}" class="{% if section == 'bookings' and request.resolver_match.url_name != 'booking_create' or section == 'opportunities' %}active{% endif %}">My requests</a>
         <a href="{% url 'messaging:inbox' %}" class="{% if section == 'messaging' %}active{% endif %}">Messages{% if unread_message_count %}<span class="nav-badge"><span class="visually-hidden">, </span>{{ unread_message_count }}<span class="visually-hidden"> unread</span></span>{% endif %}</a>
-        <a href="{% url 'forum:list' %}" class="{% if section == 'forum' %}active{% endif %}">Forum</a>
       {% endif %}
     </nav>
 
