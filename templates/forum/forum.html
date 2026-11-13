@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static forum_tags %}
+
+{% block title %}{% if selected %}{{ selected.title }} · {% endif %}Forum · PawPal{% endblock %}
+
+{% block main_class %}page page-forum{% endblock %}
+
+{% block content %}
+  {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=5">
+
+  <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
+
+  <div class="forum-heading">
+    <h1>Forum</h1>
+    <a class="btn btn-dark forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} New post</a>
+  </div>
+
+  {# #68: filter by topic #}
+  <nav class="forum-topics" aria-label="Topics">
+    {% for item in topics %}
+      <a class="forum-chip{% if item.active %} is-active{% endif %}" href="{% url 'forum:list' %}{% if item.value %}?topic={{ item.value }}{% endif %}"{% if item.active %} aria-current="true"{% endif %}>{{ item.label }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if page.object_list %}
+    <div class="forum-layout">
+      <section class="card forum-list-card" aria-labelledby="forum-recent">
+        <h2 class="forum-eyebrow" id="forum-recent">Recent</h2>
+        <ul class="forum-list">
+          {% for post in page %}
+            <li>
+              <a class="forum-row{% if post == selected %} is-selected{% endif %}" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if page.number > 1 %}page={{ page.number }}&amp;{% endif %}post={{ post.pk }}"{% if post == selected %} aria-current="true"{% endif %}>
+                {% include "forum/partials/avatar.html" with person=post %}
+                <span class="forum-row-text">
+                  <strong>{{ post.title }}</strong>
+                  <span class="muted">{{ post.author_name }} · {{ post.created_at|ago }}</span>
+                  <span class="forum-row-meta">
+                    {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
+                    <span class="forum-count">{% include "forum/partials/comment_icon.html" %} {{ post.comment_count }}<span class="visually-hidden"> comment{{ post.comment_count|pluralize }}</span></span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if page.has_other_pages %}
+          <nav class="forum-pages" aria-label="Pages">
+            {% if page.has_previous %}<a class="text-link" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}page={{ page.previous_page_number }}">Newer</a>{% endif %}
+            <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a class="text-link" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}page={{ page.next_page_number }}">Older</a>{% endif %}
+          </nav>
+        {% endif %}
+      </section>
+
+      {% if selected %}
+        {% include "forum/partials/post_panel.html" with post=selected %}
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="card empty-state">
+      <h2>{% if topic %}No posts in this topic yet{% else %}No posts yet{% endif %}</h2>
+      <p class="muted">Know a great pet-friendly spot? Be the first to share it.</p>
+      <a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>
+    </div>
+  {% endif %}
+{% endblock %}
