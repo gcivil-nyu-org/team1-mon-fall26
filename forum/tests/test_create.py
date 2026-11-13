@@ -26,7 +26,8 @@ class CreatePostTests(ForumTestData):
 
     def test_forum_links_to_the_form(self):
         response = self.client.get(LIST_URL)
-        self.assertContains(response, f'href="{CREATE_URL}">New post</a>')
+        self.assertContains(response, f'href="{CREATE_URL}">')
+        self.assertContains(response, "New post</a>")
         Post.objects.all().delete()
         response = self.client.get(LIST_URL)
         self.assertContains(response, f'href="{CREATE_URL}">Write a post</a>')
@@ -46,7 +47,8 @@ class CreatePostTests(ForumTestData):
         post = Post.objects.get(title="Vet near Prospect Park?")
         self.assertEqual(post.author, self.owner)
         self.assertEqual(post.body, "Help!")
-        self.assertRedirects(response, reverse("forum:detail", args=[post.pk]))
+        self.assertRedirects(response, f"{LIST_URL}?post={post.pk}")
+        self.assertEqual(response.context["selected"], post)
         self.assertContains(response, "Your post is published.")
         self.assertContains(response, "Vet near Prospect Park?")
 
