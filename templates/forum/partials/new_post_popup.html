@@ -1,0 +1,50 @@
+{# #67 Create Forum Post: the "New post" popup over the Forum page (Kat's 11/12 Figma). #}
+<div class="modal-backdrop forum-popup-backdrop">
+  <form method="post" action="{% url 'forum:create' %}" class="forum-popup" role="dialog" aria-modal="true" aria-labelledby="new-post-title" novalidate>
+    {% csrf_token %}
+    <h2 id="new-post-title">New post</h2>
+
+    {% if form.errors %}
+      <div class="forum-popup-alert" role="alert"><strong>Almost there.</strong> Fill in the required fields.</div>
+    {% endif %}
+
+    <div class="field{% if form.title.errors %} has-error{% endif %}">
+      <label for="{{ form.title.id_for_label }}">{{ form.title.label }} <span class="required">*</span></label>
+      {{ form.title }}
+      {% for error in form.title.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <fieldset class="field{% if form.topic.errors %} has-error{% endif %}">
+      <legend>{{ form.topic.label }} <span class="required">*</span></legend>
+      <div class="forum-topic-picker">
+        {% for radio in form.topic %}
+          <label class="forum-topic-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      {% for error in form.topic.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="field{% if form.body.errors %} has-error{% endif %}">
+      <label for="{{ form.body.id_for_label }}">{{ form.body.label }} <span class="required">*</span></label>
+      {{ form.body }}
+      {% for error in form.body.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="forum-popup-actions">
+      <a class="btn btn-outline" href="{% url 'forum:list' %}" data-close-popup>Cancel</a>
+      <button type="submit" class="btn btn-dark">Post</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Escape closes the popup, like Cancel; the title is ready to type in.
+  (function () {
+    var cancel = document.querySelector("[data-close-popup]");
+    var title = document.getElementById("{{ form.title.id_for_label }}");
+    if (title && !{{ form.errors|yesno:"true,false" }}) title.focus();
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && cancel) window.location.href = cancel.href;
+    });
+  })();
+</script>
