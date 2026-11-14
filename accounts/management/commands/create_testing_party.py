@@ -1,4 +1,3 @@
-
 import secrets
 import string
 
@@ -9,7 +8,6 @@ from django.db import transaction
 
 from accounts.models import AccountProfile
 from pets.models import Pet, PetType
-
 
 EVALUATORS = [
     ("prof", "Professor", "Mochi", "Cat"),
@@ -73,14 +71,10 @@ class Command(BaseCommand):
                         self.stdout.write(f"  PLAN: {username}")
                         continue
 
-                    user = User.objects.filter(
-                        username=username
-                    ).first()
+                    user = User.objects.filter(username=username).first()
 
                     if user is not None:
-                        profile = AccountProfile.objects.filter(
-                            user=user
-                        ).first()
+                        profile = AccountProfile.objects.filter(user=user).first()
 
                         if profile is None or profile.role != role:
                             raise CommandError(
@@ -89,9 +83,7 @@ class Command(BaseCommand):
                                 "No changes committed."
                             )
 
-                        self.stdout.write(
-                            f"  EXISTS: {username}"
-                        )
+                        self.stdout.write(f"  EXISTS: {username}")
                         continue
 
                     password = generate_password()
@@ -113,18 +105,12 @@ class Command(BaseCommand):
                     self.stdout.write(f"  CREATED: {username}")
 
                 if dry_run:
-                    self.stdout.write(
-                        f"  PLAN: {pet_name} ({pet_type_name})"
-                    )
+                    self.stdout.write(f"  PLAN: {pet_name} ({pet_type_name})")
                     continue
 
-                owner = User.objects.get(
-                    username=f"{prefix}_owner"
-                )
+                owner = User.objects.get(username=f"{prefix}_owner")
 
-                pet_type, _ = PetType.objects.get_or_create(
-                    name=pet_type_name
-                )
+                pet_type, _ = PetType.objects.get_or_create(name=pet_type_name)
 
                 pet, created = Pet.objects.get_or_create(
                     owner=owner,
@@ -133,26 +119,18 @@ class Command(BaseCommand):
                 )
 
                 status = "CREATED" if created else "EXISTS"
-                self.stdout.write(
-                    f"  {status} PET: {pet.name}"
-                )
+                self.stdout.write(f"  {status} PET: {pet.name}")
 
         if dry_run:
             self.stdout.write(
-                self.style.WARNING(
-                    "\nDRY RUN — No database changes made."
-                )
+                self.style.WARNING("\nDRY RUN — No database changes made.")
             )
             return
 
-        self.stdout.write(
-            self.style.SUCCESS("\nSetup completed successfully.")
-        )
+        self.stdout.write(self.style.SUCCESS("\nSetup completed successfully."))
 
         if credentials:
-            self.stdout.write(
-                "\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY"
-            )
+            self.stdout.write("\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY")
             for username, password in credentials:
                 self.stdout.write(f"{username}: {password}")
 
