@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from accounts.models import AccountProfile
+from caregivers.models import CaregiverProfile
 from pets.models import Pet, PetType
 
 EVALUATORS = [
@@ -20,6 +21,52 @@ EVALUATORS = [
 ]
 
 
+CAREGIVER_DATA = {
+    "prof": (
+        "Sophie Bennett",
+        "Animal lover with experience caring for dogs and cats "
+        "of all personalities. I love long walks, playtime, "
+        "and making pets feel at home.",
+    ),
+    "ta": (
+        "Daniel Rivera",
+        "Reliable and attentive caregiver who enjoys keeping "
+        "pets active, comfortable, and happy while their "
+        "owners are away.",
+    ),
+    "team1": (
+        "Emma Collins",
+        "I've always loved animals and enjoy getting to know "
+        "each pet's unique personality. I'm especially "
+        "comfortable caring for cats and smaller pets.",
+    ),
+    "team2": (
+        "Alex Morgan",
+        "Patient, dependable, and always excited to meet new "
+        "furry friends. I enjoy outdoor activities and making "
+        "sure pets get plenty of attention.",
+    ),
+    "team3": (
+        "Olivia Parker",
+        "Gentle and detail-oriented caregiver who understands "
+        "that every pet has their own routine. Happy to help "
+        "with feeding, playtime, and companionship.",
+    ),
+    "team4": (
+        "Noah Mitchell",
+        "Passionate about caring for animals of all sizes, "
+        "including smaller pets. I prioritize a calm, safe "
+        "environment and consistent routines.",
+    ),
+    "team5": (
+        "Maya Thompson",
+        "Energetic and caring pet sitter who loves meeting "
+        "new animals. I enjoy helping pets stay active and "
+        "making sure they feel loved.",
+    ),
+}
+
+
 def generate_password(length=20):
     """Generate a random password for a demo account."""
     alphabet = string.ascii_letters + string.digits + "!@#$%"
@@ -27,7 +74,9 @@ def generate_password(length=20):
 
 
 class Command(BaseCommand):
-    help = "Create PawPal testing-party accounts and sample pets."
+    help = (
+        "Create PawPal testing-party accounts, sample pets, " "and caregiver profiles."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -59,6 +108,8 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for prefix, label, pet_name, pet_type_name in EVALUATORS:
+                caregiver_name, caregiver_bio = CAREGIVER_DATA[prefix]
+
                 self.stdout.write(f"\n{label}")
 
                 for suffix, role in [
@@ -105,8 +156,28 @@ class Command(BaseCommand):
                     self.stdout.write(f"  CREATED: {username}")
 
                 if dry_run:
+                    self.stdout.write(f"  PLAN: Caregiver profile for {caregiver_name}")
                     self.stdout.write(f"  PLAN: {pet_name} ({pet_type_name})")
                     continue
+
+                caregiver = User.objects.get(username=f"{prefix}_caregiver")
+
+                caregiver_profile, profile_created = (
+                    CaregiverProfile.objects.get_or_create(
+                        user=caregiver,
+                        defaults={
+                            "name": caregiver_name,
+                            "bio": caregiver_bio,
+                        },
+                    )
+                )
+
+                profile_status = "CREATED" if profile_created else "EXISTS"
+
+                self.stdout.write(
+                    f"  {profile_status} CAREGIVER PROFILE: "
+                    f"{caregiver_profile.name}"
+                )
 
                 owner = User.objects.get(username=f"{prefix}_owner")
 
@@ -131,6 +202,7 @@ class Command(BaseCommand):
 
         if credentials:
             self.stdout.write("\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY")
+
             for username, password in credentials:
                 self.stdout.write(f"{username}: {password}")
 
