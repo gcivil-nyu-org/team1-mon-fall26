@@ -1,5 +1,6 @@
-"""#69 Comment on Forum Posts: on a post, pet owners and caregivers write a
-comment; it shows under that post (and only that post) for everyone."""
+"""#69 Comment on Forum Posts: on the selected post, pet owners and caregivers
+write a comment; it shows under that post (and only that post) for everyone.
+As in the Figma's "Comment posted" frame, the new comment is highlighted."""
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -24,9 +25,9 @@ class CommentTests(ForumTestData):
         self.assertContains(response, "0 comments")
         self.assertContains(response, "No comments yet.")
         self.assertContains(response, f'action="{comment_url(self.newer)}"')
-        self.assertContains(response, "Add a comment")
-        self.assertContains(response, f"0/{COMMENT_LENGTH}")
-        self.assertContains(response, "Post comment")
+        self.assertContains(response, 'placeholder="Add a comment…"')
+        self.assertContains(response, 'class="btn forum-comment-button is-empty"')
+        self.assertContains(response, "No comments yet. Be the first!")
 
     def test_comment_shows_under_the_post(self):
         response = self.comment(self.newer, "  Try Hillside Dog Park!  ")
@@ -34,13 +35,21 @@ class CommentTests(ForumTestData):
         self.assertEqual(comment.post, self.newer)
         self.assertEqual(comment.author, self.owner)
         self.assertEqual(comment.body, "Try Hillside Dog Park!")
-        self.assertRedirects(response, f"{detail_url(self.newer)}#comment-{comment.pk}")
+        landing = f"{detail_url(self.newer)}&new_comment={comment.pk}"
+        self.assertRedirects(response, f"{landing}#comment-{comment.pk}")
 
-        page = self.client.get(detail_url(self.newer))
+        page = self.client.get(landing)
         self.assertContains(page, "1 comment<")
-        self.assertContains(page, f'id="comment-{comment.pk}"')
-        self.assertContains(page, "<p>Try Hillside Dog Park!</p>", html=True)
+        self.assertContains(
+            page, f'class="forum-comment is-new" id="comment-{comment.pk}"'
+        )
+        self.assertContains(page, "Try Hillside Dog Park!")
+        self.assertContains(page, 'Kat W.</strong> <span class="muted">· Just now')
         self.assertNotContains(page, "No comments yet.")
+
+        # Opened again later, it isn't highlighted.
+        later = self.client.get(detail_url(self.newer))
+        self.assertContains(later, f'class="forum-comment" id="comment-{comment.pk}"')
 
     def test_others_see_it_with_who_wrote_it(self):
         self.comment(self.newer)
@@ -57,7 +66,8 @@ class CommentTests(ForumTestData):
         )
         self.assertContains(page, "Kat W.")
         self.assertContains(page, "Chloe S.")
-        self.assertContains(page, "Caregiver")
+        # Caregivers' initials are on blue, as everywhere on PawPal.
+        self.assertContains(page, "forum-avatar-caregiver forum-avatar-small")
 
     def test_comments_stay_with_their_post(self):
         self.comment(self.newer)
@@ -69,22 +79,30 @@ class CommentTests(ForumTestData):
         self.comment(self.newer)
         self.comment(self.newer, "Me too")
         response = self.client.get(LIST_URL)
-        self.assertContains(response, "2 comments")
-        self.assertContains(response, "0 comments")
+        counts = [post.comment_count for post in response.context["page"]]
+        self.assertEqual(counts, [2, 0])
+        self.assertContains(response, '2<span class="visually-hidden"> comments</span>')
+        self.assertContains(response, '0<span class="visually-hidden"> comments</span>')
 
     def test_empty_comment_is_refused(self):
         response = self.comment(self.newer, "   ")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Write a comment first.")
         self.assertContains(response, "Best cafes for dogs")
+        self.assertEqual(response.context["selected"], self.newer)
         self.assertFalse(Comment.objects.exists())
+
+    def test_comment_on_an_older_post_keeps_it_open(self):
+        response = self.comment(self.older, "", follow=False)
+        self.assertEqual(response.context["selected"], self.older)
 
     def test_long_comment_is_refused_and_kept(self):
         response = self.comment(self.newer, "x" * (COMMENT_LENGTH + 1))
         self.assertContains(
             response, f"Keep your comment under {COMMENT_LENGTH} characters."
         )
-        self.assertContains(response, f"{COMMENT_LENGTH + 1}/{COMMENT_LENGTH}")
+        self.assertContains(response, 'value="' + "x" * (COMMENT_LENGTH + 1) + '"')
+        self.assertEqual(response.context["selected"], self.newer)
         self.assertFalse(Comment.objects.exists())
 
     def test_text_is_escaped(self):

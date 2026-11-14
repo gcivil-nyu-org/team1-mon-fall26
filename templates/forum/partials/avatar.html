@@ -1,0 +1,2 @@
+{# Initials in a circle: peach for pet owners, blue for caregivers. #}
+<span class="forum-avatar{% if person.author_role == 'Caregiver' %} forum-avatar-caregiver{% elif person.author_role == 'Admin' %} forum-avatar-admin{% endif %}{% if large %} forum-avatar-large{% endif %}{% if small %} forum-avatar-small{% endif %}" aria-hidden="true">{{ person.author_initials }}</span>

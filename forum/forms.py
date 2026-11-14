@@ -47,11 +47,8 @@ class CommentForm(forms.ModelForm):
         fields = ["body"]
         labels = {"body": "Add a comment"}
         widgets = {
-            "body": forms.Textarea(
-                attrs={
-                    "rows": 3,
-                    "placeholder": "Ask a question or share what you know.",
-                }
+            "body": forms.TextInput(
+                attrs={"placeholder": "Add a comment…", "autocomplete": "off"}
             )
         }
         error_messages = {

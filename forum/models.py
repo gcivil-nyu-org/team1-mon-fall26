@@ -10,12 +10,19 @@ COMMENT_LENGTH = 1000
 
 
 class Post(models.Model):
+    class Topic(models.TextChoices):
+        # The topic chips on the Forum page (Kat's 11/12 Figma).
+        PLACES = "places", "Places"
+        TIPS = "tips", "Tips"
+        QUESTIONS = "questions", "Questions"
+
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="forum_posts",
     )
     title = models.CharField(max_length=TITLE_LENGTH)
+    topic = models.CharField(max_length=20, choices=Topic.choices, default=Topic.TIPS)
     body = models.TextField(max_length=BODY_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
 

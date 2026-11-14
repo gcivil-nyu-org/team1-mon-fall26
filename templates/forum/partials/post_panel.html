@@ -1,0 +1,54 @@
+{% load forum_tags %}
+{# The selected post and its comments (#68, #69), as in the Figma's right panel. #}
+<article class="card forum-panel" aria-labelledby="forum-post-title">
+  <header class="forum-panel-head">
+    {% include "forum/partials/avatar.html" with person=post large=True %}
+    <span class="forum-who">
+      <strong>{{ post.author_name }}</strong>
+      <span class="muted">{{ post.author_role }} · <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|ago }}</time></span>
+    </span>
+    {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
+  </header>
+  <h2 class="forum-title" id="forum-post-title">{{ post.title }}</h2>
+  <div class="forum-body">{{ post.body|linebreaks }}</div>
+
+  <section class="forum-comments" id="comments" aria-labelledby="comments-title">
+    <h3 id="comments-title">{{ comments|length }} comment{{ comments|length|pluralize }}</h3>
+    {% if comments %}
+      <ol class="forum-comment-list">
+        {% for comment in comments %}
+          <li class="forum-comment{% if comment.pk == new_comment %} is-new{% endif %}" id="comment-{{ comment.pk }}">
+            {% include "forum/partials/avatar.html" with person=comment small=True %}
+            <span class="forum-comment-text">
+              <span class="forum-comment-who"><strong>{{ comment.author_name }}</strong> <span class="muted">· {{ comment.created_at|ago }}</span></span>
+              <span class="forum-comment-body">{{ comment.body|linebreaksbr }}</span>
+            </span>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="muted forum-no-comments">No comments yet. Be the first!</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'forum:comment' post.pk %}" class="forum-comment-form" novalidate>
+      {% csrf_token %}
+      <span class="forum-avatar forum-avatar-me" aria-hidden="true">{{ my_initials }}</span>
+      <label class="visually-hidden" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>
+      {{ form.body }}
+      <button type="submit" class="btn forum-comment-button{% if not form.body.value %} is-empty{% endif %}">Comment</button>
+    </form>
+    {% for error in form.body.errors %}<p class="field-error forum-comment-error">{{ error }}</p>{% endfor %}
+  </section>
+</article>
+
+<script>
+  // The Comment button turns dark once something is typed, as in the Figma.
+  (function () {
+    var box = document.getElementById("{{ form.body.id_for_label }}");
+    var button = document.querySelector(".forum-comment-button");
+    if (!box || !button) return;
+    box.addEventListener("input", function () {
+      button.classList.toggle("is-empty", !box.value.trim());
+    });
+  })();
+</script>
