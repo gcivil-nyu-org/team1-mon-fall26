@@ -52,3 +52,7 @@ staticfiles/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+testing_party_credentials.csv
+
+db.testing-party-backup.sqlite3
