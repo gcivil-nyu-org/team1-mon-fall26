@@ -16,7 +16,7 @@
       {% if review %}
         {# Which review: the visit it's about and its paws, then its text. #}
         <span class="report-card-review-meta">
-          <span class="muted">{{ review.booking.pet.name }} · {{ review.booking.service_type.name }} · {{ review.booking.start_time|date:"M j" }}</span>
+          <span class="muted">{{ review.booking.pet_names }} · {{ review.booking.service_type.name }} · {{ review.booking.start_time|date:"M j" }}</span>
           <span class="report-card-paws">{% paws review.rating %}</span>
         </span>
       {% endif %}

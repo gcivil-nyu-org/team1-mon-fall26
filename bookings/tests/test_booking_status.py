@@ -67,8 +67,8 @@ class AttachPetProfileTests(BookingTestData):
         self.client.force_login(self.owner)
 
     def test_cannot_submit_without_a_pet(self):
-        response = self.client.post(CREATE_URL, self.form_data(pet=""))
-        self.assertContains(response, "Choose one of your pets.")
+        response = self.client.post(CREATE_URL, self.form_data(pets=[]))
+        self.assertContains(response, "Choose at least one of your pets.")
         self.assertFalse(Booking.objects.exists())
 
     def test_selected_pet_is_attached(self):

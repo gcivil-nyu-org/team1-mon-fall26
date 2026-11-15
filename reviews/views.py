@@ -45,7 +45,8 @@ def review_create(request, booking_pk):
     owner_first = booking.owner.first_name or booking.owner.username
     caregiver_first = booking.caregiver.name.split()[0]
     form.fields["comment"].widget.attrs["placeholder"] = (
-        f"How was {booking.pet.name}? Was {owner_first} easy to work with?"
+        f"How {'were' if len(booking.all_pets) > 1 else 'was'} {booking.pet_names}? "
+        f"Was {owner_first} easy to work with?"
         if is_caregiver
         else f"What went well? Anything {caregiver_first} could do better?"
     )
@@ -57,7 +58,7 @@ def review_create(request, booking_pk):
             "booking": booking,
             "is_caregiver": is_caregiver,
             "heading": (
-                f"How were {booking.pet.name} and {owner_first}?"
+                f"How were {booking.pet_names} and {owner_first}?"
                 if is_caregiver
                 else f"How was {caregiver_first}?"
             ),

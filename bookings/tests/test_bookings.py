@@ -47,7 +47,7 @@ class BookingTestData(TestCase):
     def form_data(self, **overrides):
         start = timezone.localtime() + timedelta(days=2)
         data = {
-            "pet": self.pet.pk,
+            "pets": [self.pet.pk],
             "caregiver": self.caregiver.pk,
             "service_type": self.walk.pk,
             **times(start, start + timedelta(hours=1)),
@@ -88,16 +88,16 @@ class BookingRequestFormTests(BookingTestData):
 
     def test_only_owners_pets_are_offered(self):
         form = BookingRequestForm(owner=self.owner)
-        self.assertEqual(list(form.fields["pet"].queryset), [self.pet])
+        self.assertEqual(list(form.fields["pets"].queryset), [self.pet])
 
     def test_cannot_book_someone_elses_pet(self):
-        form = self.make_form(pet=self.other_pet.pk)
+        form = self.make_form(pets=[self.other_pet.pk])
         self.assertFalse(form.is_valid())
-        self.assertIn("pet", form.errors)
+        self.assertIn("pets", form.errors)
 
     def test_pet_caregiver_service_and_times_are_required(self):
         form = self.make_form(
-            pet="",
+            pets=[],
             caregiver="",
             service_type="",
             start_time_0="",
@@ -106,7 +106,7 @@ class BookingRequestFormTests(BookingTestData):
             end_time_1="",
         )
         self.assertFalse(form.is_valid())
-        for field in ("pet", "caregiver", "service_type", "start_time", "end_time"):
+        for field in ("pets", "caregiver", "service_type", "start_time", "end_time"):
             self.assertIn(field, form.errors)
 
     def test_start_time_must_be_in_future(self):
@@ -194,7 +194,7 @@ class BookingCreateViewTests(BookingTestData):
         )
         initial = response.context["form"].initial
         self.assertEqual(initial["caregiver"], str(self.caregiver.pk))
-        self.assertEqual(initial["pet"], str(self.pet.pk))
+        self.assertEqual(initial["pets"], [str(self.pet.pk)])
 
     def test_post_saves_pending_booking_and_confirms(self):
         self.client.force_login(self.owner)
@@ -211,9 +211,9 @@ class BookingCreateViewTests(BookingTestData):
 
     def test_invalid_post_saves_nothing(self):
         self.client.force_login(self.owner)
-        response = self.client.post(self.url, self.form_data(pet=""))
+        response = self.client.post(self.url, self.form_data(pets=[]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Choose one of your pets.")
+        self.assertContains(response, "Choose at least one of your pets.")
         self.assertFalse(Booking.objects.exists())
 
 
