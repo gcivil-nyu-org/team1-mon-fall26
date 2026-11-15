@@ -3,8 +3,13 @@ View Nearby Pet-Friendly Locations, View Dog Parks).
 
 Dog parks come from NYC Parks' official "Dog Runs" dataset on NYC Open Data
 (see the import_dog_runs command). NYC Open Data has no list of pet-friendly
-cafés, stores or restaurants, so the PawPal team adds those in the admin. Every
-place records where its information came from and when it was last checked.
+cafés, stores or restaurants, so the PawPal team adds those in the admin.
+
+Outdoor dining comes from NYC DOT's "Dining Out NYC" licenses (see the
+import_outdoor_dining command). NYC lets each restaurant decide whether dogs may
+sit in its outdoor area, so these are shown as "ask if dogs are welcome", not
+as pet-friendly. Every place records where its information came from and when
+it was last checked.
 """
 
 from datetime import datetime
@@ -62,10 +67,18 @@ class Place(models.Model):
         CAFE = "cafe", "Café"
         PET_STORE = "pet_store", "Pet store"
         RESTAURANT = "restaurant", "Restaurant"
+        OUTDOOR_DINING = "outdoor_dining", "Outdoor dining"
 
     class Source(models.TextChoices):
         NYC_PARKS = "nyc_parks", "NYC Parks on NYC Open Data"
         PAWPAL = "pawpal", "the PawPal team"
+        DINING_OUT = "dining_out", "NYC DOT Dining Out NYC on NYC Open Data"
+
+    # The NYC Open Data page each source's information comes from.
+    SOURCE_URLS = {
+        Source.NYC_PARKS: "https://data.cityofnewyork.us/d/hxx3-bwgv",
+        Source.DINING_OUT: "https://data.cityofnewyork.us/d/fpeh-f7ci",
+    }
 
     name = models.CharField(max_length=150)
     category = models.CharField(max_length=20, choices=Category.choices, db_index=True)
@@ -181,6 +194,10 @@ class Place(models.Model):
         if hours[:1].isdigit():
             return f"Open today {hours}"
         return hours
+
+    def source_url(self):
+        """The NYC Open Data page this place's information came from, or ""."""
+        return self.SOURCE_URLS.get(self.source, "")
 
     def directions_url(self):
         return (

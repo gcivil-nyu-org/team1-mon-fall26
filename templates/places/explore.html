@@ -127,6 +127,11 @@
               </ul>
             {% endif %}
 
+            {% if place.category == "outdoor_dining" %}
+              {# NYC lets each restaurant decide whether dogs may sit outside. #}
+              <p class="place-ask">Dogs are allowed only if the restaurant says yes. Ask before you sit down.</p>
+            {% endif %}
+
             <div class="place-actions">
               <a class="place-directions" href="{{ place.directions_url }}" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -142,7 +147,7 @@
 
             {# Use Reliable Location Data: say where this came from and when it was last verified. #}
             <p class="place-source">
-              Source: {% if place.source == "nyc_parks" %}<a href="https://data.cityofnewyork.us/d/hxx3-bwgv" target="_blank" rel="noopener" title="NYC Parks Dog Runs dataset">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
+              Source: {% if place.source_url %}<a href="{{ place.source_url }}" target="_blank" rel="noopener" title="{{ place.get_source_display }}">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
             </p>
           </article>
         {% endfor %}
@@ -150,7 +155,12 @@
     {% else %}
       <div class="card no-results places-empty">
         <span class="places-empty-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
-        {% if origin %}
+        {% if needs_location %}
+          {# Thousands of places have outdoor dining, so it needs an area first. #}
+          <h2>Search an area to see outdoor dining</h2>
+          <p>Enter a neighborhood or ZIP code, or use your current location.</p>
+          <a class="btn btn-dark" href="#search-location" data-focus-location>Search an area</a>
+        {% elif origin %}
           <h2>No {{ category_names.1 }} near {{ origin_name }} yet</h2>
           <p>Search a nearby neighborhood or zip code.</p>
           <a class="btn btn-dark" href="#search-location" data-focus-location>Try another area</a>

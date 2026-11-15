@@ -7,6 +7,7 @@
 .cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
 .cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
 .cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+.cat-outdoor_dining { --cat-bg: #cfe2fb; --cat-ink: #1f4e79; }
 
 main.page-manage-places { max-width: 1224px; width: 100%; box-sizing: border-box; padding-left: 24px; padding-right: 24px; }
 .page-manage-places .admin-title { margin: 12px 0 18px; font-size: 44px; letter-spacing: -0.5px; }

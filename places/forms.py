@@ -63,6 +63,7 @@ class PlaceForm(forms.Form):
             (Place.Category.DOG_PARK, "Dog park"),
             (Place.Category.PET_STORE, "Pet store"),
             (Place.Category.RESTAURANT, "Restaurant"),
+            (Place.Category.OUTDOOR_DINING, "Outdoor dining"),
         ]
         for day in DAYS:
             key = day.lower()

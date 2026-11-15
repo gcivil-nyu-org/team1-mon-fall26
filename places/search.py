@@ -23,7 +23,15 @@ NAMES = {
     Place.Category.CAFE: ("café", "cafés"),
     Place.Category.PET_STORE: ("pet store", "pet stores"),
     Place.Category.RESTAURANT: ("restaurant", "restaurants"),
+    Place.Category.OUTDOOR_DINING: ("outdoor dining spot", "outdoor dining spots"),
 }
+
+# Chip labels that aren't just the plural name.
+CHIP_LABELS = {Place.Category.OUTDOOR_DINING: "Outdoor dining"}
+
+# There are thousands of places with outdoor dining, so they're only shown under
+# their own chip, near a searched area, nearest first and at most this many.
+MAX_OUTDOOR_DINING = 150
 
 
 def find_origin(params):

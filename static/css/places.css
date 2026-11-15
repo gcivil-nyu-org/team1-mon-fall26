@@ -7,6 +7,7 @@
 .cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
 .cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
 .cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+.cat-outdoor_dining { --cat-bg: #cfe2fb; --cat-ink: #1f4e79; }
 
 /* ---------- Map card ---------- */
 
@@ -300,3 +301,6 @@
 .report-card-quote-text .muted { font-size: 13px; }
 .report-card-field .required { color: #c2281b; }
 .place-actions .report-tag { margin-left: auto; }
+
+/* Outdoor dining: dogs are up to each restaurant (NYC Health Code). */
+.place-ask { margin: 0; padding: 8px 12px; background: #eaf3fc; border-radius: 12px; color: #1f4e79; font-size: 13px; font-weight: 600; line-height: 19px; }
