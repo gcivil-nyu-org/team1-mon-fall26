@@ -194,6 +194,27 @@
 .place-report:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 .place-report { color: #5c3d2e; font-size: 14px; font-weight: 600; line-height: 21.7px; text-decoration: underline; }
 
+/* After reporting: a red "Reported" tag instead of the link (Figma). */
+.place-reported { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; background: var(--error-bg); color: var(--error); font-size: 13px; font-weight: 700; line-height: 18px; }
+
+/* The pop-up sits 180px from the top, as in the Figma frames, but moves up
+   in a short window so its buttons stay on screen (it's about 600px tall). */
+.page-places .report-dialog {
+  margin-top: clamp(16px, calc((100vh - 600px) / 2), 180px);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+/* "Report wrong info" pop-up: the place's icon next to its name and address. */
+.place-report-card .report-card-quote { padding: 14px 16px; }
+.place-report-card .report-card-quote .place-icon { width: 40px; height: 40px; flex: none; }
+.place-report-card .report-card-quote .muted { font-size: 14px; }
+/* Submit turns red once a reason is picked and details are filled in. */
+.place-report-card:has(textarea:placeholder-shown) .report-card-submit {
+  background: #ece5e1;
+  color: #a39893;
+  box-shadow: none;
+}
+
 .place-source { margin: -2px 0 0; color: #8a6f64; font-size: 12px; line-height: 18px; }
 .place-source a { color: inherit; }
 

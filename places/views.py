@@ -67,6 +67,18 @@ def explore_places(request):
     else:
         origin_name = origin["label"].split(",")[0].strip()
 
+    # Places you've already reported show "Reported" instead of the link
+    # (Figma "Report Wrong Info (Done)"), until the team checks them.
+    reported_ids = set(
+        PlaceReport.objects.filter(
+            reporter=request.user,
+            is_resolved=False,
+            place__in=[place.pk for place in results],
+        ).values_list("place_id", flat=True)
+    )
+    for place in results:
+        place.reported = place.pk in reported_ids
+
     picked = params.get("place", "")
     selected = next((p for p in results if str(p.pk) == picked), None)
     if selected is None and results:
@@ -144,8 +156,14 @@ def explore_places(request):
 
 @login_required
 def report_place(request, pk):
-    """Report wrong info: tell the PawPal team a place's details are wrong."""
+    """Report wrong info: tell the PawPal team a place's details are wrong.
+
+    As in the Figma "Report Wrong Info" frames, Explore opens this as a pop-up
+    and sends it in the background (then shows "Report sent"); without
+    JavaScript it's a page of its own.
+    """
     place = get_object_or_404(Place.objects.shown(), pk=pk)
+    popup = request.headers.get("X-Requested-With") == "fetch"
     back = request.POST.get("next") or request.GET.get("next", "")
     if not url_has_allowed_host_and_scheme(
         back, allowed_hosts={request.get_host()}, require_https=request.is_secure()
@@ -153,31 +171,40 @@ def report_place(request, pk):
         back = ""
     back = back or f"{reverse('places:explore')}?place={place.pk}"
 
+    reason = ""
     details = ""
-    error = ""
+    errors = {}
     if request.method == "POST":
+        reason = request.POST.get("reason", "")
         details = request.POST.get("details", "").strip()
+        if reason not in PlaceReport.Reason.values:
+            errors["reason"] = "Choose what's wrong."
+            reason = ""
         if not details:
-            error = "Tell us what's wrong so we can fix it."
+            errors["details"] = "Tell us what's wrong so we can fix it."
         elif len(details) > MAX_REPORT_LENGTH:
-            error = f"Keep it to {MAX_REPORT_LENGTH} characters."
-        else:
+            errors["details"] = f"Keep it to {MAX_REPORT_LENGTH} characters."
+        if not errors:
             PlaceReport.objects.create(
-                place=place, reporter=request.user, details=details
+                place=place, reporter=request.user, reason=reason, details=details
             )
+            if popup:
+                return render(request, "places/partials/report_sent.html")
             messages.success(
                 request, f"Thanks! We'll check the information for {place.name}."
             )
             return redirect(back)
 
-    return render(
-        request,
-        "places/report.html",
-        {
-            "place": place,
-            "details": details,
-            "error": error,
-            "back": back,
-            "max_length": MAX_REPORT_LENGTH,
-        },
-    )
+    context = {
+        "place": place,
+        "reasons": PlaceReport.Reason.choices,
+        "reason": reason,
+        "details": details,
+        "errors": errors,
+        "back": back,
+        "action": request.path,
+        "max_length": MAX_REPORT_LENGTH,
+    }
+    if popup:
+        return render(request, "places/partials/report_card.html", context)
+    return render(request, "places/report.html", context)

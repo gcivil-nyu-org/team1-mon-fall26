@@ -1,0 +1,42 @@
+{% comment %}
+  "Report wrong info" from the Figma "Report Wrong Info" frames: the place,
+  what's wrong (chips) and the correct info. A pop-up on Explore, or the
+  page itself without JavaScript. Styled like the other report cards.
+{% endcomment %}
+<form method="post" action="{{ action }}" class="report-card place-report-card cat-{{ place.category }}" data-report-form novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ back }}">
+
+  <h2 class="report-card-title" id="report-card-title">Report wrong info</h2>
+
+  <div class="report-card-quote">
+    <span class="place-icon" aria-hidden="true">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+    <span class="report-card-quote-text">
+      <strong>{{ place.name }}</strong>
+      {% if place.place_line %}<span class="muted">{{ place.place_line }}</span>{% endif %}
+    </span>
+  </div>
+
+  <fieldset class="report-card-field{% if errors.reason %} has-error{% endif %}">
+    <legend>What’s wrong? <span class="required">*</span></legend>
+    <div class="report-card-reasons">
+      {% for value, label in reasons %}
+        <label class="report-card-reason"><input type="radio" name="reason" value="{{ value }}" required{% if value == reason %} checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+    {% if errors.reason %}<p class="field-error">{{ errors.reason }}</p>{% endif %}
+  </fieldset>
+
+  <div class="report-card-field{% if errors.details %} has-error{% endif %}">
+    <div class="report-card-label-row">
+      <label for="report-details">Details <span class="required">*</span></label>
+    </div>
+    <textarea id="report-details" name="details" rows="3" maxlength="{{ max_length }}" placeholder="What’s the correct info?" required{% if errors.details %} aria-invalid="true" aria-describedby="report-details-error"{% endif %}>{{ details }}</textarea>
+    {% if errors.details %}<p class="field-error" id="report-details-error">{{ errors.details }}</p>{% endif %}
+  </div>
+
+  <div class="report-card-actions">
+    <a class="btn btn-outline" href="{{ back }}" data-close-report>Cancel</a>
+    <button type="submit" class="btn report-card-submit">Submit report</button>
+  </div>
+</form>

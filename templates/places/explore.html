@@ -8,7 +8,8 @@
 {% block content %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=7">
-  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=9">
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=6">
   <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=10">
 
   <div class="search-page">
@@ -131,7 +132,11 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
                 Get directions<span class="visually-hidden"> (opens Google Maps)</span>
               </a>
-              <a class="place-report" href="{{ place.report_url }}?next={{ request.path|urlencode }}%3F{% if query_without_place %}{{ query_without_place|urlencode }}%26{% endif %}place%3D{{ place.pk }}">Report wrong info</a>
+              {% if place.reported %}
+                <span class="place-reported">{% include "places/partials/flag_icon.html" %} Reported</span>
+              {% else %}
+                <a class="place-report" href="{{ place.report_url }}?next={{ request.path|urlencode }}%3F{% if query_without_place %}{{ query_without_place|urlencode }}%26{% endif %}place%3D{{ place.pk }}" data-report-place>Report wrong info</a>
+              {% endif %}
             </div>
 
             {# Use Reliable Location Data: say where this came from and when it was last verified. #}
@@ -165,4 +170,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="{% static 'js/caregiver_search.js' %}?v=2"></script>
   <script src="{% static 'js/places.js' %}?v=9"></script>
+  {# Report wrong info opens as a pop-up (Figma "Report Wrong Info"). #}
+  <dialog class="report-dialog" id="report-dialog" aria-labelledby="report-card-title"></dialog>
+  <script src="{% static 'js/place_report.js' %}?v=1"></script>
 {% endblock %}

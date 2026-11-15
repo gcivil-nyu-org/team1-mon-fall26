@@ -13,7 +13,7 @@ class PlaceAdmin(admin.ModelAdmin):
 
 @admin.register(PlaceReport)
 class PlaceReportAdmin(admin.ModelAdmin):
-    list_display = ("place", "reporter", "created_at", "is_resolved")
-    list_filter = ("is_resolved",)
+    list_display = ("place", "reason", "reporter", "created_at", "is_resolved")
+    list_filter = ("is_resolved", "reason")
     search_fields = ("place__name", "details", "reporter__username")
     list_editable = ("is_resolved",)

@@ -117,7 +117,18 @@ class Place(models.Model):
 class PlaceReport(models.Model):
     """Someone told us a place's information is wrong ("Report wrong info")."""
 
+    class Reason(models.TextChoices):
+        # The "What's wrong?" chips in the Figma "Report Wrong Info" frame.
+        WRONG_HOURS = "wrong_hours", "Wrong hours"
+        WRONG_ADDRESS = "wrong_address", "Wrong address"
+        CLOSED = "closed", "Permanently closed"
+        NOT_PET_FRIENDLY = "not_pet_friendly", "Not pet-friendly"
+        OTHER = "other", "Something else"
+
     place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="reports")
+    reason = models.CharField(
+        max_length=20, choices=Reason.choices, default=Reason.OTHER
+    )
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

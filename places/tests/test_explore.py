@@ -318,15 +318,31 @@ class ReportWrongInfoTests(ExploreData):
         response = self.client.get(self.url())
         self.assertContains(response, "Report wrong info")
         self.assertContains(response, "214 7th Ave, Brooklyn")
+        # Figma "Report Wrong Info": what's wrong (chips), then the details.
+        self.assertContains(response, "What’s wrong?")
+        for label in (
+            "Wrong hours",
+            "Wrong address",
+            "Permanently closed",
+            "Not pet-friendly",
+            "Something else",
+        ):
+            self.assertContains(response, f"<span>{label}</span>")
+        self.assertContains(response, 'placeholder="What’s the correct info?"')
+        self.assertContains(response, "Submit report")
+        self.assertContains(response, 'class="report-card place-report-card cat-cafe"')
 
     def test_report(self):
         back = f"{EXPLORE}?location=Park+Slope&place={self.cafe.pk}"
         response = self.client.post(
-            self.url(), {"details": " Closes at 5 PM now. ", "next": back}, follow=True
+            self.url(),
+            {"reason": "wrong_hours", "details": " Closes at 5 PM now. ", "next": back},
+            follow=True,
         )
         self.assertRedirects(response, back)
         report = PlaceReport.objects.get()
         self.assertEqual(report.details, "Closes at 5 PM now.")
+        self.assertEqual(report.reason, PlaceReport.Reason.WRONG_HOURS)
         self.assertEqual(report.reporter, self.owner)
         self.assertFalse(report.is_resolved)
         self.assertContains(
@@ -336,19 +352,59 @@ class ReportWrongInfoTests(ExploreData):
     def test_empty_or_too_long(self):
         response = self.client.post(self.url(), {"details": "  "})
         self.assertContains(response, "Tell us what&#x27;s wrong")
+        self.assertContains(response, "Choose what&#x27;s wrong.")
         response = self.client.post(
-            self.url(), {"details": "x" * (MAX_REPORT_LENGTH + 1)}
+            self.url(),
+            {"reason": "closed", "details": "x" * (MAX_REPORT_LENGTH + 1)},
         )
+        self.assertContains(response, "checked><span>Permanently closed</span>")
         self.assertContains(response, f"Keep it to {MAX_REPORT_LENGTH} characters.")
         self.assertFalse(PlaceReport.objects.exists())
 
     def test_back_link_must_stay_on_pawpal(self):
         response = self.client.post(
-            self.url(), {"details": "Moved.", "next": "https://evil.example/"}
+            self.url(),
+            {"reason": "other", "details": "Moved.", "next": "https://evil.example/"},
         )
         self.assertRedirects(
             response, f"{EXPLORE}?place={self.cafe.pk}", fetch_redirect_response=False
         )
+
+    def test_unknown_reason(self):
+        response = self.client.post(self.url(), {"reason": "nope", "details": "Hi"})
+        self.assertContains(response, "Choose what&#x27;s wrong.")
+        self.assertFalse(PlaceReport.objects.exists())
+
+    def test_popup_on_explore(self):
+        # Explore opens the form in a pop-up and sends it in the background.
+        popup = {"HTTP_X_REQUESTED_WITH": "fetch"}
+        response = self.client.get(self.url(), **popup)
+        self.assertTemplateUsed(response, "places/partials/report_card.html")
+        self.assertNotContains(response, "<html")
+        response = self.client.post(
+            self.url(), {"reason": "wrong_address", "details": "Moved."}, **popup
+        )
+        self.assertContains(response, "Report sent")
+        self.assertContains(response, "Thanks! Our team will check and update it.")
+        self.assertEqual(PlaceReport.objects.get().reason, "wrong_address")
+        response = self.client.post(self.url(), {"details": ""}, **popup)
+        self.assertContains(response, "Choose what&#x27;s wrong.")
+
+    def test_reported_places_show_reported(self):
+        explore = self.client.get(EXPLORE, {"place": self.cafe.pk})
+        self.assertContains(explore, "data-report-place")
+        self.assertContains(explore, 'id="report-dialog"')
+        PlaceReport.objects.create(
+            place=self.cafe, reporter=self.owner, reason="closed", details="Closed."
+        )
+        explore = self.client.get(EXPLORE, {"place": self.cafe.pk})
+        self.assertContains(explore, '<span class="place-reported">')
+        card = explore.content.decode().split(f'data-place="{self.cafe.pk}"')[1]
+        self.assertNotIn("Report wrong info", card.split("</article>")[0])
+        # Once the team has checked it, it can be reported again.
+        PlaceReport.objects.update(is_resolved=True)
+        explore = self.client.get(EXPLORE, {"place": self.cafe.pk})
+        self.assertNotContains(explore, '<span class="place-reported">')
 
     def test_hidden_places_cannot_be_reported(self):
         self.assertEqual(self.client.get(self.url(self.hidden)).status_code, 404)
