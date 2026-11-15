@@ -203,6 +203,26 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 /* #99: Remove button on each review that's still up. */
 .staff-review-remove { flex: none; min-height: 34px; padding: 0 14px; font-size: 13px; }
 
+/* #107: pet-friendly places, as in Kat's 11/12 Figma. Category colors match Explore. */
+.staff-place-icon { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--cat-bg); color: var(--cat-ink); }
+.staff-place-icon svg { width: 20px; height: 20px; }
+.staff-place-icon.place-icon-large { width: 56px; height: 56px; }
+.staff-place-icon.place-icon-large svg { width: 26px; height: 26px; }
+.staff-place-icon.cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; }
+.staff-place-icon.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.staff-place-icon.cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
+.staff-place-icon.cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+.staff-place-reports { justify-self: start; margin-top: 4px; padding: 1px 9px; border-radius: 999px; background: #ffe9b8; color: #6b4500; font-size: 12px; font-weight: 700; }
+.staff-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.staff-place-hidden { margin: 0 0 18px; padding: 10px 14px; border-radius: 14px; background: #efe9e6; color: #5a4038; font-size: 15px; font-weight: 700; }
+.staff-place-report { min-height: 0; margin: 0 0 14px; }
+.staff-place-facts { grid-template-columns: 1fr; }
+.staff-amenities { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 15px; }
+.staff-amenities li { display: flex; align-items: center; gap: 10px; }
+.staff-amenity-check { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--success-bg); color: var(--success-ink); }
+.staff-amenity-check svg { width: 12px; height: 12px; }
+.staff-place-source { margin: 16px 0 0; font-size: 13px; }
+
 @media (max-width: 760px) {
   .page-staff .admin-title { font-size: 34px; }
   .page-staff .modal-backdrop { padding-top: 16px; place-items: center; }

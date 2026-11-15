@@ -1,0 +1,6 @@
+{# Active or Hidden, with a dot, as in the Figma. #}
+{% if place.is_active %}
+  <span class="account-status account-status-active"><span class="staff-dot" aria-hidden="true"></span>Active</span>
+{% else %}
+  <span class="account-status account-status-deleted"><span class="staff-dot" aria-hidden="true"></span>Hidden</span>
+{% endif %}

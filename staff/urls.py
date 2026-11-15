@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import place_views, views
 
 app_name = "staff"
 
@@ -17,4 +17,9 @@ urlpatterns = [
         views.remove_review,
         name="remove_review",
     ),
+    # #107: pet-friendly places, under Explore.
+    path("places/", place_views.place_list, name="place_list"),
+    path("places/<int:pk>/", place_views.place_detail, name="place_detail"),
+    path("places/<int:pk>/hide/", place_views.hide_place, name="hide_place"),
+    path("places/<int:pk>/show/", place_views.show_place, name="show_place"),
 ]

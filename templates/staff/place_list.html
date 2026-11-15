@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if selected %}{{ selected.name }} · {% endif %}Pet-friendly places · PawPal admin{% endblock %}
+
+{% block main_class %}page page-staff{% endblock %}
+
+{% block content %}
+  {# #107: Kat's 11/12 Figma "Pet-Friendly Places (All)": places on the left, the selected place on the right. #}
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=13">
+
+  <h1 class="admin-title">Pet-friendly places</h1>
+
+  <nav class="admin-tabs" aria-label="Places">
+    {% for t in tabs %}
+      <a class="admin-tab{% if t.key == tab %} is-active{% endif %}" href="{% url 'staff:place_list' %}{% if t.key %}?tab={{ t.key }}{% endif %}"{% if t.key == tab %} aria-current="page"{% endif %}>
+        {{ t.label }} <span class="admin-tab-count">{{ t.count }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <div class="staff-layout">
+    <section class="card staff-list" aria-label="Places">
+      <form method="get" action="{% url 'staff:place_list' %}" class="staff-search" role="search">
+        <svg class="staff-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <label class="visually-hidden" for="place-search">Search by name or address</label>
+        <input type="search" id="place-search" name="q" value="{{ query }}" placeholder="Search name or address" autocomplete="off">
+        {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+        <button type="submit" class="visually-hidden">Search</button>
+      </form>
+      {% if query %}
+        <p class="muted staff-count">{{ page.paginator.count }} place{{ page.paginator.count|pluralize }} found</p>
+      {% endif %}
+      {% if page.object_list %}
+        <ul class="staff-rows">
+          {% for place in page %}
+            <li>
+              <a class="staff-row{% if place.pk == selected.pk %} is-selected{% endif %}" href="{% url 'staff:place_detail' place.pk %}{% if keep %}?{{ keep }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if place.pk == selected.pk %} aria-current="true"{% endif %}>
+                <span class="place-icon staff-place-icon cat-{{ place.category }}">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+                <span class="staff-row-text">
+                  <strong>{{ place.name }}</strong>
+                  <span class="muted">{{ place.place_line }}</span>
+                  {% if place.open_reports %}<span class="staff-place-reports">{{ place.open_reports }} report{{ place.open_reports|pluralize }}</span>{% endif %}
+                </span>
+                {% include "staff/partials/place_status.html" %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if page.has_other_pages %}
+          <nav class="staff-pages" aria-label="Pages">
+            {% if page.has_previous %}<a class="btn btn-outline btn-small" href="{% url 'staff:place_list' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
+            <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a class="btn btn-outline btn-small" href="{% url 'staff:place_list' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="staff-empty">
+          {% if query %}
+            <strong>No places found</strong>
+            <p class="muted">Nothing matches “{{ query }}”. Check the spelling or try the address.</p>
+          {% elif tab == "hidden" %}
+            <strong>No hidden places</strong>
+            <p class="muted">Places you hide show up here.</p>
+          {% else %}
+            <strong>No places yet</strong>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+
+    {% if selected %}
+      {% with place=selected %}
+        <article class="card staff-account" aria-labelledby="place-name">
+          <header class="staff-account-header">
+            <span class="place-icon place-icon-large staff-place-icon cat-{{ place.category }}">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+            <div>
+              <h2 id="place-name">{{ place.name }}</h2>
+              <p class="muted">{{ place.get_category_display }}</p>
+            </div>
+            {% include "staff/partials/place_status.html" %}
+          </header>
+
+          {% if done %}
+            <p class="staff-banner staff-banner-{% if done == 'hidden' %}restricted{% else %}reinstated{% endif %}" role="status">
+              <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+              {% if done == "hidden" %}Hidden. Users can’t see this place.{% else %}Shown. Users can see this place again.{% endif %}
+            </p>
+          {% elif not place.is_active %}
+            <p class="staff-place-hidden" role="status">Hidden. Users can’t see this place.</p>
+          {% endif %}
+
+          {% if place.open_reports %}
+            <div class="staff-report staff-place-report">
+              <span><strong>{{ place.open_reports }} report{{ place.open_reports|pluralize }} open</strong></span>
+            </div>
+          {% endif %}
+
+          <dl class="staff-facts staff-place-facts">
+            <div><dt>Address</dt><dd>{{ place.place_line|default:"Not listed" }}</dd></div>
+            <div><dt>Hours</dt><dd>{{ place.hours|default:"Not listed" }}</dd></div>
+          </dl>
+
+          <h3>Pet amenities</h3>
+          {% with amenities=place.feature_list %}
+            {% if amenities %}
+              <ul class="staff-amenities">
+                {% for item in amenities %}
+                  <li><span class="staff-amenity-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>{{ item }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted staff-none">None listed.</p>
+            {% endif %}
+          {% endwith %}
+
+          <p class="muted staff-place-source">From {{ place.get_source_display }}{% if place.checked_on %} · checked {{ place.checked_on|date:"M j, Y" }}{% endif %}</p>
+
+          <div class="staff-actions">
+            {% if place.is_active %}
+              <a class="btn btn-outline-danger" href="{% url 'staff:place_detail' place.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=hide">Hide place</a>
+            {% else %}
+              <form method="post" action="{% url 'staff:show_place' place.pk %}">
+                {% csrf_token %}
+                {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+                {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+                <button type="submit" class="btn btn-dark">Show place</button>
+              </form>
+            {% endif %}
+          </div>
+        </article>
+      {% endwith %}
+    {% endif %}
+  </div>
+
+  {% if confirm_hide %}
+    {# Figma "Hide Pet-Friendly Location": confirm first, like the Users popups. #}
+    <div class="modal-backdrop">
+      <form method="post" action="{% url 'staff:hide_place' selected.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="hide-title">
+        {% csrf_token %}
+        {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="hide-title">Hide {{ selected.name }}?</h2>
+        <p class="muted">Users won’t see it on Explore until you show it again. Nothing is deleted.</p>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'staff:place_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+          <button type="submit" class="btn btn-danger" autofocus>Hide place</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

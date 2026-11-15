@@ -30,8 +30,9 @@
         {# #94: new reports show up as a count, so admins notice them on any page. #}
         {% open_report_count as open_reports %}
         <a href="{% url 'reports:admin_list' %}" class="{% if section == 'reports' %}active{% endif %}">Reports{% if open_reports %} <span class="nav-count">{{ open_reports }}<span class="visually-hidden"> open</span></span>{% endif %}</a>
-        <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
-        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
+        <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' and 'place' not in request.resolver_match.url_name %}active{% endif %}">Users</a>
+        {# #107: admins manage pet-friendly places under Explore (Kat's 11/12 Figma). #}
+        <a href="{% url 'staff:place_list' %}" class="{% if section == 'staff' and 'place' in request.resolver_match.url_name or section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
