@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .authors import describe, initials
+from .authors import describe, initials, theme
 from .forms import CommentForm, PostForm
 from .models import Post
 
@@ -86,6 +86,7 @@ def _forum(request, selected=None, form=None, post_form=None):
             "form": form or CommentForm(),
             "new_comment": int(new_comment) if new_comment.isdigit() else None,
             "my_initials": initials(request.user),
+            "my_theme": theme(request.user),
             "just_posted": just_posted,
             "post_form": post_form,
         },
