@@ -1,0 +1,21 @@
+{# #107: Figma "Manage Pet-Friendly Location Information (Edit)": the panel turns into a form. #}
+<form method="post" action="{% url 'staff:edit_place' place.pk %}" class="staff-place-form" novalidate>
+  {% csrf_token %}
+  {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+  {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+  {% if form.errors %}
+    <div class="alert alert-error" role="alert"><span class="alert-icon" aria-hidden="true">!</span><span><strong>Almost there.</strong> Check the highlighted fields.</span></div>
+  {% endif %}
+  {% for field in form %}
+    <div class="field{% if field.errors %} has-error{% endif %}{% if field.name == 'borough' or field.name == 'zip_code' %} staff-place-half{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}</label>
+      {{ field }}
+      {% if field.help_text %}<p class="field-hint">{{ field.help_text }}</p>{% endif %}
+      {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endfor %}
+  <div class="staff-actions">
+    <a class="btn btn-outline" href="{% url 'staff:place_detail' place.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+    <button type="submit" class="btn btn-dark">Save changes</button>
+  </div>
+</form>

@@ -223,6 +223,16 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-amenity-check svg { width: 12px; height: 12px; }
 .staff-place-source { margin: 16px 0 0; font-size: 13px; }
 
+/* #107: editing a place in the panel. */
+.staff-place-form { display: flex; flex-wrap: wrap; column-gap: 12px; }
+.staff-place-form > .field, .staff-place-form > .alert, .staff-place-form > .staff-actions { flex: 1 1 100%; }
+.staff-place-form > .staff-place-half { flex: 1 1 160px; }
+.staff-place-form .field { margin-bottom: 14px; }
+.staff-place-form input[type="text"], .staff-place-form select, .staff-place-form textarea { width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--ink); font: inherit; font-size: 15px; }
+.staff-place-form .has-error input, .staff-place-form .has-error textarea { border-color: var(--error); background: var(--error-input-bg); }
+.staff-place-form .field-hint { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.staff-place-form .alert { margin-bottom: 14px; }
+
 @media (max-width: 760px) {
   .page-staff .admin-title { font-size: 34px; }
   .page-staff .modal-backdrop { padding-top: 16px; place-items: center; }

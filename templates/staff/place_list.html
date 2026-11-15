@@ -7,7 +7,7 @@
 
 {% block content %}
   {# #107: Kat's 11/12 Figma "Pet-Friendly Places (All)": places on the left, the selected place on the right. #}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=13">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=14">
 
   <h1 class="admin-title">Pet-friendly places</h1>
 
@@ -81,6 +81,15 @@
             {% include "staff/partials/place_status.html" %}
           </header>
 
+          {% if saved %}
+            {# Figma "Manage Pet-Friendly Location Information (Saved)" #}
+            <p class="staff-banner staff-banner-reinstated" role="status">
+              <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+              Changes saved. Users see the new details on Explore.
+            </p>
+            {% if unlocated %}<p class="staff-place-hidden" role="status">We couldn’t look up the new address right now, so the map pin didn’t move.</p>{% endif %}
+          {% endif %}
+
           {% if done %}
             <p class="staff-banner staff-banner-{% if done == 'hidden' %}restricted{% else %}reinstated{% endif %}" role="status">
               <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
@@ -90,6 +99,9 @@
             <p class="staff-place-hidden" role="status">Hidden. Users can’t see this place.</p>
           {% endif %}
 
+          {% if edit_form %}
+            {% include "staff/partials/place_form.html" with form=edit_form %}
+          {% else %}
           {% if place.open_reports %}
             <div class="staff-report staff-place-report">
               <span><strong>{{ place.open_reports }} report{{ place.open_reports|pluralize }} open</strong></span>
@@ -117,6 +129,7 @@
           <p class="muted staff-place-source">From {{ place.get_source_display }}{% if place.checked_on %} · checked {{ place.checked_on|date:"M j, Y" }}{% endif %}</p>
 
           <div class="staff-actions">
+            <a class="btn btn-outline" href="{% url 'staff:place_detail' place.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}edit=1">Edit details</a>
             {% if place.is_active %}
               <a class="btn btn-outline-danger" href="{% url 'staff:place_detail' place.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=hide">Hide place</a>
             {% else %}
@@ -128,6 +141,7 @@
               </form>
             {% endif %}
           </div>
+          {% endif %}
         </article>
       {% endwith %}
     {% endif %}

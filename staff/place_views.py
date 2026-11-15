@@ -9,16 +9,19 @@ from django.db.models import Count, Q
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from places.models import Place
 
+from .place_forms import PlaceForm
 from .views import staff_required
 
 HIDDEN = "hidden"
 PER_PAGE = 25
 # Banners after hiding or showing a place (?done=...).
 DONE = {"hidden": False, "shown": True}
+SAVED = "saved"
 
 
 def _places(tab="", query=""):
@@ -47,7 +50,7 @@ def place_url(place, tab="", **params):
 
 
 @staff_required
-def place_list(request, pk=None):
+def place_list(request, pk=None, edit_form=None):
     tab = HIDDEN if request.GET.get("tab") == HIDDEN else ""
     query = request.GET.get("q", "").strip()
     page = Paginator(_places(tab, query), PER_PAGE).get_page(request.GET.get("page"))
@@ -84,6 +87,11 @@ def place_list(request, pk=None):
             confirm_hide=request.GET.get("confirm") == "hide" and selected.is_active,
             # The banner only shows while the place is still in that state.
             done=done if DONE.get(done) == selected.is_active else "",
+            saved=done == SAVED,
+            unlocated=request.GET.get("unlocated") == "1",
+            # "Edit details" turns the panel into a form (?edit=1).
+            edit_form=edit_form
+            or (PlaceForm(instance=selected) if request.GET.get("edit") else None),
         )
     return render(request, "staff/place_list.html", context)
 
@@ -114,3 +122,27 @@ def hide_place(request, pk):
 @staff_required
 def show_place(request, pk):
     return _set_shown(request, pk, True)
+
+
+@staff_required
+def edit_place(request, pk):
+    """Correct a place's details; users see them on Explore right away."""
+    place = get_object_or_404(Place, pk=pk)
+    if request.method != "POST":
+        return redirect(place_url(place, edit="1"))
+    form = PlaceForm(request.POST, instance=place)
+    if not form.is_valid():
+        return place_list(request, pk=pk, edit_form=form)
+    place = form.save(commit=False)
+    place.checked_on = timezone.localdate()
+    place.save()
+    tab = HIDDEN if request.POST.get("tab") == HIDDEN else ""
+    return redirect(
+        place_url(
+            place,
+            tab,
+            q=request.POST.get("q", "").strip(),
+            done=SAVED,
+            unlocated="1" if form.geocoding_unavailable else "",
+        )
+    )
