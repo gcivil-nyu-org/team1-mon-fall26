@@ -44,6 +44,11 @@ class Command(BaseCommand):
 
         if not isinstance(credentials, dict) or set(credentials) != expected:
             raise CommandError("Expected exactly 14 testing-party accounts.")
+        if not all(
+            isinstance(password, str) and password
+            for password in credentials.values()
+        ):
+            raise CommandError("Invalid password in payload.")
 
         User = get_user_model()
 
