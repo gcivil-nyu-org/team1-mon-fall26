@@ -7,6 +7,7 @@
 
 {% block content %}
   <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=6">
+  <link rel="stylesheet" href="{% static 'css/place_reports.css' %}?v=1">
   <h1 class="admin-title">Reports</h1>
 
   <nav class="admin-tabs" aria-label="Report status">
@@ -20,7 +21,10 @@
   <div class="reports-layout">
     <section class="card reports-list" aria-label="{% if tab == 'open' %}Open{% else %}Resolved{% endif %} reports">
       {% for report in reports %}
-        <a class="report-row{% if selected and report.pk == selected.pk %} is-selected{% endif %}" href="{% url 'reports:admin_detail' report.pk %}"{% if selected and report.pk == selected.pk %} aria-current="true"{% endif %}>
+        {% if report.is_place_report %}
+          {% include "reports/partials/place_report_row.html" %}
+        {% else %}
+        <a class="report-row{% if selected and report.pk == selected.pk and report.kind == selected.kind %} is-selected{% endif %}" href="{% url 'reports:admin_detail' report.pk %}"{% if selected and report.pk == selected.pk and report.kind == selected.kind %} aria-current="true"{% endif %}>
           <span class="report-icon">{% include "reports/partials/kind_icon.html" with kind=report.kind %}</span>
           <span class="report-row-text">
             <strong>{{ report.get_reason_display }}</strong>
@@ -29,12 +33,15 @@
           </span>
           {% include "reports/partials/status_pill.html" %}
         </a>
+        {% endif %}
       {% empty %}
         <p class="muted reports-empty">{% if tab == "open" %}No open reports. Nice!{% else %}No resolved reports yet.{% endif %}</p>
       {% endfor %}
     </section>
 
-    {% if selected %}
+    {% if selected.is_place_report %}
+      {% include "reports/partials/place_report_detail.html" %}
+    {% elif selected %}
       <article class="card report-detail" aria-labelledby="report-title">
         <header class="report-detail-head">
           <span class="report-icon report-icon-large">{% include "reports/partials/kind_icon.html" with kind=selected.kind %}</span>

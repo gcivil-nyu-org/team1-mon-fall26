@@ -1,0 +1,88 @@
+{% load static %}
+{# Figma "Manage Pet-Friendly Location (Edit)". #}
+<form method="post" action="{% url 'places:manage_edit' selected.pk %}{% if keep %}?{{ keep }}{% endif %}" class="manage-form" novalidate>
+  {% csrf_token %}
+  {% if form.errors %}
+    <p class="manage-error-banner" role="alert">Almost there. Check the fields marked in red.</p>
+  {% endif %}
+  {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+  <div class="manage-field{% if form.name.errors %} has-error{% endif %}">
+    <label for="{{ form.name.id_for_label }}">Name <span class="required">*</span></label>
+    {{ form.name }}
+    {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <fieldset class="manage-field{% if form.category.errors %} has-error{% endif %}">
+    <legend>Type <span class="required">*</span></legend>
+    <div class="manage-chips">
+      {% for radio in form.category %}
+        <label class="manage-chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+      {% endfor %}
+    </div>
+    {% for error in form.category.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </fieldset>
+
+  <div class="manage-field{% if form.address.errors %} has-error{% endif %}">
+    <label for="{{ form.address.id_for_label }}">Address <span class="required">*</span></label>
+    {{ form.address }}
+    {% for error in form.address.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+
+  <fieldset class="manage-field">
+    <legend>Hours</legend>
+    <div class="manage-hours-rows">
+      {% for day in form.days %}
+        <div class="manage-hours-row{% if day.errors %} has-error{% endif %}">
+          <span class="manage-hours-day" id="day-{{ day.name|lower }}">{{ day.name }}</span>
+          <label class="manage-switch">
+            <input type="checkbox" name="{{ day.open.html_name }}" id="{{ day.open.id_for_label }}"{% if day.open.value %} checked{% endif %} aria-labelledby="day-{{ day.name|lower }}">
+            <span class="manage-switch-track" aria-hidden="true"></span>
+            <span class="visually-hidden">Open</span>
+          </label>
+          <span class="manage-hours-times">
+            <input type="time" name="{{ day.from.html_name }}" value="{{ day.from.value|time:'H:i'|default:day.from.value }}" aria-label="{{ day.name }} opens">
+            <span class="muted">to</span>
+            <input type="time" name="{{ day.to.html_name }}" value="{{ day.to.value|time:'H:i'|default:day.to.value }}" aria-label="{{ day.name }} closes">
+          </span>
+          <span class="manage-hours-closed">Closed</span>
+          {% for error in day.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+    <p class="manage-hint muted">Switch every day off if the hours aren't known.</p>
+  </fieldset>
+
+  <fieldset class="manage-field">
+    <legend>Pet amenities</legend>
+    <ul class="manage-amenity-list" data-amenities>
+      {% for amenity in form.amenities %}
+        <li class="manage-amenity">
+          <span class="manage-tick" aria-hidden="true"><svg viewBox="0 0 12 12" focusable="false"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <input type="text" name="amenity" value="{{ amenity }}" maxlength="80" aria-label="Pet amenity">
+          <button type="button" class="manage-amenity-remove" data-remove-amenity aria-label="Remove {{ amenity }}">×</button>
+        </li>
+      {% endfor %}
+      <noscript>
+        <li class="manage-amenity">
+          <span class="manage-tick" aria-hidden="true"></span>
+          <input type="text" name="amenity" value="" maxlength="80" placeholder="Add an amenity" aria-label="New pet amenity">
+        </li>
+      </noscript>
+    </ul>
+    <template id="amenity-row">
+      <li class="manage-amenity">
+        <span class="manage-tick" aria-hidden="true"><svg viewBox="0 0 12 12" focusable="false"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input type="text" name="amenity" value="" maxlength="80" placeholder="e.g. Water bowls and treats" aria-label="New pet amenity">
+        <button type="button" class="manage-amenity-remove" data-remove-amenity aria-label="Remove this amenity">×</button>
+      </li>
+    </template>
+    <button type="button" class="manage-add-amenity" data-add-amenity hidden>+ Add amenity</button>
+  </fieldset>
+
+  <div class="manage-form-actions">
+    <a class="btn btn-outline" href="{% url 'places:manage_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+    <button type="submit" class="btn btn-dark">Save changes</button>
+  </div>
+</form>
+<script src="{% static 'js/manage_places.js' %}?v=1"></script>

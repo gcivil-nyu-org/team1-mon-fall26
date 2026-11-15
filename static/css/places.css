@@ -293,3 +293,10 @@
   .places-list { overflow: visible; }
   .places-empty h2 { font-size: 24px; }
 }
+
+/* "Report wrong info" pop-up (Figma): the place at the top of the card. */
+.report-card-quote .report-card-place-icon { width: 36px; height: 36px; }
+.report-card-quote .report-card-place-icon svg { width: 18px; height: 18px; }
+.report-card-quote-text .muted { font-size: 13px; }
+.report-card-field .required { color: #c2281b; }
+.place-actions .report-tag { margin-left: auto; }

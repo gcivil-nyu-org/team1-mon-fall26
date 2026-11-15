@@ -1,0 +1,342 @@
+/* Admin "Pet-friendly places" page (story #107, Figma "Manage Pet-Friendly
+   Location"). Laid out like the Reports and Users pages: places on the left,
+   the selected place on the right. */
+
+/* Category colors, as on Explore (places.css). */
+.cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; }
+.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
+.cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+
+main.page-manage-places { max-width: 1224px; width: 100%; box-sizing: border-box; padding-left: 24px; padding-right: 24px; }
+.page-manage-places .admin-title { margin: 12px 0 18px; font-size: 44px; letter-spacing: -0.5px; }
+.page-manage-places .admin-tabs { padding: 5px; margin-bottom: 20px; }
+.page-manage-places .admin-tab { gap: 6px; padding: 8px 18px; font-size: 16px; line-height: 24px; }
+.page-manage-places .admin-tab-count { min-width: 22px; height: 20px; font-size: 12px; line-height: 1; }
+
+.manage-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 464px) minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.manage-list,
+.manage-panel {
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+/* ---------- The list ---------- */
+
+.manage-list { padding: 20px; }
+
+.manage-search { position: relative; margin-bottom: 12px; }
+.manage-search input {
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 18px 10px 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--input-bg);
+  font: inherit;
+  font-size: 15px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.manage-search input::-webkit-search-cancel-button,
+.manage-search input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.manage-search input:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+.manage-search-icon { position: absolute; left: 16px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.manage-count { margin: 0 0 12px; font-size: 13px; }
+.manage-empty { margin: 8px 4px; }
+
+.manage-rows { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+
+.manage-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 10px 12px;
+  background: #faf5f2;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.manage-row:hover { border-color: var(--line-strong); }
+.manage-row.is-selected { background: #fff; border-color: var(--ink); }
+.manage-row:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.manage-row.is-hidden .manage-row-text strong,
+.manage-row.is-hidden .manage-row-address { color: #8a7a74; }
+.manage-row .manage-pill { margin-left: auto; }
+
+.manage-row-text { display: grid; justify-items: start; gap: 2px; min-width: 0; }
+.manage-row-text strong { font-size: 15px; line-height: 21px; overflow-wrap: anywhere; }
+.manage-row-address { color: #6a5a54; font-size: 13px; line-height: 19px; overflow-wrap: anywhere; }
+
+.manage-report-tag {
+  margin-top: 4px;
+  padding: 1px 9px;
+  background: #ffe9b8;
+  border-radius: 999px;
+  color: #6b4500;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.place-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--cat-bg);
+  border-radius: 50%;
+  color: var(--cat-ink);
+}
+.place-icon svg { width: 20px; height: 20px; }
+.place-icon-large { width: 56px; height: 56px; }
+.place-icon-large svg { width: 26px; height: 26px; }
+
+.manage-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+.manage-pill.is-active { background: #cdefdc; color: #14532d; }
+.manage-pill.is-hidden { background: #efe9e6; color: #5a4038; }
+.manage-pill .status-dot { width: 7px; height: 7px; background: currentColor; border-radius: 50%; }
+
+.manage-pages { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; font-size: 13px; }
+
+/* ---------- The selected place ---------- */
+
+.manage-panel { display: grid; gap: 14px; padding: 24px; min-width: 0; }
+
+.manage-head { display: flex; align-items: center; gap: 14px; }
+.manage-head > div { flex: 1; min-width: 0; }
+.manage-head h2 { margin: 0; font-size: 28px; line-height: 1.2; letter-spacing: -0.14px; overflow-wrap: anywhere; }
+.manage-head p { margin: 2px 0 0; font-size: 13px; }
+.manage-head .manage-pill { align-self: flex-start; margin-top: 6px; }
+
+.manage-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.manage-banner.is-done { background: #cdefdc; color: #14532d; }
+.manage-banner.is-hidden { background: #f8e3dc; color: #5a2a1e; }
+.manage-check { display: grid; flex: none; place-items: center; width: 22px; height: 22px; background: #fff; border-radius: 50%; }
+.manage-check svg { width: 13px; height: 13px; }
+
+.manage-reports-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 14px;
+  background: #fff3cc;
+  border-radius: 14px;
+  color: #6b4500;
+  font-size: 14px;
+  font-weight: 700;
+}
+.manage-reports-bar span { display: inline-flex; align-items: center; gap: 8px; }
+.manage-reports-bar svg { width: 15px; height: 15px; }
+.manage-reports-bar a { color: #4a2f00; font-size: 13px; text-decoration: underline; }
+
+.manage-tile { display: grid; gap: 4px; padding: 12px 14px; background: #faf5f2; border-radius: 16px; }
+.manage-tile strong { font-size: 15px; line-height: 22px; }
+.manage-tile-label { color: #8a6f64; font-size: 11px; font-weight: 700; line-height: 17px; letter-spacing: 0.7px; text-transform: uppercase; }
+.manage-tile-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+.manage-week { display: grid; gap: 2px; margin: 4px 0 0; }
+.manage-day { display: flex; justify-content: space-between; gap: 12px; padding: 6px 10px; border-radius: 10px; font-size: 14px; }
+.manage-day dt { font-weight: 700; }
+.manage-day dd { margin: 0; color: #3d322e; }
+.manage-day dd.is-closed { color: #b42318; font-weight: 600; }
+.manage-day.is-today { background: #fff3cc; }
+.manage-day.is-today dd { font-weight: 700; }
+
+.manage-amenities h3 { margin: 4px 0 8px; font-size: 16px; }
+.manage-amenities ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.manage-amenities li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.manage-amenities p { margin: 0; font-size: 14px; }
+.manage-tick { display: grid; flex: none; place-items: center; width: 20px; height: 20px; background: #cdefdc; border-radius: 50%; color: #14532d; }
+.manage-tick svg { width: 11px; height: 11px; }
+
+.manage-source { margin: 0; color: #8a7a74; font-size: 12px; }
+
+.manage-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.manage-actions form { margin: 0; }
+.manage-actions .btn,
+.manage-confirm .btn,
+.manage-form-actions .btn { min-height: 48px; padding: 0 24px; font-size: 15px; }
+.manage-hide-link { color: #b42318; font-size: 15px; font-weight: 700; text-decoration: underline; }
+
+/* Figma "Hide Place": the question under the buttons. */
+.manage-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  background: #faf5f2;
+  border-radius: 18px;
+}
+.manage-confirm > div { flex: 1; min-width: 200px; }
+.manage-confirm strong { display: block; font-size: 15px; line-height: 22px; }
+.manage-confirm p { margin: 0; color: #6a5a54; font-size: 13px; }
+
+/* ---------- Edit form ---------- */
+
+.manage-form { display: grid; gap: 16px; margin: 0; }
+.manage-error-banner { margin: 0; padding: 11px 14px; background: #fde4e1; border-radius: 14px; color: #8e1b12; font-size: 14px; }
+.manage-field { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.manage-field > label,
+.manage-field legend { padding: 0; font-size: 15px; font-weight: 700; line-height: 22px; }
+.manage-field legend { margin-bottom: 8px; }
+.manage-field .required { color: #c2281b; }
+.manage-field input[type="text"] {
+  width: 100%;
+  padding: 11px 16px;
+  background: #fffcfa;
+  border: 2px solid #ead3c9;
+  border-radius: 16px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+.manage-field input:focus { border-color: var(--ink); outline: none; }
+.manage-field.has-error > input[type="text"] { background: #fff3f2; border-color: #c2281b; }
+.manage-field .field-error,
+.manage-form > .field-error { margin: 0; color: #b42318; font-size: 13px; font-weight: 600; }
+
+.manage-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.manage-chip { position: relative; }
+.manage-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.manage-chip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 6px 18px;
+  background: #fff;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.manage-chip input:checked + span { background: var(--ink); border-color: var(--ink); box-shadow: 0 3px 0 var(--orange); color: #fff; }
+.manage-chip input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: 2px; }
+.manage-field.has-error .manage-chip span { border-color: #c2281b; }
+
+/* Hours: day, switch, then "8:00 AM to 5:00 PM" or "Closed". */
+.manage-hours-rows { display: grid; gap: 8px; }
+.manage-hours-row { display: grid; grid-template-columns: 44px auto 1fr; align-items: center; gap: 4px 12px; min-height: 40px; }
+.manage-hours-day { font-size: 14px; font-weight: 700; }
+.manage-hours-times { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.manage-hours-times input {
+  width: 128px;
+  min-height: 38px;
+  padding: 4px 10px;
+  background: #fffcfa;
+  border: 2px solid #ead3c9;
+  border-radius: 12px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+.manage-hours-times input:focus { border-color: var(--ink); outline: none; }
+.manage-hours-row.has-error .manage-hours-times input { background: #fff3f2; border-color: #c2281b; }
+.manage-hours-row .field-error { grid-column: 3; }
+.manage-hours-closed { color: #6a5a54; font-size: 13px; font-weight: 600; }
+.manage-hours-row:has(.manage-switch input:checked) .manage-hours-closed,
+.manage-hours-row:not(:has(.manage-switch input:checked)) .manage-hours-times { display: none; }
+.manage-hint { margin: 2px 0 0; font-size: 12px; }
+
+.manage-switch { position: relative; display: inline-flex; cursor: pointer; }
+.manage-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.manage-switch-track { position: relative; width: 34px; height: 20px; background: #e4d9d4; border-radius: 999px; transition: background 0.15s; }
+.manage-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+.manage-switch input:checked + .manage-switch-track { background: var(--ink); }
+.manage-switch input:checked + .manage-switch-track::after { transform: translateX(14px); }
+.manage-switch input:focus-visible + .manage-switch-track { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* Pet amenities */
+.manage-amenity-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.manage-amenity { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 14px; background: #faf5f2; border-radius: 14px; }
+.manage-field .manage-amenity input[type="text"] { flex: 1; min-width: 0; padding: 5px 6px; background: transparent; border: 0; border-radius: 8px; font-size: 14px; }
+.manage-field .manage-amenity input[type="text"]:focus { background: #fff; outline: 2px solid var(--ink); }
+.manage-amenity-remove {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: #fff;
+  border: 0;
+  border-radius: 50%;
+  color: #6a5a54;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.manage-amenity-remove:hover { color: var(--ink); }
+.manage-add-amenity {
+  min-height: 42px;
+  background: none;
+  border: 1.5px dashed #e3b9a8;
+  border-radius: 14px;
+  color: #5a4038;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.manage-add-amenity:hover { background: #fffaf7; }
+.manage-add-amenity[hidden] { display: none; }
+
+.manage-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 860px) {
+  .manage-layout { grid-template-columns: 1fr; }
+  .page-manage-places .admin-title { font-size: 34px; }
+  .manage-panel { padding: 18px; }
+  .manage-hours-row { grid-template-columns: 40px auto; }
+  .manage-hours-times,
+  .manage-hours-closed,
+  .manage-hours-row .field-error { grid-column: 1 / -1; }
+}

@@ -11,10 +11,13 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from caregivers.search import DISTANCE_CHOICES, neighborhoods
 from caregivers.views import _choice, _with, _without
 
-from .models import MAX_REPORT_LENGTH, Place, PlaceReport
+from .forms import PlaceReportForm
+from .models import Place, PlaceReport
 from .search import NAMES, find_origin, places_near
 
 DEFAULT_DISTANCE = 1  # miles, as in the design
+THANKS = "Thanks! Our team will check and update it."
+ALREADY = "You've already reported this place. Our team will check it."
 # Search fields both Explore pages share, kept when switching between them.
 SHARED_FIELDS = ("location", "distance", "lat", "lng", "here")
 
@@ -104,6 +107,12 @@ def explore_places(request):
             "distance": distance,
             "distance_choices": DISTANCE_CHOICES,
             "any_places": Place.objects.shown().exists(),
+            # Places this person reported and we haven't fixed yet show "Reported".
+            "reported_ids": set(
+                PlaceReport.objects.filter(
+                    reporter=request.user, status=PlaceReport.Status.OPEN
+                ).values_list("place_id", flat=True)
+            ),
             "query_without_place": _without(params, "place"),
             "neighborhood_options": [
                 {
@@ -140,9 +149,16 @@ def explore_places(request):
     )
 
 
+def _in_popup(request):
+    """Explore opens the form as a pop-up and sends it in the background, as
+    Messages does for reports."""
+    return request.headers.get("X-Requested-With") == "fetch"
+
+
 @login_required
 def report_place(request, pk):
-    """Report wrong info: tell the PawPal team a place's details are wrong."""
+    """Report wrong info (Figma "Report wrong info" pop-up): tell the PawPal
+    team a place's details are wrong. Admins see it on the Reports page."""
     place = get_object_or_404(Place.objects.shown(), pk=pk)
     back = request.POST.get("next") or request.GET.get("next", "")
     if not url_has_allowed_host_and_scheme(
@@ -150,32 +166,33 @@ def report_place(request, pk):
     ):
         back = ""
     back = back or f"{reverse('places:explore')}?place={place.pk}"
+    popup = _in_popup(request)
 
-    details = ""
-    error = ""
-    if request.method == "POST":
-        details = request.POST.get("details", "").strip()
-        if not details:
-            error = "Tell us what's wrong so we can fix it."
-        elif len(details) > MAX_REPORT_LENGTH:
-            error = f"Keep it to {MAX_REPORT_LENGTH} characters."
-        else:
-            PlaceReport.objects.create(
-                place=place, reporter=request.user, details=details
+    already = PlaceReport.objects.filter(
+        place=place, reporter=request.user, status=PlaceReport.Status.OPEN
+    ).exists()
+    if already:
+        if popup:
+            return render(
+                request, "reports/partials/report_sent.html", {"text": ALREADY}
             )
-            messages.success(
-                request, f"Thanks! We'll check the information for {place.name}."
-            )
-            return redirect(back)
+        messages.info(request, ALREADY)
+        return redirect(back)
 
-    return render(
-        request,
-        "places/report.html",
-        {
-            "place": place,
-            "details": details,
-            "error": error,
-            "back": back,
-            "max_length": MAX_REPORT_LENGTH,
-        },
-    )
+    form = PlaceReportForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        report = form.save(commit=False)
+        report.place = place
+        report.reporter = request.user
+        report.save()
+        if popup:
+            return render(
+                request, "reports/partials/report_sent.html", {"text": THANKS}
+            )
+        messages.success(request, THANKS)
+        return redirect(back)
+
+    context = {"place": place, "form": form, "back": back, "action": request.path}
+    if popup:
+        return render(request, "places/partials/report_card.html", context)
+    return render(request, "places/report.html", context)

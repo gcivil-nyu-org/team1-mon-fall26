@@ -12,4 +12,11 @@ urlpatterns = [
     path("admin/<int:pk>/", admin_views.report_detail, name="admin_detail"),
     path("admin/<int:pk>/dismiss/", admin_views.report_dismiss, name="admin_dismiss"),
     path("admin/<int:pk>/remove/", admin_views.report_remove, name="admin_remove"),
+    # Reports of wrong place information (#107).
+    path("admin/place/<int:pk>/", admin_views.place_report_detail, name="admin_place"),
+    path(
+        "admin/place/<int:pk>/resolve/",
+        admin_views.place_report_resolve,
+        name="admin_place_resolve",
+    ),
 ]
