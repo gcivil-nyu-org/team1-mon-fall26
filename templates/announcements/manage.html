@@ -6,7 +6,7 @@
 {% block main_class %}page page-announcements{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=2">
 
   <div class="announcements-head">
     <h1 class="admin-title">Announcements</h1>
@@ -131,8 +131,8 @@
               <strong id="confirm-title">{% if selected.is_published %}Remove this announcement?{% else %}Delete this draft?{% endif %}</strong>
               <p>{% if selected.is_published %}Users won't see it anymore.{% else %}It won't be saved.{% endif %}</p>
             </div>
-            <a class="btn btn-outline btn-small" href="{% url 'announcements:detail' selected.pk %}">Cancel</a>
-            <button type="submit" class="btn btn-danger btn-small" autofocus>{% if selected.is_published %}Remove{% else %}Delete{% endif %}</button>
+            <a class="btn btn-outline" href="{% url 'announcements:detail' selected.pk %}">Cancel</a>
+            <button type="submit" class="btn btn-danger" autofocus>{% if selected.is_published %}Remove{% else %}Delete{% endif %}</button>
           </form>
         {% else %}
           <div class="announcement-actions">

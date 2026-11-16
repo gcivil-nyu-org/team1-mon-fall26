@@ -158,7 +158,7 @@ class PlaceReportForm(forms.ModelForm):
             attrs={
                 "rows": 3,
                 "maxlength": MAX_REPORT_LENGTH,
-                "placeholder": "For example: it closes at 5 PM now",
+                "placeholder": "What's the correct info?",
             }
         ),
         error_messages={
