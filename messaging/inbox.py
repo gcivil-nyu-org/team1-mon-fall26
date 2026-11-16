@@ -16,8 +16,9 @@ from .models import Conversation, Message
 
 # Treat "never opened" as opened long ago, so every message counts as new.
 NEVER = datetime(2000, 1, 1, tzinfo=dt_timezone.utc)
-# Avatar colors for pet owners, picked by account id.
-OWNER_THEMES = ("yellow", "blue", "mint", "pink", "peach")
+# Avatar colors for pet owners, picked by account id. Ordered so the sample
+# pet owner "Kat W." (account 2) is yellow, as in the Figma.
+OWNER_THEMES = ("pink", "peach", "yellow", "blue", "mint")
 
 
 def conversations_for(user):

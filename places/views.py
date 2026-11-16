@@ -39,6 +39,8 @@ def explore_places(request):
     params = request.GET
     if params.get("looking_for") == "caregivers":
         return redirect(explore_url("caregiver_list", params))
+    if params.get("looking_for") == "pets":
+        return redirect(explore_url("opportunities:browse", params))
 
     category = params.get("category", "")
     if category not in Place.Category.values:

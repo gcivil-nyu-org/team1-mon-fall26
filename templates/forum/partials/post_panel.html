@@ -32,7 +32,7 @@
 
     <form method="post" action="{% url 'forum:comment' post.pk %}" class="forum-comment-form" novalidate>
       {% csrf_token %}
-      <span class="forum-avatar forum-avatar-me" aria-hidden="true">{{ my_initials }}</span>
+      <span class="forum-avatar forum-avatar-me theme-{{ my_theme }}" aria-hidden="true">{{ my_initials }}</span>
       <label class="visually-hidden" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>
       {{ form.body }}
       <button type="submit" class="btn forum-comment-button{% if not form.body.value %} is-empty{% endif %}">Comment</button>
