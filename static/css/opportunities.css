@@ -9,6 +9,9 @@ main.co-wide {
 }
 
 .co-page { width: 100%; margin: 28px auto 0; color: var(--ink); }
+/* Explore (Pets needing care): the purple box sits where it does on the other
+   Explore pages (Pet-friendly places, Caregivers), with no extra gap above it. */
+.co-explore .co-page { margin-top: 0; }
 .co-narrow { max-width: 756px; }
 
 /* ---------- Page header ---------- */
