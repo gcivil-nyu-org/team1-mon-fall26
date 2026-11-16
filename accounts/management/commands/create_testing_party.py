@@ -1,5 +1,9 @@
+
+import csv
+import os
 import secrets
 import string
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,6 +13,7 @@ from django.db import transaction
 from accounts.models import AccountProfile
 from caregivers.models import CaregiverProfile
 from pets.models import Pet, PetType
+
 
 EVALUATORS = [
     ("prof", "Professor", "Mochi", "Cat"),
@@ -67,41 +72,102 @@ CAREGIVER_DATA = {
 }
 
 
+INTEGRATION_HOST = "pawpal-integration.us-east-2.elasticbeanstalk.com"
+
+
 def generate_password(length=20):
-    """Generate a random password for a demo account."""
+    """Generate a random password for local demo accounts."""
     alphabet = string.ascii_letters + string.digits + "!@#$%"
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+def load_demo_passwords(csv_path):
+    """Read and validate the existing testing-party CSV."""
+    if not csv_path.is_file():
+        raise CommandError(f"Credentials file not found: {csv_path}")
+
+    with csv_path.open(newline="", encoding="utf-8-sig") as file:
+        reader = csv.DictReader(file)
+
+        if not {"username", "password"}.issubset(reader.fieldnames or []):
+            raise CommandError("CSV must contain username,password columns.")
+
+        rows = list(reader)
+
+    expected = {
+        f"{prefix}_{suffix}"
+        for prefix, *_ in EVALUATORS
+        for suffix in ("owner", "caregiver")
+    }
+
+    passwords = {}
+
+    for row in rows:
+        username = row["username"]
+        password = row["password"]
+
+        if username in passwords:
+            raise CommandError(f"Duplicate username: {username}")
+
+        if not password:
+            raise CommandError(f"Empty password for {username}")
+
+        passwords[username] = password
+
+    if len(rows) != 14 or set(passwords) != expected:
+        raise CommandError(
+            "Credentials CSV must contain exactly the 14 expected demo accounts."
+        )
+
+    return passwords
+
+
 class Command(BaseCommand):
-    help = (
-        "Create PawPal testing-party accounts, sample pets, " "and caregiver profiles."
-    )
+    help = "Create or update PawPal testing-party accounts and sample data."
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--dry-run",
             action="store_true",
-            help="Preview the setup without changing the database.",
+            help="Preview without modifying the database.",
         )
         parser.add_argument(
             "--allow-production",
             action="store_true",
-            help="Explicitly permit running with DEBUG=False.",
+            help="Allow DEBUG=False, subject to integration safety checks.",
+        )
+        parser.add_argument(
+            "--credentials-file",
+            type=Path,
+            help="CSV containing the 14 existing demo usernames and passwords.",
         )
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
+        csv_path = options["credentials_file"]
 
         if not settings.DEBUG and not dry_run:
             if not options["allow_production"]:
                 raise CommandError(
-                    "Production changes are blocked. "
-                    "Use --allow-production only after review."
+                    "DEBUG=False requires --allow-production."
                 )
 
+            # Check the deployment's explicitly configured hostname rather than
+            # requiring Django ALLOWED_HOSTS to be an exact one-item list.
+            if os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip() != INTEGRATION_HOST:
+                raise CommandError(
+                    "Refusing to modify a non-integration environment."
+                )
+
+        passwords = load_demo_passwords(csv_path) if csv_path else None
+
+        if not settings.DEBUG and not dry_run and passwords is None:
+            raise CommandError(
+                "Integration setup requires --credentials-file."
+            )
+
         User = get_user_model()
-        credentials = []
+        generated_credentials = []
 
         self.stdout.write("PawPal Testing Party Setup")
         self.stdout.write("-" * 40)
@@ -129,15 +195,24 @@ class Command(BaseCommand):
 
                         if profile is None or profile.role != role:
                             raise CommandError(
-                                f"{username} already exists with "
-                                "a missing or different role. "
+                                f"{username} has a missing or incorrect role. "
                                 "No changes committed."
                             )
 
-                        self.stdout.write(f"  EXISTS: {username}")
+                        if passwords is not None:
+                            user.set_password(passwords[username])
+                            user.save(update_fields=["password"])
+                            self.stdout.write(f"  UPDATED: {username}")
+                        else:
+                            self.stdout.write(f"  EXISTS: {username}")
+
                         continue
 
-                    password = generate_password()
+                    password = (
+                        passwords[username]
+                        if passwords is not None
+                        else generate_password()
+                    )
 
                     user = User.objects.create_user(
                         username=username,
@@ -152,15 +227,23 @@ class Command(BaseCommand):
                         },
                     )
 
-                    credentials.append((username, password))
+                    if passwords is None:
+                        generated_credentials.append((username, password))
+
                     self.stdout.write(f"  CREATED: {username}")
 
                 if dry_run:
-                    self.stdout.write(f"  PLAN: Caregiver profile for {caregiver_name}")
-                    self.stdout.write(f"  PLAN: {pet_name} ({pet_type_name})")
+                    self.stdout.write(
+                        f"  PLAN: Caregiver profile for {caregiver_name}"
+                    )
+                    self.stdout.write(
+                        f"  PLAN: {pet_name} ({pet_type_name})"
+                    )
                     continue
 
-                caregiver = User.objects.get(username=f"{prefix}_caregiver")
+                caregiver = User.objects.get(
+                    username=f"{prefix}_caregiver"
+                )
 
                 caregiver_profile, profile_created = (
                     CaregiverProfile.objects.get_or_create(
@@ -172,16 +255,22 @@ class Command(BaseCommand):
                     )
                 )
 
-                profile_status = "CREATED" if profile_created else "EXISTS"
+                profile_status = (
+                    "CREATED" if profile_created else "EXISTS"
+                )
 
                 self.stdout.write(
                     f"  {profile_status} CAREGIVER PROFILE: "
                     f"{caregiver_profile.name}"
                 )
 
-                owner = User.objects.get(username=f"{prefix}_owner")
+                owner = User.objects.get(
+                    username=f"{prefix}_owner"
+                )
 
-                pet_type, _ = PetType.objects.get_or_create(name=pet_type_name)
+                pet_type, _ = PetType.objects.get_or_create(
+                    name=pet_type_name
+                )
 
                 pet, created = Pet.objects.get_or_create(
                     owner=owner,
@@ -194,20 +283,27 @@ class Command(BaseCommand):
 
         if dry_run:
             self.stdout.write(
-                self.style.WARNING("\nDRY RUN — No database changes made.")
+                self.style.WARNING(
+                    "\nDRY RUN — No database changes made."
+                )
             )
             return
 
-        self.stdout.write(self.style.SUCCESS("\nSetup completed successfully."))
+        self.stdout.write(
+            self.style.SUCCESS("\nSetup completed successfully.")
+        )
 
-        if credentials:
-            self.stdout.write("\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY")
-
-            for username, password in credentials:
-                self.stdout.write(f"{username}: {password}")
-
+        if passwords is not None:
             self.stdout.write(
-                "\nPasswords are shown only when accounts "
-                "are first created. Existing passwords "
-                "are never displayed or reset."
+                self.style.SUCCESS(
+                    "All 14 demo accounts have their CSV passwords."
+                )
             )
+
+        if generated_credentials:
+            self.stdout.write(
+                "\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY"
+            )
+
+            for username, password in generated_credentials:
+                self.stdout.write(f"{username}: {password}")
