@@ -6,7 +6,7 @@
 {% block main_class %}page page-admin-reports{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=6">
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=8">
   <link rel="stylesheet" href="{% static 'css/place_reports.css' %}?v=1">
   <h1 class="admin-title">Reports</h1>
 
@@ -78,18 +78,18 @@
               {% if review %}{% paws review.rating %}{% endif %}
             </div>
             <p{% if review.removed_at %} class="is-removed"{% endif %}>{{ selected.content_text|default:"(Rating only, no written review)"|linebreaksbr }}</p>
-            {% include "reports/partials/content_tag.html" with removed=review.removed_at %}
+            {% include "reports/partials/content_tag.html" with removed=review.removed_at dismissed=selected.is_dismissed %}
           </div>
         {% elif conversation %}
           <h3>Conversation</h3>
           <ol class="report-conversation">
             {% for m in conversation %}
-                <li class="report-line{% if m.sender_id == selected.reporter_id %} is-reporter{% endif %}{% if m.pk == message.pk %} is-reported{% endif %}">
+                <li class="report-line{% if m.sender_id == selected.reporter_id %} is-reporter{% endif %}{% if m.pk == message.pk %} is-reported{% if selected.is_dismissed %} is-dismissed{% endif %}{% endif %}">
                   <p class="report-chat-name">{{ m.sender|display_name }}</p>
                   <p class="report-bubble{% if m.removed_at %} is-removed{% endif %}">{{ m.body|linebreaksbr }}</p>
                   <p class="report-chat-meta">
                     <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:"g:i A" }}</time>
-                    {% if m.pk == message.pk %}{% include "reports/partials/content_tag.html" with removed=m.removed_at %}{% elif m.removed_at %}{% include "reports/partials/content_tag.html" with removed=True %}{% endif %}
+                    {% if m.pk == message.pk %}{% include "reports/partials/content_tag.html" with removed=m.removed_at dismissed=selected.is_dismissed %}{% elif m.removed_at %}{% include "reports/partials/content_tag.html" with removed=True %}{% endif %}
                   </p>
                 </li>
             {% endfor %}

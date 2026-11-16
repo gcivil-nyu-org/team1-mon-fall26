@@ -534,3 +534,19 @@ main.page-admin-reports {
   background: #f3ebe7;
   color: var(--ink);
 }
+
+/* Figma: the Reported tag lines up with the right edge of the message, the
+   time stays on the left. The time-and-tag row stretches to the message's
+   width; the message keeps its own width, so a short one doesn't grow. */
+.bubble-row.is-theirs:has(.report-tag) { align-items: stretch; }
+.bubble-row.is-theirs:has(.report-tag) .chat-bubble { align-self: flex-start; }
+.bubble-meta .report-tag,
+.report-chat-meta .report-tag { margin-left: auto; }
+.report-line:not(.is-reporter):has(.report-chat-meta .report-tag) { justify-self: start; justify-items: stretch; }
+.report-line:not(.is-reporter):has(.report-chat-meta .report-tag) .report-bubble { justify-self: start; }
+
+/* Figma "Dismiss Content Report": once dismissed, the message looks normal again
+   and its tag turns gray. */
+.report-tag.is-dismissed,
+.report-status-dismissed { background: #efe9e6; color: #5a4038; }
+.report-line.is-reported.is-dismissed .report-bubble { border-color: var(--line-strong); box-shadow: none; }
