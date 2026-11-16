@@ -58,7 +58,7 @@ def experience_range(years):
     """Years of experience as the ranges the design shows."""
     years = years or 0
     if years < 1:
-        return "Under 1 year"
+        return "Less than 1 year"
     if years <= 2:
         return "1–2 years"
     if years <= 5:

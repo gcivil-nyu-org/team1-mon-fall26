@@ -13,7 +13,6 @@ from .models import AccountProfile
 from .restriction import RESTRICTED_MESSAGE, is_restricted
 from .verification import email_taken, mark_verified, needs_verification
 
-
 # Same limit as pet and caregiver photos.
 MAX_PHOTO_MB = 5
 

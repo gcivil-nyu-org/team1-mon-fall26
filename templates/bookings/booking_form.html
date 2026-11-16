@@ -19,7 +19,7 @@
     </div>
   {% endif %}
 
-  {% if not form.fields.pet.queryset.exists %}
+  {% if not form.fields.pets.queryset.exists %}
     <div class="card empty-state">
       <span class="bubble bubble-yellow" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
       <h2>Add a pet first</h2>
@@ -36,10 +36,11 @@
       {% for error in form.caregiver.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
-    <fieldset class="booking-step{% if form.pet.errors %} has-error{% endif %}">
-      <legend class="booking-step-label"><span class="step-dot step-pink">2</span> Which pet?</legend>
+    <fieldset class="booking-step{% if form.pets.errors %} has-error{% endif %}">
+      <legend class="booking-step-label"><span class="step-dot step-pink">2</span> Which pets?</legend>
+      {% if form.fields.pets.queryset.count > 1 %}<p class="booking-step-hint muted">Pick one or more. For more than one pet, the caregiver confirms the price.</p>{% endif %}
       <div class="booking-pets">
-        {% for radio in form.pet %}
+        {% for radio in form.pets %}
           {% with pet=radio.data.value.instance %}
             <label class="booking-pet theme-{{ pet.theme }}">
               {{ radio.tag }}
@@ -54,7 +55,7 @@
           {% endwith %}
         {% endfor %}
       </div>
-      {% for error in form.pet.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      {% for error in form.pets.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </fieldset>
 
     <fieldset class="booking-step{% if form.service_type.errors %} has-error{% endif %}">
@@ -123,11 +124,11 @@
       update();
     })();
 
-    // Clicking the pet or service that's already picked unselects it.
+    // Clicking the service that's already picked unselects it (pets are checkboxes).
     (function () {
       const form = document.getElementById('booking-form');
       if (!form) return;
-      const radios = form.querySelectorAll('[name="pet"], [name="service_type"]');
+      const radios = form.querySelectorAll('[name="service_type"]');
       const remember = () => radios.forEach(r => { r.dataset.wasChecked = r.checked; });
       radios.forEach(r => r.addEventListener('click', () => {
         if (r.dataset.wasChecked === 'true') r.checked = false;

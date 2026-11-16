@@ -7,6 +7,9 @@ from django.utils import timezone
 from django.utils.formats import date_format
 
 from messaging.inbox import person
+from places.models import PlaceReport
+
+from ..models import Report
 
 register = template.Library()
 
@@ -79,3 +82,16 @@ def person_theme(user):
 @register.filter
 def person_initials(user):
     return person(user)["initials"]
+
+
+@register.simple_tag
+def open_report_count():
+    """#94: how many reports are waiting for an admin, for the header. Reports
+    about a place count once per place, as on the Reports page."""
+    places = (
+        PlaceReport.objects.filter(status=PlaceReport.Status.OPEN)
+        .values("place")
+        .distinct()
+        .count()
+    )
+    return Report.objects.filter(status=Report.Status.OPEN).count() + places

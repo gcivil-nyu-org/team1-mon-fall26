@@ -58,6 +58,18 @@ class DismissReportTests(AdminReportsTestData):
         self.assertContains(later, "Dismissed by Ada · Today,")
         self.assertNotContains(response, "?confirm=dismiss")
 
+    def test_dismissed_message_gets_a_gray_dismissed_tag(self):
+        # Figma "Dismiss Content Report": the message looks normal again.
+        report = self.report(self.owner, self.their_message)
+        response = self.client.get(self.detail_url(report))
+        self.assertContains(response, "</svg>\n Reported</span>")
+        self.assertNotContains(response, "is-dismissed")
+        self.client.post(self.dismiss_url(report))
+        response = self.client.get(self.detail_url(report))
+        self.assertContains(response, 'class="report-tag is-dismissed"')
+        self.assertContains(response, "</svg>\n Dismissed</span>")
+        self.assertContains(response, "is-reported is-dismissed")
+
     def test_dismissing_closes_every_open_report_about_the_same_content(self):
         first = self.report(self.stranger, self.owner_review)
         self.report(self.sitter, self.owner_review)

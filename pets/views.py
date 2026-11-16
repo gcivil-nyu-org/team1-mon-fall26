@@ -82,7 +82,8 @@ def upcoming_bookings(pet):
     """Bookings that still need this pet: pending requests and care that hasn't ended."""
     now = timezone.now()
     return (
-        pet.bookings.filter(
+        Booking.for_pet(pet)
+        .filter(
             Q(status=Booking.Status.PENDING, start_time__gt=now)
             | Q(status=Booking.Status.ACCEPTED, end_time__gt=now)
         )
@@ -117,7 +118,7 @@ class PetDeleteView(OwnerPetsMixin, DeleteView):
             )
             return redirect("pets:delete", pk=pet.pk)
 
-        if pet.bookings.exists():
+        if Booking.for_pet(pet).exists():
             pet.deleted_at = timezone.now()
             pet.save(update_fields=["deleted_at"])
         else:
@@ -155,14 +156,18 @@ class CaregiverPetView(LoginRequiredMixin, DetailView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        pet_ids = current_care(self.request.user).values("pet_id")
-        return Pet.objects.filter(pk__in=pet_ids).select_related("pet_type", "owner")
+        care = current_care(self.request.user)
+        # Every pet in those bookings, not only the first one picked.
+        return Pet.objects.filter(
+            Q(pk__in=care.values("pet_id")) | Q(pk__in=care.values("pets"))
+        ).select_related("pet_type", "owner")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["care_bookings"] = (
             current_care(self.request.user)
-            .filter(pet=self.object)
+            .filter(Q(pet=self.object) | Q(pets=self.object))
+            .distinct()
             .select_related("service_type")
             .order_by("start_time")
         )

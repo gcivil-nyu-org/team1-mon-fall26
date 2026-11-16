@@ -11,7 +11,7 @@
     <div class="booking-detail-body">
       <h1>Cancel this booking?</h1>
       <p>
-        <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong> with {{ booking.caregiver.name }},
+        <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong> with {{ booking.caregiver.name }},
         {{ booking.start_time|date:"D, M j, g:i A" }} to {{ booking.end_time|date:"D, M j, g:i A" }}.
       </p>
       <p class="muted">

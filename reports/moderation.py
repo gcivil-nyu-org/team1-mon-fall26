@@ -35,3 +35,15 @@ def remove_content(report, admin):
         target.removed_at = timezone.now()
         target.save(update_fields=["removed_at"])
     return count
+
+
+def remove_review(review, admin):
+    """#99: an admin removes a review directly, without a report first (from
+    the account's review history, #100). Open reports about it close as
+    Removed, the same as removing it from the Reports page."""
+    Report.objects.filter(review=review, status=Report.Status.OPEN).update(
+        status=Report.Status.RESOLVED, handled_by=admin, handled_at=timezone.now()
+    )
+    if review.removed_at is None:
+        review.removed_at = timezone.now()
+        review.save(update_fields=["removed_at"])

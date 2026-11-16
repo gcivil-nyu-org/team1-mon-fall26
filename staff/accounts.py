@@ -7,9 +7,11 @@ from accounts.restriction import is_restricted
 from bookings.models import Booking
 from pets.models import Pet
 from reports.models import Report
+from reviews.models import Review
 
 PER_PAGE = 25
 RECENT_BOOKINGS = 5
+RECENT_REVIEWS = 5
 
 
 def account_type(user):
@@ -74,17 +76,21 @@ def restricted(accounts):
 
 
 def search(accounts, query):
-    """#90: accounts whose name, username or email contains every word typed.
+    """#90: accounts whose name or email contains every word typed, as the
+    search box says ("Search name or email").
 
-    Case doesn't matter, so "kat w" finds Kat Wongsri.
+    Case doesn't matter, so "kat w" finds Kat Wongsri. Only what the page shows
+    is searched, so every result visibly matches: the username counts only for
+    an account with no name, where the username is shown instead.
     """
     for word in query.split():
         accounts = accounts.filter(
-            Q(username__icontains=word)
-            | Q(email__icontains=word)
+            Q(email__icontains=word)
             | Q(first_name__icontains=word)
             | Q(last_name__icontains=word)
-        )
+            | Q(caregiver_profile__name__icontains=word)
+            | Q(first_name="", last_name="", username__icontains=word)
+        ).distinct()
     return accounts
 
 
@@ -93,7 +99,8 @@ def details(user):
 
     Pets (a deleted pet is listed but marked), the caregiver profile (its
     services are on the public profile), the latest bookings the account took part in, either as the
-    pet owner or as the caregiver, and how often it has been reported.
+    pet owner or as the caregiver, how often it has been reported, and its
+    review history (#100).
     """
     caregiver = getattr(user, "caregiver_profile", None)
     reports = Report.objects.filter(reported_user=user).order_by("-created_at", "-pk")
@@ -112,6 +119,41 @@ def details(user):
         # Reports other people made about this account (#95), newest first.
         "report_count": reports.count(),
         "latest_report": reports.first(),
+        **review_history(user),
+    }
+
+
+def _about(user):
+    """Reviews about this account: owners review the caregiver, and caregivers
+    review the owner and pet."""
+    return Q(role=Review.Role.OWNER, booking__caregiver__user=user) | Q(
+        role=Review.Role.CAREGIVER, booking__owner=user
+    )
+
+
+def history_reviews(user):
+    """Every review in the account's history (#100), written or received."""
+    return Review.objects.filter(Q(author=user) | _about(user))
+
+
+def review_history(user):
+    """#100: the reviews this account wrote and the reviews about it, newest
+    first. Removed reviews (#97) are listed too, marked, so admins see the
+    whole history."""
+    reviews = Review.objects.select_related(
+        "author",
+        "booking__owner",
+        "booking__caregiver",
+        "booking__pet",
+        "booking__service_type",
+    ).order_by("-created_at", "-pk")
+    written = reviews.filter(author=user)
+    received = reviews.filter(_about(user))
+    return {
+        "reviews_written": written[:RECENT_REVIEWS],
+        "reviews_written_count": written.count(),
+        "reviews_received": received[:RECENT_REVIEWS],
+        "reviews_received_count": received.count(),
     }
 
 

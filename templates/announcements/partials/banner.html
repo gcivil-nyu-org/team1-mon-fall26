@@ -1,0 +1,21 @@
+{% load static %}
+{# The newest announcement for this user (Figma "Announcements (Pet owners)" and "(Caregivers)"). #}
+{% if current_announcement %}
+  {% with a=current_announcement %}
+    <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=3">
+    <aside class="announcement-banner kind-{{ a.kind }}" role="status" aria-label="Announcement">
+      <span class="announcement-icon" aria-hidden="true">{% include "announcements/partials/kind_icon.html" with kind=a.kind %}</span>
+      <div class="announcement-banner-text">
+        <strong>{{ a.title }}</strong>
+        <p>{{ a.message|linebreaksbr }}</p>
+      </div>
+      <form method="post" action="{% url 'announcements:dismiss' a.pk %}" class="announcement-dismiss">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" aria-label="Close this announcement">
+          <svg viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </form>
+    </aside>
+  {% endwith %}
+{% endif %}

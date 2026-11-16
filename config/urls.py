@@ -28,6 +28,8 @@ urlpatterns = [
     path("manage/", include("staff.urls")),
     path("reports/", include("reports.urls")),
     path("explore/", include("places.urls")),
+    path("forum/", include("forum.urls")),
+    path("announcements/", include("announcements.urls")),
 ]
 
 # Serve uploaded photos while developing locally.

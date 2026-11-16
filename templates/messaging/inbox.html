@@ -67,7 +67,7 @@
             <div class="chat-context chat-booking">
               {% include "bookings/partials/pet_avatar.html" with pet=b.pet classes="chat-pet-avatar" %}
               <div class="chat-context-text">
-                <strong>{{ b.pet.name }} · {{ b.service_type.name }}</strong>
+                <strong>{{ b.pet_names }} · {{ b.service_type.name }}</strong>
                 <span class="chat-context-sub">
                   <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"><path d="M4.33333 3.33333H11.6667C12.7712 3.33333 13.6667 4.22876 13.6667 5.33333V11.3333C13.6667 12.4379 12.7712 13.3333 11.6667 13.3333H4.33333C3.22876 13.3333 2.33333 12.4379 2.33333 11.3333V5.33333C2.33333 4.22876 3.22876 3.33333 4.33333 3.33333Z"/><path d="M2.33333 6.66667H13.6667M5.33333 2V4.66667M10.6667 2V4.66667"/></svg>
                   {{ b.start_time|booking_when }}
@@ -144,7 +144,7 @@
       </button>
     </div>
     <dialog class="report-dialog" id="report-dialog" aria-labelledby="report-card-title"></dialog>
-    <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=8">
     <script src="{% static 'js/messaging.js' %}?v=1"></script>
     <script src="{% static 'js/report_message.js' %}?v=4"></script>
   {% endif %}

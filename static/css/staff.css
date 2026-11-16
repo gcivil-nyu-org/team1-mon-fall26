@@ -84,7 +84,10 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
   font-size: 16px;
 }
 
-.staff-avatar-caregiver { background: var(--mint); color: var(--success-ink); }
+/* Each person's Messages color (Figma "Users"), with the same peach and yellow as Messages. */
+.staff-avatar[class*="theme-"] { background: var(--theme-bg); color: var(--theme-ink); }
+.staff-avatar.theme-peach { --theme-bg: var(--orange); --theme-ink: var(--ink); }
+.staff-avatar.theme-yellow { --theme-bg: var(--yellow); --theme-ink: var(--ink); }
 .staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
 .staff-avatar-large { width: 64px; height: 64px; font-size: 22px; }
 
@@ -191,6 +194,17 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 }
 .staff-confirm .has-error textarea { border-color: var(--error); background: var(--error-input-bg); }
 .staff-confirm .field-error { margin: 0; }
+
+/* #100: review history. Removed reviews (#97) stay listed, faded and crossed out. */
+.staff-count-pill { display: inline-grid; place-items: center; min-width: 24px; height: 22px; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--bg); font-size: 13px; font-weight: 700; vertical-align: 2px; }
+.staff-review { align-items: flex-start; }
+.staff-review > span:first-child { gap: 4px; }
+.staff-review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.staff-review-text { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.staff-review.is-removed .staff-review-text { color: var(--muted); text-decoration: line-through; }
+.staff-removed-tag { flex: none; background: #fdecea; color: var(--error); font-size: 12px; font-weight: 700; }
+/* #99: Remove button on each review that's still up. */
+.staff-review-remove { flex: none; min-height: 34px; padding: 0 14px; font-size: 13px; }
 
 @media (max-width: 760px) {
   .page-staff .admin-title { font-size: 34px; }

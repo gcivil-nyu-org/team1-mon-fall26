@@ -223,23 +223,53 @@ def opportunity_reopen(request, pk):
     )
 
 
-def _place_and_distance(location, caregiver):
-    """Short place name ("Gowanus") and miles from the caregiver, if known."""
+def _place_and_distance(location, origin):
+    """Short place name ("Gowanus") and miles from where the caregiver is
+    searching (or their own area), if both are known."""
     place_name = (location or "").split(",")[0].strip()
     place = find_neighborhood(location or "")
-    if place is None or caregiver.latitude is None or caregiver.longitude is None:
+    if place is None or origin is None:
         return place_name, None
     miles = distance_miles(
-        caregiver.latitude, caregiver.longitude, place["latitude"], place["longitude"]
+        origin["latitude"], origin["longitude"], place["latitude"], place["longitude"]
     )
     return place_name, round(miles, 1)
 
 
+def _browse_query(params, **values):
+    """This search's query string with the given filters set; "" drops one."""
+    kept = params.copy()
+    for key in ("post", "interest", "looking_for"):
+        kept.pop(key, None)
+    for key, value in values.items():
+        if value in ("", None):
+            kept.pop(key, None)
+        else:
+            kept[key] = str(value)
+    return kept.urlencode()
+
+
 @login_required
 def opportunity_browse(request):
-    """Caregiver marketplace, with service and pet type filters."""
+    """Caregiver marketplace, with service and pet type filters.
+
+    Figma "Find Pets": under Explore ("Looking for: Pets needing care"), with
+    the same Location and Distance search as the other Explore pages. Without
+    a search it lists every open post, nearest to the caregiver's own area.
+    """
     from caregivers.models import CaregiverProfile, ServiceType
+    from caregivers.search import DEFAULT_DISTANCE, DISTANCE_CHOICES
+    from caregivers.views import _choice
     from pets.models import PetType
+    from places.search import find_origin
+    from places.views import explore_url
+
+    params = request.GET
+    looking_for = params.get("looking_for")
+    if looking_for == "places":
+        return redirect(explore_url("places:explore", params))
+    if looking_for == "caregivers":
+        return redirect(explore_url("caregiver_list", params))
 
     caregiver = CaregiverProfile.objects.filter(user=request.user).first()
     if caregiver is None:
@@ -264,7 +294,24 @@ def opportunity_browse(request):
     if pet_type.isdecimal():
         opportunities = opportunities.filter(pet__pet_type_id=int(pet_type))
 
-    posts = list(opportunities)
+    distance = _choice(params.get("distance"), DISTANCE_CHOICES, DEFAULT_DISTANCE)
+    origin, notice = find_origin(params)
+    searched = origin is not None
+    if origin is None and caregiver.latitude is not None:
+        # No search yet: distances from the caregiver's own area.
+        origin = {
+            "label": caregiver.neighborhood or caregiver.service_area,
+            "latitude": caregiver.latitude,
+            "longitude": caregiver.longitude,
+        }
+
+    posts = []
+    for post in opportunities:
+        post.place_name, post.distance = _place_and_distance(post.location, origin)
+        # A search only shows posts within the distance picked.
+        if searched and (post.distance is None or post.distance > distance):
+            continue
+        posts.append(post)
     selected_id = request.GET.get("post", "")
     selected = next((post for post in posts if str(post.pk) == selected_id), None)
     if selected is None and posts:
@@ -289,7 +336,15 @@ def opportunity_browse(request):
 
     for post in posts:
         post.caregiver_interested = post.pk in interested_ids
-        post.place_name, post.distance = _place_and_distance(post.location, caregiver)
+
+    # The headings name the area as typed ("Park Slope").
+    typed = params.get("location", "").strip()
+    if not searched:
+        origin_name = ""
+    elif typed and params.get("here") != "1":
+        origin_name = typed.split(",")[0].strip()
+    else:
+        origin_name = origin["label"].split(",")[0].strip()
 
     return render(
         request,
@@ -305,6 +360,47 @@ def opportunity_browse(request):
             "interest_withdrawn": request.GET.get("interest") == "withdrawn",
             "active_requests_tab": "find_pets",
             "caregiver_neighborhood": caregiver.neighborhood,
+            # The purple Explore search (Figma "Find Pets").
+            # Before a search, the box shows the caregiver's own area (Figma).
+            "location_text": (
+                ""
+                if params.get("here") == "1"
+                else typed or ("" if searched else caregiver.neighborhood)
+            ),
+            "distance": distance,
+            "distance_choices": DISTANCE_CHOICES,
+            "searched": searched,
+            "origin_name": origin_name,
+            "notice": notice,
+            "neighborhood_options": [
+                {
+                    "label": f"{n['name']}, {n['borough']}",
+                    "latitude": n["latitude"],
+                    "longitude": n["longitude"],
+                }
+                for n in neighborhoods()
+            ],
+            # Each filter link keeps the rest of the search.
+            "pet_filters": [
+                {
+                    "label": pet.name,
+                    "query": _browse_query(params, pet_type=pet.pk),
+                    "active": pet_type == str(pet.pk),
+                }
+                for pet in PetType.objects.order_by("name")
+            ],
+            "service_filters": [
+                {
+                    "label": st.name,
+                    "query": _browse_query(params, service=st.pk),
+                    "active": service == str(st.pk),
+                }
+                for st in ServiceType.objects.order_by("name")
+            ],
+            "all_pets_query": _browse_query(params, pet_type=""),
+            "all_services_query": _browse_query(params, service=""),
+            "post_query": _browse_query(params),
+            "clear_filters_query": _browse_query(params, pet_type="", service=""),
         },
     )
 

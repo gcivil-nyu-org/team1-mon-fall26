@@ -42,16 +42,17 @@ def offered_service_type_ids(caregiver):
 
 
 class BookingRequestForm(forms.ModelForm):
-    """Lets a signed-in owner request care for one of their own pets."""
+    """Lets a signed-in owner request care for one or more of their own pets.
+    With several pets, the caregiver works out the price."""
 
-    pet = forms.ModelChoiceField(
+    pets = forms.ModelMultipleChoiceField(
         queryset=Pet.objects.none(),
-        widget=forms.RadioSelect,
-        empty_label=None,
-        label="Which pet needs care?",
+        widget=forms.CheckboxSelectMultiple,
+        label="Which pets need care?",
         error_messages={
-            "required": "Choose one of your pets.",
-            "invalid_choice": "Choose one of your pets.",
+            "required": "Choose at least one of your pets.",
+            "invalid_choice": "Choose your own pets.",
+            "invalid_pk_value": "Choose your own pets.",
         },
     )
     caregiver = forms.ModelChoiceField(
@@ -78,7 +79,7 @@ class BookingRequestForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ["pet", "caregiver", "service_type", "start_time", "end_time", "notes"]
+        fields = ["caregiver", "service_type", "start_time", "end_time", "notes"]
         labels = {"notes": "Note for the caregiver"}
         widgets = {
             "notes": forms.Textarea(
@@ -91,8 +92,11 @@ class BookingRequestForm(forms.ModelForm):
 
     def __init__(self, *args, owner, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["pet"].queryset = (
-            Pet.objects.active().filter(owner=owner).select_related("pet_type")
+        self.fields["pets"].queryset = (
+            Pet.objects.active()
+            .filter(owner=owner)
+            .select_related("pet_type")
+            .order_by("name", "pk")
         )
         # Owners can't send a request to their own caregiver profile.
         self.fields["caregiver"].queryset = (
@@ -103,7 +107,7 @@ class BookingRequestForm(forms.ModelForm):
         self.fields["service_type"].queryset = ServiceType.objects.order_by("name")
 
         # Readable choice labels without touching the other apps' models.
-        self.fields["pet"].label_from_instance = lambda pet: pet.name
+        self.fields["pets"].label_from_instance = lambda pet: pet.name
         self.fields["caregiver"].label_from_instance = lambda cg: (
             f"{cg.name} · {cg.service_area}" if cg.service_area else cg.name
         )
@@ -124,6 +128,19 @@ class BookingRequestForm(forms.ModelForm):
         for caregiver_id, service_type_id in rows:
             offered.setdefault(caregiver_id, []).append(service_type_id)
         return offered
+
+    def save(self, commit=True):
+        """The first pet picked becomes the booking's `pet`; all go in `pets`."""
+        booking = super().save(commit=False)
+        booking.pet = self.cleaned_data["pets"][0]
+        if commit:
+            booking.save()
+            self.save_m2m()
+        return booking
+
+    def _save_m2m(self):
+        super()._save_m2m()
+        self.instance.pets.set(self.cleaned_data["pets"])
 
     def clean_start_time(self):
         start = self.cleaned_data["start_time"]

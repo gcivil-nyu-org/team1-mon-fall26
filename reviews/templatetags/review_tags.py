@@ -1,4 +1,7 @@
 from django import template
+from django.db.models import Q
+
+from messaging.inbox import person
 
 from ..models import Review, rating_summary
 
@@ -54,7 +57,8 @@ def pet_reviews(context, pet):
     """Caregivers' ratings and reviews of this owner and pet (#66)."""
     reviews = (
         Review.objects.visible()
-        .filter(booking__pet=pet, role=Review.Role.CAREGIVER)
+        .filter(Q(booking__pet=pet) | Q(booking__pets=pet), role=Review.Role.CAREGIVER)
+        .distinct()
         .select_related("author", "booking__caregiver", "booking__service_type")
     )
     return {
@@ -81,8 +85,9 @@ def paws(rating, size="small"):
 
 @register.filter
 def avatar_tone(user):
-    """Gives each reviewer one of three avatar colours, like the Figma (yellow, blue, pink)."""
-    return user.pk % 3
+    """The reviewer's avatar colour: the one they have in Messages, so each
+    person keeps one colour everywhere."""
+    return person(user)["theme"]
 
 
 @register.filter
@@ -120,7 +125,9 @@ def owner_can_rate(booking):
 @register.inclusion_tag("reviews/partials/pet_rating_line.html")
 def pet_rating_line(pet):
     """One line for the request panel: how earlier caregivers rated this owner and pet."""
-    reviews = Review.objects.visible().filter(
-        booking__pet=pet, role=Review.Role.CAREGIVER
+    reviews = (
+        Review.objects.visible()
+        .filter(Q(booking__pet=pet) | Q(booking__pets=pet), role=Review.Role.CAREGIVER)
+        .distinct()
     )
     return {"pet": pet, "summary": rating_summary(reviews), "latest": reviews.first()}

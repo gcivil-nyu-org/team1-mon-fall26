@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     "staff",
     "reports",
     "places",
+    "forum",
+    "announcements",
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "messaging.context_processors.unread_messages",
+                "announcements.context_processors.current_announcement",
             ],
         },
     },

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static announcement_tags %}
+
+{% block title %}Announcements · PawPal admin{% endblock %}
+
+{% block main_class %}page page-announcements{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=3">
+
+  <div class="announcements-head">
+    <h1 class="admin-title">Announcements</h1>
+    <a class="btn btn-dark announcements-new" href="{% url 'announcements:create' %}?tab={{ tab }}">{% include "partials/plus_icon.html" %} New announcement</a>
+  </div>
+
+  <nav class="admin-tabs" aria-label="Announcement status">
+    {% for t in tabs %}
+      <a class="admin-tab{% if t.active %} is-active{% endif %}" href="{% url 'announcements:manage' %}?tab={{ t.key }}"{% if t.active %} aria-current="page"{% endif %}>
+        {{ t.label }} <span class="admin-tab-count">{{ t.count }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  {% if done %}
+    <p class="announcements-done" role="status"><span class="done-check" aria-hidden="true">{% include "partials/check_icon.html" %}</span> {{ done }}</p>
+  {% endif %}
+
+  <div class="announcements-layout">
+    <section class="announcements-list" aria-label="{% if tab == 'published' %}Published announcements{% else %}Drafts{% endif %}">
+      {% for a in announcements %}
+          <a class="announcement-row kind-{{ a.kind|default:'none' }}{% if selected and a.pk == selected.pk %} is-selected{% endif %}" href="{% url 'announcements:detail' a.pk %}"{% if selected and a.pk == selected.pk %} aria-current="true"{% endif %}>
+            <span class="announcement-icon" aria-hidden="true">{% include "announcements/partials/kind_icon.html" with kind=a.kind %}</span>
+            <span class="announcement-row-text">
+              <strong>{{ a.title }}</strong>
+              <span class="announcement-row-meta">{{ a.get_audience_display|default:"No audience yet" }} · {% if a.is_published %}{{ a.published_at|day }}{% else %}{{ a.updated_at|day }}{% endif %}</span>
+              {% if a.kind %}<span class="announcement-kind">{{ a.get_kind_display }}</span>{% endif %}
+            </span>
+          </a>
+      {% empty %}
+        <p class="muted announcements-empty">{% if tab == "published" %}No published announcements.{% else %}No drafts.{% endif %}</p>
+      {% endfor %}
+    </section>
+
+    {% if form %}
+      {# New announcement, or editing one (Figma "Create Announcement" and "Edit Announcement"). #}
+      <section class="announcement-panel">
+        <form method="post" action="{% if editing %}{% url 'announcements:edit' editing.pk %}{% else %}{% url 'announcements:create' %}{% endif %}" class="announcement-form" novalidate>
+          {% csrf_token %}
+          <h2>{% if editing %}Edit announcement{% else %}New announcement{% endif %}</h2>
+
+          {% if form.errors %}
+            <p class="announcement-error-banner" role="alert"><strong>Almost there.</strong> Fill in the required fields.</p>
+          {% endif %}
+
+          <div class="announcement-field{% if form.title.errors %} has-error{% endif %}">
+            <label for="announcement-title">Title <span class="required" aria-hidden="true">*</span></label>
+            <input type="text" id="announcement-title" name="title" value="{{ form.title.value|default:'' }}" maxlength="120" placeholder="e.g. Scheduled maintenance Sunday"{% if form.title.errors %} aria-invalid="true" aria-describedby="title-error"{% endif %}>
+            {% if form.title.errors %}<p class="field-error" id="title-error">{{ form.title.errors.0 }}</p>{% endif %}
+          </div>
+
+          <fieldset class="announcement-field{% if form.kind.errors %} has-error{% endif %}">
+            <legend>Type <span class="required" aria-hidden="true">*</span></legend>
+            <div class="chip-options">
+              {% for value, label in kinds %}
+                <label class="chip-option"><input type="radio" name="kind" value="{{ value }}"{% if form.kind.value == value %} checked{% endif %}><span>{{ label }}</span></label>
+              {% endfor %}
+            </div>
+            {% if form.kind.errors %}<p class="field-error">{{ form.kind.errors.0 }}</p>{% endif %}
+          </fieldset>
+
+          <fieldset class="announcement-field{% if form.audience.errors %} has-error{% endif %}">
+            <legend>Who sees it <span class="required" aria-hidden="true">*</span></legend>
+            <div class="chip-options">
+              {% for value, label in audiences %}
+                <label class="chip-option"><input type="radio" name="audience" value="{{ value }}"{% if form.audience.value == value %} checked{% endif %}><span>{{ label }}</span></label>
+              {% endfor %}
+            </div>
+            {% if form.audience.errors %}<p class="field-error">{{ form.audience.errors.0 }}</p>{% endif %}
+          </fieldset>
+
+          <div class="announcement-field{% if form.message.errors %} has-error{% endif %}">
+            <label for="announcement-message">Message <span class="required" aria-hidden="true">*</span></label>
+            <textarea id="announcement-message" name="message" rows="4" maxlength="500" placeholder="What do users need to know?"{% if form.message.errors %} aria-invalid="true" aria-describedby="message-error"{% endif %}>{{ form.message.value|default:'' }}</textarea>
+            {% if form.message.errors %}<p class="field-error" id="message-error">{{ form.message.errors.0 }}</p>{% endif %}
+          </div>
+
+          <div class="announcement-form-actions">
+            <a class="btn btn-outline" href="{% if editing %}{% url 'announcements:detail' editing.pk %}{% else %}{% url 'announcements:manage' %}?tab={{ tab }}{% endif %}">Cancel</a>
+            {% if editing and editing.is_published %}
+              <button type="submit" name="action" value="save" class="btn btn-dark">Save changes</button>
+            {% else %}
+              <button type="submit" name="action" value="draft" class="btn btn-outline">Save draft</button>
+              <button type="submit" name="action" value="publish" class="btn btn-dark">Publish</button>
+            {% endif %}
+          </div>
+        </form>
+      </section>
+    {% elif selected %}
+      {# One announcement (Figma "Announcements", "Save Draft"). #}
+      <article class="announcement-panel" aria-labelledby="announcement-heading">
+        <p class="announcement-pills">
+          {% if selected.kind %}<span class="announcement-kind kind-{{ selected.kind }}">{{ selected.get_kind_display }}</span>{% endif %}
+          <span class="announcement-status is-{{ selected.status }}"><span class="status-dot" aria-hidden="true"></span>{{ selected.get_status_display }}</span>
+        </p>
+        <h2 id="announcement-heading">{{ selected.title }}</h2>
+        <p class="announcement-message">{{ selected.message|default:"No message yet."|linebreaksbr }}</p>
+
+        <dl class="announcement-facts">
+          <div><dt>Who sees it</dt><dd>{{ selected.get_audience_display|default:"Not picked yet" }}</dd></div>
+          {% if selected.is_published %}
+            <div><dt>Posted</dt><dd>{{ selected.published_at|day }}</dd></div>
+          {% else %}
+            <div><dt>Last saved</dt><dd>{{ selected.updated_at|day }}</dd></div>
+          {% endif %}
+        </dl>
+
+        <h3 class="announcement-preview-label">What users see</h3>
+        <div class="announcement-banner is-preview kind-{{ selected.kind|default:'update' }}">
+          <span class="announcement-icon" aria-hidden="true">{% include "announcements/partials/kind_icon.html" with kind=selected.kind %}</span>
+          <div class="announcement-banner-text">
+            <strong>{{ selected.title }}</strong>
+            <p>{{ selected.message|linebreaksbr }}</p>
+          </div>
+        </div>
+
+        {% if confirm_remove %}
+          {# Figma "Remove Announcement": the question replaces the buttons. #}
+          <form method="post" action="{% url 'announcements:remove' selected.pk %}" class="announcement-confirm" role="alertdialog" aria-labelledby="confirm-title">
+            {% csrf_token %}
+            <div>
+              <strong id="confirm-title">{% if selected.is_published %}Remove this announcement?{% else %}Delete this draft?{% endif %}</strong>
+              <p>{% if selected.is_published %}Users won't see it anymore.{% else %}It won't be saved.{% endif %}</p>
+            </div>
+            <a class="btn btn-outline" href="{% url 'announcements:detail' selected.pk %}">Cancel</a>
+            <button type="submit" class="btn btn-danger" autofocus>{% if selected.is_published %}Remove{% else %}Delete{% endif %}</button>
+          </form>
+        {% else %}
+          <div class="announcement-actions">
+            {% if not selected.is_published %}
+              <form method="post" action="{% url 'announcements:publish' selected.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-dark">Publish</button>
+              </form>
+            {% endif %}
+            <a class="btn btn-outline" href="{% url 'announcements:edit' selected.pk %}">Edit</a>
+            <a class="announcement-remove" href="{% url 'announcements:detail' selected.pk %}?confirm=remove">{% if selected.is_published %}Remove{% else %}Delete draft{% endif %}</a>
+          </div>
+        {% endif %}
+      </article>
+    {% else %}
+      <section class="announcement-panel announcement-panel-empty">
+        <h2>Nothing here yet</h2>
+        <p class="muted">Post an update, a policy change or planned downtime. Pet owners and caregivers see it at the top of PawPal.</p>
+        <a class="btn btn-dark" href="{% url 'announcements:create' %}?tab={{ tab }}">{% include "partials/plus_icon.html" %} New announcement</a>
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

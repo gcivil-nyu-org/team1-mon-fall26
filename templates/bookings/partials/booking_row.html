@@ -2,7 +2,7 @@
 <a class="booking-row status-{{ booking.status }}" href="{{ booking.get_absolute_url }}">
   {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
   <span class="booking-row-text">
-    <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+    <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong>
     <span class="muted">{{ booking.caregiver.name }} · {{ booking.start_time|date:"D, M j, g:i A" }}</span>
   </span>
   {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}

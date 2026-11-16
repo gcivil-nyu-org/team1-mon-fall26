@@ -1,4 +1,4 @@
-"""#90 Search User Accounts: admins find an account by name, username or email."""
+"""#90 Search User Accounts: admins find an account by name or email."""
 
 from django.urls import reverse
 
@@ -10,7 +10,14 @@ class SearchTests(StaffTestData):
         response = self.client.get(LIST_URL, {"q": query})
         return response, list(response.context["page"])
 
-    def test_by_name_username_or_email(self):
+    def test_hidden_usernames_dont_match(self):
+        # The page never shows a username for someone with a name, so typing
+        # part of it shouldn't find them ("Search name or email").
+        self.make("vsecret", "Alex", "Lee", "alex@example.org")
+        self.assertEqual(self.found("vsec")[1], [])
+        self.assertEqual(len(self.found("alex")[1]), 1)
+
+    def test_by_name_or_email(self):
         cases = {
             "Chloe": [self.sitter],
             "shih": [self.sitter],

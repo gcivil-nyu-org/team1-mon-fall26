@@ -95,6 +95,10 @@ class Report(models.Model):
     def is_open(self):
         return self.status == self.Status.OPEN
 
+    @property
+    def is_dismissed(self):
+        return self.status == self.Status.DISMISSED
+
     def same_content(self):
         """Every report about the same review or message, this one included."""
         target = self.review_id if self.kind == self.Kind.REVIEW else self.message_id

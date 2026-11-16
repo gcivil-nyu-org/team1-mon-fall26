@@ -1,0 +1,2 @@
+{# Open, or Resolved in green as in the Figma (a removed review or message is red). #}
+<span class="report-status report-status-{% if report.is_open %}open{% else %}place-resolved{% endif %}"><span class="status-dot" aria-hidden="true"></span>{{ report.get_status_display }}</span>

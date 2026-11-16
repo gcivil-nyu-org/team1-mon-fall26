@@ -7,7 +7,9 @@
 
 {% block content %}
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=7">
+  <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=8">
+  {# The Pet / Service dropdowns are the same as on Pets needing care. #}
+  <link rel="stylesheet" href="{% static 'css/opportunities.css' %}?v=6">
 
   <div class="search-page">
     <form method="get" class="search-hero" id="caregiver-search" autocomplete="off">
@@ -84,6 +86,7 @@
       <input type="hidden" name="here" id="search-here">
       <input type="hidden" name="map" id="search-map" value="{% if show_map %}1{% endif %}">
       {% if service %}<input type="hidden" name="service" value="{{ service.pk }}">{% endif %}
+      {% if pet_type %}<input type="hidden" name="pet_type" value="{{ pet_type.pk }}">{% endif %}
       {% if sort != "closest" %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
       {% if availability != "available" %}<input type="hidden" name="availability" value="{{ availability }}">{% endif %}
       {% comment %}While the availability fields above are hidden, keep a date/time filter from the address.{% endcomment %}
@@ -92,23 +95,27 @@
       {% if requested_end %}<input type="hidden" name="end_time" value="{{ requested_end }}">{% endif %}
     </form>
 
-    {# Service filter (#34), as chips like the Figma "Filter Caregivers by Service" frame. #}
-    {% if caregivers or service %}
-      <nav class="service-filters" aria-label="Filter by service">
-        <a class="filter-chip{% if not service %} is-active{% endif %}" href="?{{ query_without_service }}"{% if not service %} aria-current="true"{% endif %}>All services</a>
-        {% for chip in service_filters %}
-          {% if chip.type == service %}
-            <a class="filter-chip is-active" href="?{{ query_without_service }}" aria-current="true">
-              {{ chip.type.name }}
-              <svg class="filter-chip-x" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3.5 3.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <span class="visually-hidden">Clear filter</span>
-            </a>
-          {% else %}
-            <a class="filter-chip" href="?{{ chip.query }}">{{ chip.type.name }}</a>
-          {% endif %}
-        {% endfor %}
-      </nav>
-    {% endif %}
+    {# Pet and Service dropdowns, as in the Figma "Find Caregivers" frame (#34). #}
+    <div class="co-filter" aria-label="Filter caregivers">
+      <details class="co-dropdown {% if pet_type %}has-selection{% endif %}">
+        <summary><span>Pet:</span><span class="co-filter-value">{% if pet_type %}{{ pet_type.name }}{% else %}All{% endif %}</span><svg class="co-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <nav class="co-dropdown-menu" aria-label="Pet type options">
+          <a href="?{{ query_without_pet }}" {% if not pet_type %}aria-current="true"{% endif %}><span>All pets</span><span class="co-option-check" aria-hidden="true">{% if not pet_type %}✓{% endif %}</span></a>
+          {% for chip in pet_filters %}
+            <a href="?{{ chip.query }}" {% if chip.type == pet_type %}aria-current="true"{% endif %}><span>{{ chip.type.name }}</span><span class="co-option-check" aria-hidden="true">{% if chip.type == pet_type %}✓{% endif %}</span></a>
+          {% endfor %}
+        </nav>
+      </details>
+      <details class="co-dropdown {% if service %}has-selection{% endif %}">
+        <summary><span>Service:</span><span class="co-filter-value">{% if service %}{{ service.name }}{% else %}All{% endif %}</span><svg class="co-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <nav class="co-dropdown-menu" aria-label="Service options">
+          <a href="?{{ query_without_service }}" {% if not service %}aria-current="true"{% endif %}><span>All services</span><span class="co-option-check" aria-hidden="true">{% if not service %}✓{% endif %}</span></a>
+          {% for chip in service_filters %}
+            <a href="?{{ chip.query }}" {% if chip.type == service %}aria-current="true"{% endif %}><span>{{ chip.type.name }}</span><span class="co-option-check" aria-hidden="true">{% if chip.type == service %}✓{% endif %}</span></a>
+          {% endfor %}
+        </nav>
+      </details>
+    </div>
 
     {% if notice %}
       <div class="alert alert-info" role="status"><span class="alert-icon" aria-hidden="true">!</span><span>{{ notice }}</span></div>
@@ -207,4 +214,5 @@
   {{ neighborhood_options|json_script:"neighborhood-options" }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="{% static 'js/caregiver_search.js' %}"></script>
+  <script src="{% static 'js/filter_dropdown.js' %}?v=1"></script>
 {% endblock %}

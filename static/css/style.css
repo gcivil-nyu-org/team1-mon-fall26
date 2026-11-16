@@ -160,6 +160,21 @@ a {
   color: #fff;
 }
 
+/* #94: open reports next to "Reports" in the admin header. */
+.nav-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0 6px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--error);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .account {
   justify-self: end;
 }
@@ -3256,15 +3271,14 @@ img.pet-initial-large {
   height: 17px;
 }
 
-.review-avatar.tone-1 {
-  background: #bde0f5;
-  color: #2d3a8c;
+/* Each reviewer in their Messages colour, so a person keeps one colour everywhere. */
+.review-avatar[class*="theme-"] {
+  background: var(--theme-bg);
+  color: var(--theme-ink);
 }
 
-.review-avatar.tone-2 {
-  background: #fde1e8;
-  color: #8a2846;
-}
+.review-avatar.theme-peach { --theme-bg: var(--orange); --theme-ink: var(--ink); }
+.review-avatar.theme-yellow { --theme-bg: var(--yellow); --theme-ink: var(--ink); }
 
 .review-card-who {
   display: grid;
