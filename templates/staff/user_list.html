@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static report_tags %}
 
-{% block title %}{% if selected %}{{ selected.get_full_name|default:selected.username }} · {% endif %}Users · PawPal admin{% endblock %}
+{% block title %}{% if selected %}{{ selected|display_name }} · {% endif %}Users · PawPal admin{% endblock %}
 
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=12">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=13">
 
   <h1 class="admin-title">Users</h1>
 
@@ -24,7 +24,7 @@
       {# #90: search inside the list, as in the Figma. #}
       <form method="get" action="{% url 'staff:user_list' %}" class="staff-search" role="search">
         <svg class="staff-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <label class="visually-hidden" for="staff-search">Search by name, username or email</label>
+        <label class="visually-hidden" for="staff-search">Search by name or email</label>
         <input type="search" id="staff-search" name="q" value="{{ query }}" placeholder="Search name or email" autocomplete="off">
         {% if tab == "restricted" %}<input type="hidden" name="tab" value="restricted">{% endif %}
         <button type="submit" class="visually-hidden">Search</button>
@@ -39,7 +39,7 @@
                 <a class="staff-row{% if account.pk == selected.pk %} is-selected{% endif %}" href="{% url 'staff:user_detail' account.pk %}{% if keep %}?{{ keep }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if account.pk == selected.pk %} aria-current="true"{% endif %}>
                   {% include "staff/partials/account_avatar.html" %}
                   <span class="staff-row-text">
-                    <strong>{{ account.get_full_name|default:account.username }}</strong>
+                    <strong>{{ account|display_name }}</strong>
                     <span class="muted">{{ account.type_label }}{% if account.place %} · {{ account.place }}{% endif %}</span>
                   </span>
                   {% include "staff/partials/account_status.html" %}
@@ -76,7 +76,7 @@
           <header class="staff-account-header">
             {% include "staff/partials/account_avatar.html" with large=True %}
             <div>
-              <h2 id="account-name">{{ account.get_full_name|default:account.username }}</h2>
+              <h2 id="account-name">{{ account|display_name }}</h2>
               <p class="muted">{{ account.type_label }}{% if account.place %} · {{ account.place }}{% endif %}</p>
             </div>
             {% include "staff/partials/account_status.html" %}
@@ -140,7 +140,7 @@
                 <li class="staff-item">
                   <span>
                     <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong>
-                    <span class="muted">{{ booking.start_time|date:"M j" }} · with {% if booking.owner_id == account.pk %}{{ booking.caregiver.name }}{% else %}{{ booking.owner.get_full_name|default:booking.owner.username }}{% endif %}</span>
+                    <span class="muted">{{ booking.start_time|date:"M j" }} · with {% if booking.owner_id == account.pk %}{{ booking.caregiver.name }}{% else %}{{ booking.owner|display_name }}{% endif %}</span>
                   </span>
                   {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
                 </li>
@@ -235,7 +235,7 @@
         <h2 id="remove-review-title">Remove this review?</h2>
         <p class="muted">Users won’t see it anymore, and it won’t count in ratings. Any open reports about it will close as Removed.</p>
         <div class="modal-quote">
-          <span><strong>{{ confirm_review.author.get_full_name|default:confirm_review.author.username }}</strong> · {{ confirm_review.booking.pet_names }} · {{ confirm_review.booking.service_type.name }}<br>{% if confirm_review.comment %}“{{ confirm_review.comment|truncatechars:160 }}”{% else %}Rating only, no written review.{% endif %}</span>
+          <span><strong>{{ confirm_review.author|display_name }}</strong> · {{ confirm_review.booking.pet_names }} · {{ confirm_review.booking.service_type.name }}<br>{% if confirm_review.comment %}“{{ confirm_review.comment|truncatechars:160 }}”{% else %}Rating only, no written review.{% endif %}</span>
         </div>
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
@@ -244,4 +244,7 @@
       </form>
     </div>
   {% endif %}
+
+  {# #90: search as you type. #}
+  <script src="{% static 'js/staff_search.js' %}?v=1"></script>
 {% endblock %}

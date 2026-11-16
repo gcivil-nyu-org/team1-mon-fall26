@@ -1,4 +1,4 @@
-{% load review_tags %}
+{% load review_tags report_tags %}
 {% comment %}
   #100: one list of reviews in an account's review history, written or received.
   A review an admin removed (#97, #99) stays in the list, marked "Removed";
@@ -11,9 +11,9 @@
         <span>
           <strong>
             {% if written %}
-              {% if review.role == "owner" %}About {{ review.booking.caregiver.name }}{% else %}About {{ review.booking.owner.get_full_name|default:review.booking.owner.username }} &amp; {{ review.booking.pet_names }}{% endif %}
+              {% if review.role == "owner" %}About {{ review.booking.caregiver.name }}{% else %}About {{ review.booking.owner|display_name }} &amp; {{ review.booking.pet_names }}{% endif %}
             {% else %}
-              From {{ review.author.get_full_name|default:review.author.username }}
+              From {{ review.author|display_name }}
             {% endif %}
           </strong>
           <span class="staff-review-meta">

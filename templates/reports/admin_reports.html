@@ -70,7 +70,7 @@
           <h3>{% if where %}Review on {{ where.name }}'s profile{% else %}Reported review{% endif %}</h3>
           <div class="report-review">
             <div class="report-review-head">
-              <span class="review-avatar tone-{{ selected.reported_user|avatar_tone }}" aria-hidden="true">{{ selected.reported_user|initials }}</span>
+              <span class="review-avatar theme-{{ selected.reported_user|avatar_tone }}" aria-hidden="true">{{ selected.reported_user|initials }}</span>
               <span class="report-review-who">
                 <strong>{{ selected.reported_user|display_name }}</strong>
                 <span class="muted">{% if review %}{{ review.created_at|posted_ago }}{% else %}Deleted{% endif %}</span>

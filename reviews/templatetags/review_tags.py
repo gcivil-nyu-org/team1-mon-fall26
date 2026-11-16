@@ -1,6 +1,8 @@
 from django import template
 from django.db.models import Q
 
+from messaging.inbox import person
+
 from ..models import Review, rating_summary
 
 register = template.Library()
@@ -83,8 +85,9 @@ def paws(rating, size="small"):
 
 @register.filter
 def avatar_tone(user):
-    """Gives each reviewer one of three avatar colours, like the Figma (yellow, blue, pink)."""
-    return user.pk % 3
+    """The reviewer's avatar colour: the one they have in Messages, so each
+    person keeps one colour everywhere."""
+    return person(user)["theme"]
 
 
 @register.filter
