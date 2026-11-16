@@ -149,7 +149,9 @@ class CreateTests(AnnouncementData):
         self.assertIsNotNone(a.published_at)
         self.assertEqual(a.created_by, self.admin)
         page = self.client.get(detail_url(a) + "?done=published")
-        self.assertContains(page, "Announcement published.")
+        self.assertContains(
+            page, "Published. Users will see the announcement on their home page."
+        )
 
     def test_save_draft(self):
         response = self.post_form(CREATE, "draft")

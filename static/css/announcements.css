@@ -55,7 +55,8 @@
 
 /* ---------- Admin page ---------- */
 
-.page-announcements { max-width: 1240px; }
+/* Same width as the other admin pages (Reports, Explore), as in the Figma. */
+main.page-announcements { max-width: 1224px; width: 100%; box-sizing: border-box; padding-left: 24px; padding-right: 24px; }
 
 .announcements-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .announcements-head .admin-title { margin: 0; font-size: 46px; line-height: 1.05; letter-spacing: -0.23px; }

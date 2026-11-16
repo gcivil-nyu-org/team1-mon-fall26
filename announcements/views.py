@@ -23,7 +23,7 @@ TABS = [(PUBLISHED, "Published"), (DRAFTS, "Drafts")]
 
 # The banner after an action (Figma wording), keyed by ?done=.
 DONE = {
-    "published": "Announcement published.",
+    "published": "Published. Users will see the announcement on their home page.",
     "drafted": "Saved to Drafts.",
     "saved": "Changes saved.",
     "removed": "Announcement removed.",
