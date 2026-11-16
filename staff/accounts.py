@@ -76,17 +76,21 @@ def restricted(accounts):
 
 
 def search(accounts, query):
-    """#90: accounts whose name, username or email contains every word typed.
+    """#90: accounts whose name or email contains every word typed, as the
+    search box says ("Search name or email").
 
-    Case doesn't matter, so "kat w" finds Kat Wongsri.
+    Case doesn't matter, so "kat w" finds Kat Wongsri. Only what the page shows
+    is searched, so every result visibly matches: the username counts only for
+    an account with no name, where the username is shown instead.
     """
     for word in query.split():
         accounts = accounts.filter(
-            Q(username__icontains=word)
-            | Q(email__icontains=word)
+            Q(email__icontains=word)
             | Q(first_name__icontains=word)
             | Q(last_name__icontains=word)
-        )
+            | Q(caregiver_profile__name__icontains=word)
+            | Q(first_name="", last_name="", username__icontains=word)
+        ).distinct()
     return accounts
 
 
