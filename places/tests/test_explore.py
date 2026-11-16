@@ -188,6 +188,7 @@ class ViewNearbyPlacesTests(ExploreData):
                 "Pet stores",
                 "Restaurants",
                 "Outdoor dining",
+                "Off-leash areas",
             ],
         )
         cafes = response.context["chips"][2]["query"]
