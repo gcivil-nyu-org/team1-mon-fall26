@@ -21,7 +21,7 @@ class ExploreStripTests(ForumTestData):
         for post in (newest, self.newer, self.older):
             self.assertContains(response, f'href="{LIST_URL}?post={post.pk}"')
         self.assertContains(response, "Pup cups at Bark &amp; Brew")
-        self.assertContains(response, "Chloe S. · Just now")
+        self.assertContains(response, "Chloe Shih · Just now")
         self.assertContains(response, '1<span class="visually-hidden"> comment</span>')
 
     def test_only_three(self):

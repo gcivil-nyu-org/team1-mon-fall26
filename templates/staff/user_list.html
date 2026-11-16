@@ -139,7 +139,7 @@
               {% for booking in bookings %}
                 <li class="staff-item">
                   <span>
-                    <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                    <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong>
                     <span class="muted">{{ booking.start_time|date:"M j" }} · with {% if booking.owner_id == account.pk %}{{ booking.caregiver.name }}{% else %}{{ booking.owner.get_full_name|default:booking.owner.username }}{% endif %}</span>
                   </span>
                   {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
@@ -235,7 +235,7 @@
         <h2 id="remove-review-title">Remove this review?</h2>
         <p class="muted">Users won’t see it anymore, and it won’t count in ratings. Any open reports about it will close as Removed.</p>
         <div class="modal-quote">
-          <span><strong>{{ confirm_review.author.get_full_name|default:confirm_review.author.username }}</strong> · {{ confirm_review.booking.pet.name }} · {{ confirm_review.booking.service_type.name }}<br>{% if confirm_review.comment %}“{{ confirm_review.comment|truncatechars:160 }}”{% else %}Rating only, no written review.{% endif %}</span>
+          <span><strong>{{ confirm_review.author.get_full_name|default:confirm_review.author.username }}</strong> · {{ confirm_review.booking.pet_names }} · {{ confirm_review.booking.service_type.name }}<br>{% if confirm_review.comment %}“{{ confirm_review.comment|truncatechars:160 }}”{% else %}Rating only, no written review.{% endif %}</span>
         </div>
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>

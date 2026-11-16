@@ -7,7 +7,7 @@
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=6">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=10">
 
   <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
 
@@ -27,7 +27,7 @@
     {# Figma "Create Forum Post Confirmation" #}
     <div class="alert alert-success forum-posted" role="status">
       <span class="alert-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
-      <span><strong>Posted!</strong> Others can now see and comment.</span>
+      <span>Posted! Others can now see and comment.</span>
     </div>
   {% endif %}
 

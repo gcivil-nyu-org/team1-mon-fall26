@@ -12,7 +12,8 @@ from django.utils import timezone
 
 from accounts.models import AccountProfile
 from caregivers.models import CaregiverProfile
-from forum.authors import initials, role, short_name
+from messaging.inbox import person
+from forum.authors import display_name, initials, role, theme
 from forum.models import Post
 from forum.templatetags.forum_tags import ago
 from forum.views import PER_PAGE
@@ -82,7 +83,8 @@ class AccessTests(ForumTestData):
 
     def test_caregivers_get_explore_too(self):
         self.client.force_login(self.sitter)
-        explore = reverse("places:explore")
+        # Explore opens on Pets needing care (Figma "Explore" section).
+        explore = reverse("opportunities:browse")
         response = self.client.get(reverse("messaging:inbox"))
         self.assertContains(response, f'href="{explore}" class="">Explore</a>')
         response = self.client.get(LIST_URL)
@@ -104,7 +106,7 @@ class ListTests(ForumTestData):
             "Best cafes for dogs",
             "Kat W. · Yesterday",
             "Quiet dog runs?",
-            "Chloe S. · ",
+            "Chloe Shih · ",
             '<span class="forum-tag forum-tag-places">Places</span>',
             '<span class="forum-tag forum-tag-questions">Questions</span>',
         ):
@@ -181,7 +183,7 @@ class SelectedPostTests(ForumTestData):
             '<h2 class="forum-title" id="forum-post-title">Quiet dog runs?</h2>',
             html=True,
         )
-        self.assertContains(response, "Chloe S.")
+        self.assertContains(response, "Chloe Shih")
         self.assertContains(response, "Caregiver · ")
         self.assertContains(response, "<p>Any in Park Slope?</p>", html=True)
 
@@ -204,19 +206,40 @@ class SelectedPostTests(ForumTestData):
 
 class AuthorTests(ForumTestData):
     def test_names(self):
-        self.assertEqual(short_name(self.owner), "Kat W.")
+        self.assertEqual(display_name(self.owner), "Kat W.")
         no_last = User.objects.create_user("sam", first_name="Sam")
-        self.assertEqual(short_name(no_last), "Sam")
+        self.assertEqual(display_name(no_last), "Sam")
         self.assertEqual(initials(no_last), "SA")
         plain = User.objects.create_user("plainuser")
-        self.assertEqual(short_name(plain), "plainuser")
+        self.assertEqual(display_name(plain), "plainuser")
         self.assertEqual(initials(plain), "PL")
         self.assertEqual(initials(self.owner), "KW")
 
+    def test_names_and_colors_match_messages(self):
+        # Caregivers by their full name, pet owners as "Kat W.", each in the
+        # color they have in Messages (Figma).
+        self.assertEqual(display_name(self.sitter), "Chloe Shih")
+        self.assertEqual(theme(self.sitter), person(self.sitter)["theme"])
+        self.assertEqual(theme(self.owner), person(self.owner)["theme"])
+        response = self.client.get(detail_url(self.older))
+        self.assertContains(response, f"forum-avatar theme-{theme(self.sitter)}")
+        # Your own avatar by the comment box is in your Messages color too.
+        self.assertContains(response, f"forum-avatar-me theme-{theme(self.owner)}")
+
+    def test_everyone_has_the_same_color_whoever_looks(self):
+        # Kat's post is in Kat's Messages color for Kat and for Chloe alike.
+        response = self.client.get(detail_url(self.newer))
+        self.assertEqual(response.context["selected"].author_theme, theme(self.owner))
+        self.client.force_login(self.sitter)
+        response = self.client.get(detail_url(self.newer))
+        self.assertEqual(response.context["selected"].author_theme, theme(self.owner))
+        self.assertContains(response, f"forum-avatar-me theme-{theme(self.sitter)}")
+
     def test_deleted_accounts_stay_anonymous(self):
         gone = User.objects.create_user("gone", first_name="Gone", is_active=False)
-        self.assertEqual(short_name(gone), "Deleted account")
+        self.assertEqual(display_name(gone), "Deleted account")
         self.assertEqual(initials(gone), "?")
+        self.assertEqual(theme(gone), "deleted")
         post = self.post(gone, "Old post", "Still here")
         response = self.client.get(detail_url(post))
         self.assertContains(response, "Deleted account")

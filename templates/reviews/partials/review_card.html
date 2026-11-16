@@ -5,7 +5,7 @@
     <span class="review-avatar tone-{{ review.author|avatar_tone }}" aria-hidden="true">{{ review.author|initials }}</span>
     <div class="review-card-who">
       <strong>{{ review.author|reviewer_name }}</strong>
-      <span>{{ review.booking.pet.name }} · {{ review.booking.service_type.name }} · {{ review.booking.start_time|date:"M j" }}</span>
+      <span>{{ review.booking.pet_names }} · {{ review.booking.service_type.name }} · {{ review.booking.start_time|date:"M j" }}</span>
     </div>
     {% paws review.rating %}
   </header>

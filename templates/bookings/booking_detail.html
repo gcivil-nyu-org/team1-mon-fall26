@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load review_tags %}
 
-{% block title %}{{ booking.pet.name }} · {{ booking.service_type.name }} · PawPal{% endblock %}
+{% block title %}{{ booking.pet_names }} · {{ booking.service_type.name }} · PawPal{% endblock %}
 
 {% block main_class %}page page-medium{% endblock %}
 
@@ -17,7 +17,7 @@
       {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar booking-avatar-large" %}
       <div>
         <p class="eyebrow">Booking request #{{ booking.pk }}</p>
-        <h1>{{ booking.pet.name }} · {{ booking.service_type.name }}</h1>
+        <h1>{{ booking.pet_names }} · {{ booking.service_type.name }}</h1>
       </div>
       {% include "bookings/partials/status_pill.html" with status=booking.status label=booking.get_status_display %}
     </header>
@@ -44,14 +44,19 @@
       <p>{{ booking.notes|default:"No extra details added."|linebreaksbr }}</p>
 
       {% if is_caregiver %}
-        <h2>About {{ booking.pet.name }}</h2>
-        <p>{{ booking.pet.pet_type }}{% if booking.pet.breed %} · {{ booking.pet.breed }}{% endif %}{% if booking.pet.age_display %} · {{ booking.pet.age_display }} old{% endif %}</p>
-        {% if booking.pet.description %}<p>{{ booking.pet.description|linebreaksbr }}</p>{% endif %}
-        <h2>Care needs</h2>
-        <p>{{ booking.pet.special_care_instructions|default:"No care needs added."|linebreaksbr }}</p>
-        {% if booking.shows_pet_care_info %}
-          <a class="btn btn-dark pet-care-link" href="{% url 'pets:care_view' booking.pet.pk %}">View {{ booking.pet.name }}'s feeding, medication &amp; emergency info</a>
+        {% if booking.all_pets|length > 1 %}
+          <p class="booking-note muted">This request is for {{ booking.all_pets|length }} pets. You and {{ booking.owner.first_name|default:booking.owner.username }} agree on the price.</p>
         {% endif %}
+        {% for pet in booking.all_pets %}
+          <h2>About {{ pet.name }}</h2>
+          <p>{{ pet.pet_type }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.age_display %} · {{ pet.age_display }} old{% endif %}</p>
+          {% if pet.description %}<p>{{ pet.description|linebreaksbr }}</p>{% endif %}
+          <h2>{% if booking.all_pets|length > 1 %}{{ pet.name }}'s care needs{% else %}Care needs{% endif %}</h2>
+          <p>{{ pet.special_care_instructions|default:"No care needs added."|linebreaksbr }}</p>
+          {% if booking.shows_pet_care_info %}
+            <a class="btn btn-dark pet-care-link" href="{% url 'pets:care_view' pet.pk %}">View {{ pet.name }}'s feeding, medication &amp; emergency info</a>
+          {% endif %}
+        {% endfor %}
 
         {% if can_respond %}
           <form method="post" action="{% url 'bookings:booking_respond' booking.pk %}" class="respond-actions">
@@ -80,14 +85,14 @@
       {% elif booking.status == "accepted" %}
         <div class="alert alert-success booking-outcome" role="status">
           <span class="alert-icon" aria-hidden="true">✓</span>
-          <span><strong>Request accepted.</strong> {{ booking.caregiver.name }} accepted on {{ booking.updated_at|date:"M j, g:i A" }} and will look after {{ booking.pet.name }}.</span>
+          <span><strong>Request accepted.</strong> {{ booking.caregiver.name }} accepted on {{ booking.updated_at|date:"M j, g:i A" }} and will look after {{ booking.pet_names }}.</span>
         </div>
       {% elif booking.status == "declined" %}
         <div class="alert alert-info booking-outcome" role="status">
           <span class="alert-icon" aria-hidden="true">!</span>
           <span><strong>Request declined.</strong> {{ booking.caregiver.name }} can't take this one. You can send a request to another caregiver.</span>
         </div>
-        <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}?pet={{ booking.pet.pk }}">Request another caregiver</a>
+        <a class="btn btn-dark" href="{% url 'bookings:booking_create' %}?{% for pet in booking.all_pets %}{% if not forloop.first %}&amp;{% endif %}pet={{ pet.pk }}{% endfor %}">Request another caregiver</a>
       {% elif booking.status == "completed" %}
         <div class="alert alert-success booking-outcome" role="status">
           <span class="alert-icon" aria-hidden="true">✓</span>
