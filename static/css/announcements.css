@@ -1,0 +1,263 @@
+/* Platform announcements: the admin page and the banner users see
+   (Figma "PawPal - Announcements"). */
+
+/* Colors per type: icon circle and pill, then the banner. */
+.kind-maintenance { --kind-bg: #ffe9d6; --kind-ink: #8a4100; --banner-bg: #fff4ea; }
+.kind-update,
+.kind-none { --kind-bg: #dcebfa; --kind-ink: #1f4e79; --banner-bg: #eaf3fc; }
+.kind-policy { --kind-bg: #efe8fa; --kind-ink: #4c3480; --banner-bg: #f6f2fd; }
+
+.announcement-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  background: var(--kind-bg);
+  border-radius: 50%;
+  color: var(--kind-ink);
+}
+.announcement-icon svg { width: 20px; height: 20px; }
+.announcement-icon .paw-icon { fill: currentColor; }
+
+/* ---------- The banner users see ---------- */
+
+.announcement-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  background: var(--banner-bg);
+  border-radius: 20px;
+}
+.announcement-banner-text { flex: 1; min-width: 0; }
+.announcement-banner-text strong { display: block; font-size: 16px; line-height: 24.8px; }
+.announcement-banner-text p { margin: 0; color: #3d322e; font-size: 15px; line-height: 23.25px; overflow-wrap: anywhere; }
+.announcement-banner.is-preview { margin: 0; }
+
+.announcement-dismiss { flex: none; margin: 0; }
+.announcement-dismiss button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: #6a5a54;
+  cursor: pointer;
+}
+.announcement-dismiss button:hover { background: rgba(28, 26, 26, 0.06); color: var(--ink); }
+.announcement-dismiss button:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.announcement-dismiss svg { width: 14px; height: 14px; }
+
+/* ---------- Admin page ---------- */
+
+.page-announcements { max-width: 1240px; }
+
+.announcements-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.announcements-head .admin-title { margin: 0; font-size: 46px; line-height: 1.05; letter-spacing: -0.23px; }
+/* Same tab size as the Users admin page (staff.css). */
+.page-announcements .admin-tabs { padding: 5px; margin-bottom: 20px; }
+.page-announcements .admin-tab { gap: 6px; padding: 8px 18px; font-size: 16px; line-height: 24px; }
+.page-announcements .admin-tab-count { min-width: 22px; height: 20px; font-size: 12px; line-height: 1; }
+.announcements-new { min-height: 50px; padding: 0 26px; font-size: 16px; }
+.announcements-new .plus-icon { width: 16px; height: 16px; }
+
+.announcements-done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: var(--success-bg, #cdefdc);
+  border-radius: 16px;
+  color: #14532d;
+  font-size: 15px;
+  font-weight: 700;
+}
+.done-check { display: grid; place-items: center; width: 24px; height: 24px; background: #fff; border-radius: 50%; }
+.done-check svg { width: 14px; height: 14px; }
+
+.announcements-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 448fr) minmax(0, 706fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.announcements-list,
+.announcement-panel {
+  background: var(--card, #fff);
+  border-radius: 28px;
+  box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+}
+
+.announcements-list { display: grid; gap: 8px; padding: 14px; }
+.announcements-empty { margin: 0; padding: 18px 12px; }
+
+.announcement-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px; /* + 2px border = Figma's 12px */
+  background: #faf5f2;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.announcement-row:hover { border-color: #ead3c9; }
+.announcement-row.is-selected { background: #fff; border-color: var(--ink); }
+.announcement-row:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.announcement-row-text { display: grid; justify-items: start; gap: 4px; min-width: 0; }
+.announcement-row-text strong { font-size: 16px; line-height: 20.8px; overflow-wrap: anywhere; }
+.announcement-row-meta { color: #6a5a54; font-size: 13px; line-height: 20.15px; }
+
+.announcement-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--kind-bg);
+  border-radius: 999px;
+  color: var(--kind-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18.6px;
+}
+
+/* The selected announcement */
+.announcement-panel { display: grid; gap: 18px; padding: 28px; min-width: 0; }
+.announcement-panel h2 { margin: 0; font-size: 30px; line-height: 34.5px; letter-spacing: -0.15px; overflow-wrap: anywhere; }
+.announcement-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0; }
+.announcement-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20.15px;
+}
+.announcement-status.is-published { background: #cdefdc; color: #14532d; }
+.announcement-status.is-draft { background: #efe9e6; color: #5a4038; }
+.status-dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; }
+.announcement-message { margin: -8px 0 0; color: #3d322e; font-size: 16px; line-height: 24.8px; overflow-wrap: anywhere; }
+
+.announcement-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
+.announcement-facts div { padding: 12px 14px; background: #faf5f2; border-radius: 18px; }
+.announcement-facts dt { color: #8a6f64; font-size: 12px; font-weight: 700; line-height: 18.6px; letter-spacing: 0.72px; text-transform: uppercase; }
+.announcement-facts dd { margin: 2px 0 0; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+
+.announcement-preview-label {
+  margin: 0 0 -10px;
+  color: #8a6f64;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20.15px;
+  letter-spacing: 1.04px;
+  text-transform: uppercase;
+}
+
+.announcement-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.announcement-actions form { margin: 0; }
+.announcement-actions .btn { min-height: 50px; padding: 0 26px; font-size: 16px; }
+.announcement-remove { color: #b42318; font-size: 16px; font-weight: 700; text-decoration: underline; }
+
+/* Figma "Remove Announcement": the question in place of the buttons. */
+.announcement-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  background: #faf5f2;
+  border-radius: 18px;
+}
+.announcement-confirm > div { flex: 1; min-width: 180px; }
+.announcement-confirm strong { display: block; font-size: 16px; line-height: 24px; }
+.announcement-confirm p { margin: 0; color: #6a5a54; font-size: 13px; }
+.announcement-confirm .btn-danger { background: var(--error, #b42318); border-color: var(--error, #b42318); box-shadow: 0 3px 0 #7d1810; color: #fff; }
+
+.announcement-panel-empty { justify-items: start; }
+.announcement-panel-empty h2 { font-size: 26px; }
+.announcement-panel-empty p { margin: -8px 0 0; }
+
+/* ---------- Form ---------- */
+
+.announcement-form { display: grid; gap: 18px; margin: 0; }
+.announcement-form h2 { font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+
+.announcement-error-banner {
+  margin: 0;
+  padding: 12px 16px;
+  background: #fde4e1;
+  border-radius: 14px;
+  color: #8e1b12;
+  font-size: 14px;
+}
+
+.announcement-field { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.announcement-field label,
+.announcement-field legend { padding: 0; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.announcement-field legend { margin-bottom: 2px; }
+.announcement-field .required { color: #c2281b; }
+.announcement-field input[type="text"],
+.announcement-field textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: #fffcfa;
+  border: 2px solid #ead3c9;
+  border-radius: 16px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24.8px;
+}
+.announcement-field textarea { min-height: 110px; resize: vertical; }
+.announcement-field input:focus,
+.announcement-field textarea:focus { border-color: var(--ink); outline: none; }
+
+.chip-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip-option { position: relative; }
+.chip-option input { position: absolute; opacity: 0; pointer-events: none; }
+.chip-option span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 8px 20px;
+  background: #fff;
+  border: 2px solid #ead3c9;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24.8px;
+  cursor: pointer;
+}
+.chip-option input:checked + span { background: var(--ink); border-color: var(--ink); box-shadow: 0 3px 0 var(--orange); color: #fff; }
+.chip-option input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* Figma "Create Announcement (Error)" */
+.announcement-field.has-error input[type="text"],
+.announcement-field.has-error textarea { background: #fff3f2; border-color: #c2281b; }
+.announcement-field.has-error .chip-option span { border-color: #c2281b; }
+.announcement-field .field-error { margin: 0; color: #b42318; font-size: 13px; font-weight: 600; }
+
+.announcement-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.announcement-form-actions .btn { min-height: 50px; padding: 0 26px; font-size: 16px; }
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 860px) {
+  .announcements-layout { grid-template-columns: 1fr; }
+  .announcements-head .admin-title { font-size: 34px; }
+  .announcements-new { min-height: 44px; padding: 0 18px; font-size: 15px; }
+  .announcement-panel { padding: 20px; }
+  .announcement-panel h2 { font-size: 24px; line-height: 1.2; }
+  .announcement-facts { grid-template-columns: 1fr; }
+}

@@ -32,6 +32,7 @@
         <a href="{% url 'reports:admin_list' %}" class="{% if section == 'reports' %}active{% endif %}">Reports{% if open_reports %} <span class="nav-count">{{ open_reports }}<span class="visually-hidden"> open</span></span>{% endif %}</a>
         <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
         <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
+        <a href="{% url 'announcements:manage' %}" class="{% if section == 'announcements' %}active{% endif %}">Announcements</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
@@ -96,6 +97,10 @@
   <main class="{% block main_class %}page{% endblock %}">
     {% block messages %}
       {% include "partials/messages.html" %}
+    {% endblock %}
+    {# Platform announcements (Figma "Announcements (Pet owners)"): the newest one not yet closed. #}
+    {% block announcement %}
+      {% include "announcements/partials/banner.html" %}
     {% endblock %}
     {% block content %}{% endblock %}
   </main>
