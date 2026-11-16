@@ -182,7 +182,7 @@
 .announcement-confirm > div { flex: 1; min-width: 180px; }
 .announcement-confirm strong { display: block; font-size: 16px; line-height: 24px; }
 .announcement-confirm p { margin: 0; color: #6a5a54; font-size: 13px; }
-.announcement-confirm .btn-danger { background: var(--error, #b42318); border-color: var(--error, #b42318); box-shadow: 0 3px 0 #7d1810; color: #fff; }
+.announcement-confirm .btn-danger { padding: 11px 20px; background: var(--error, #b42318); border-color: var(--error, #b42318); box-shadow: 0 3px 0 #7d1810; color: #fff; font-size: 14px; font-weight: 700; line-height: 1.55; }
 
 .announcement-panel-empty { justify-items: start; }
 .announcement-panel-empty h2 { font-size: 26px; }

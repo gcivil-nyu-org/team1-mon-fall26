@@ -306,3 +306,7 @@
 
 /* Outdoor dining: dogs are up to each restaurant (NYC Health Code). */
 .place-ask { margin: 0; padding: 8px 12px; background: #eaf3fc; border-radius: 12px; color: #1f4e79; font-size: 13px; font-weight: 600; line-height: 19px; }
+
+/* Figma "Report wrong info": the pop-up sits 180px from the top, over the
+   search box. Short windows bring it up so the buttons still show. */
+.page-places .report-dialog { margin-top: clamp(16px, calc((100vh - 600px) / 2), 180px); max-height: calc(100vh - 32px); overflow-y: auto; }
