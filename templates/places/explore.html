@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="{% static 'css/caregiver_search.css' %}?v=7">
   <link rel="stylesheet" href="{% static 'css/reports.css' %}?v=6">
-  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=6">
+  <link rel="stylesheet" href="{% static 'css/places.css' %}?v=7">
   <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=10">
 
   <div class="search-page">
@@ -90,7 +90,7 @@
                     <strong>{{ place.name }}</strong>
                     <span>{{ place.address|default:place.neighborhood }}{% if origin %}{% if place.address or place.neighborhood %} · {% endif %}<span class="place-distance">{{ place.distance|floatformat:1 }} mi</span>{% endif %}</span>
                   </span>
-                  {% if place.category == "dog_park" %}<span class="place-badge">Dog park</span>{% endif %}
+                  {% if place.category == "dog_park" %}<span class="place-badge">Dog park</span>{% elif place.category == "off_leash" %}<span class="place-badge">Off-leash</span>{% endif %}
                 </a>
               </li>
             {% endfor %}
@@ -127,6 +127,16 @@
               </ul>
             {% endif %}
 
+            {% if place.category == "off_leash" %}
+              {# NYC Parks rules: leashed (6 feet at most) outside off-leash hours. #}
+              <p class="place-ask">Outside these hours, dogs must be on a leash no longer than 6 feet.</p>
+            {% endif %}
+
+            {% if place.category == "outdoor_dining" %}
+              {# NYC lets each restaurant decide whether dogs may sit outside. #}
+              <p class="place-ask">Dogs are allowed only if the restaurant says yes. Ask before you sit down.</p>
+            {% endif %}
+
             <div class="place-actions">
               <a class="place-directions" href="{{ place.directions_url }}" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 3L3 10.5l7.5 2.9L13.4 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -142,7 +152,7 @@
 
             {# Use Reliable Location Data: say where this came from and when it was last verified. #}
             <p class="place-source">
-              Source: {% if place.source == "nyc_parks" %}<a href="https://data.cityofnewyork.us/d/hxx3-bwgv" target="_blank" rel="noopener" title="NYC Parks Dog Runs dataset">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
+              Source: {% if place.source_url %}<a href="{{ place.source_url }}" target="_blank" rel="noopener" title="{{ place.get_source_display }}">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
             </p>
           </article>
         {% endfor %}
@@ -150,7 +160,12 @@
     {% else %}
       <div class="card no-results places-empty">
         <span class="places-empty-icon" aria-hidden="true">{% include "partials/paw_icon.html" %}</span>
-        {% if origin %}
+        {% if needs_location %}
+          {# Thousands of places have outdoor dining, so it needs an area first. #}
+          <h2>Search an area to see outdoor dining</h2>
+          <p>Enter a neighborhood or ZIP code, or use your current location.</p>
+          <a class="btn btn-dark" href="#search-location" data-focus-location>Search an area</a>
+        {% elif origin %}
           <h2>No {{ category_names.1 }} near {{ origin_name }} yet</h2>
           <p>Search a nearby neighborhood or zip code.</p>
           <a class="btn btn-dark" href="#search-location" data-focus-location>Try another area</a>

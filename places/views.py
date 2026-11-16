@@ -13,7 +13,13 @@ from caregivers.views import _choice, _with, _without
 
 from .forms import PlaceReportForm
 from .models import Place, PlaceReport
-from .search import NAMES, find_origin, places_near
+from .search import (
+    CHIP_LABELS,
+    MAX_OUTDOOR_DINING,
+    NAMES,
+    find_origin,
+    places_near,
+)
 
 DEFAULT_DISTANCE = 1  # miles, as in the design
 THANKS = "Thanks! Our team will check and update it."
@@ -53,10 +59,20 @@ def explore_places(request):
     current = params.get("here") == "1" and origin is not None
 
     places = Place.objects.shown()
+    outdoor = category == Place.Category.OUTDOOR_DINING
     if category:
         places = places.filter(category=category)
+    else:
+        # Outdoor dining only shows under its own chip: there are thousands,
+        # and whether dogs are welcome is up to each restaurant.
+        places = places.exclude(category=Place.Category.OUTDOOR_DINING)
+    needs_location = outdoor and origin is None
     if origin is not None:
         results = places_near(places, origin["latitude"], origin["longitude"], distance)
+        if outdoor:
+            results = results[:MAX_OUTDOOR_DINING]
+    elif needs_location:
+        results = []
     else:
         results = list(places)
 
@@ -88,7 +104,10 @@ def explore_places(request):
             ),
         }
         for value, label in [("", "All")]
-        + [(c, NAMES[c][1].capitalize()) for c in Place.Category.values]
+        + [
+            (c, CHIP_LABELS.get(c, NAMES[c][1].capitalize()))
+            for c in Place.Category.values
+        ]
     ]
 
     return render(
@@ -109,6 +128,7 @@ def explore_places(request):
             "distance": distance,
             "distance_choices": DISTANCE_CHOICES,
             "any_places": Place.objects.shown().exists(),
+            "needs_location": needs_location,
             # Places this person reported and we haven't fixed yet show "Reported".
             "reported_ids": set(
                 PlaceReport.objects.filter(

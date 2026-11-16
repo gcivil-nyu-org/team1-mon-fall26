@@ -180,7 +180,16 @@ class ViewNearbyPlacesTests(ExploreData):
         response = self.client.get(EXPLORE, {"location": "Park Slope", "place": "1"})
         labels = [c["label"] for c in response.context["chips"]]
         self.assertEqual(
-            labels, ["All", "Dog parks", "Cafés", "Pet stores", "Restaurants"]
+            labels,
+            [
+                "All",
+                "Dog parks",
+                "Cafés",
+                "Pet stores",
+                "Restaurants",
+                "Outdoor dining",
+                "Off-leash areas",
+            ],
         )
         cafes = response.context["chips"][2]["query"]
         self.assertIn("category=cafe", cafes)
