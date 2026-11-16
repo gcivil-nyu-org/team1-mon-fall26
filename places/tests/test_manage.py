@@ -297,6 +297,19 @@ class EditTests(ManageData):
         # The address didn't change, so the pin stays.
         self.assertEqual(self.cafe.latitude, Decimal("40.671600"))
 
+    def test_every_type_has_a_chip(self):
+        # Off-leash areas and dog fountains came from later imports; editing
+        # one used to fail with "Pick a type." because it had no chip.
+        response = self.client.get(self.edit_url(self.cafe))
+        for value, label in Place.Category.choices:
+            self.assertContains(response, f'value="{value}"')
+        for category in (Place.Category.OFF_LEASH, Place.Category.DOG_FOUNTAIN):
+            data = self.form_data(category=category)
+            response = self.client.post(self.edit_url(self.cafe), data)
+            self.assertEqual(response.status_code, 302)
+            self.cafe.refresh_from_db()
+            self.assertEqual(self.cafe.category, category)
+
     def test_day_by_day_hours_replace_text_hours(self):
         data = self.form_data(name="Paws Patio", category="restaurant", address="")
         data["address"] = "300 5th Ave, Brooklyn"

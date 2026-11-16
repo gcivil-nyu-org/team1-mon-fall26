@@ -57,13 +57,16 @@ class PlaceForm(forms.Form):
             initial[f"{key}_from"] = day_hours["open"] if day_hours else "09:00"
             initial[f"{key}_to"] = day_hours["close"] if day_hours else "17:00"
         super().__init__(*args, initial=initial, **kwargs)
-        # Category order follows the Figma chips.
+        # Category order follows the Figma chips, then the types added since.
+        # Every type needs a chip, or places of that type can't be saved.
         self.fields["category"].choices = [
             (Place.Category.CAFE, "Café"),
             (Place.Category.DOG_PARK, "Dog park"),
             (Place.Category.PET_STORE, "Pet store"),
             (Place.Category.RESTAURANT, "Restaurant"),
             (Place.Category.OUTDOOR_DINING, "Outdoor dining"),
+            (Place.Category.OFF_LEASH, "Off-leash area"),
+            (Place.Category.DOG_FOUNTAIN, "Dog fountain"),
         ]
         for day in DAYS:
             key = day.lower()
