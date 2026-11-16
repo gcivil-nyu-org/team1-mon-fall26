@@ -85,7 +85,7 @@ class DeletePetTests(TestCase):
         self.book(Booking.Status.DECLINED, timedelta(days=-3))
         self.client.post(self.url)
         form = BookingRequestForm(owner=self.owner)
-        self.assertNotIn(self.pet, form.fields["pet"].queryset)
+        self.assertNotIn(self.pet, form.fields["pets"].queryset)
 
     def test_cannot_delete_with_a_pending_request(self):
         self.book(Booking.Status.PENDING, timedelta(days=2))

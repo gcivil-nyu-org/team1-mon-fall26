@@ -715,7 +715,7 @@ def manage_availability(request):
             "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
             "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
             "status": booking.status,
-            "pet": booking.pet.name if booking.pet else "Pet",
+            "pet": booking.pet_names if booking.pet else "Pet",
         }
         for booking in bookings
     ]

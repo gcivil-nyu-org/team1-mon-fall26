@@ -3,7 +3,7 @@ The whole row opens the booking; the buttons on the right do their own thing.{% 
 <div class="co-booking-row">
   {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="booking-avatar" %}
   <span class="co-item-copy">
-    <a class="co-booking-link" href="{{ booking.get_absolute_url }}"><strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong></a>
+    <a class="co-booking-link" href="{{ booking.get_absolute_url }}"><strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong></a>
     <small>{{ booking.caregiver.name }} · {{ booking.start_time|date:"D, M j, g:i A" }}</small>
   </span>
   <span class="co-booking-actions">

@@ -20,13 +20,21 @@ RELATED = ("owner", "pet__pet_type", "caregiver", "service_type")
 def owner_bookings(user):
     """Bookings the signed-in owner made, with the related records preloaded."""
     Booking.update_overdue()
-    return Booking.objects.filter(owner=user).select_related(*RELATED)
+    return (
+        Booking.objects.filter(owner=user)
+        .select_related(*RELATED)
+        .prefetch_related("pets")
+    )
 
 
 def caregiver_bookings(user):
     """Booking requests sent to the signed-in user's caregiver profile."""
     Booking.update_overdue()
-    return Booking.objects.filter(caregiver__user=user).select_related(*RELATED)
+    return (
+        Booking.objects.filter(caregiver__user=user)
+        .select_related(*RELATED)
+        .prefetch_related("pets__pet_type")
+    )
 
 
 @login_required
@@ -47,6 +55,7 @@ def booking_create(request):
             booking.owner = request.user
             booking.status = Booking.Status.PENDING
             booking.save()
+            form.save_m2m()
             messages.success(
                 request,
                 f"Request sent to {booking.caregiver.name}. "
@@ -58,9 +67,12 @@ def booking_create(request):
         # page or a filtered caregiver search.
         initial = {
             key: request.GET[key]
-            for key in ("caregiver", "pet", "service_type")
+            for key in ("caregiver", "service_type")
             if request.GET.get(key, "").isdigit()
         }
+        picked = [p for p in request.GET.getlist("pet") if p.isdigit()]
+        if picked:
+            initial["pets"] = picked
         form = BookingRequestForm(initial=initial, owner=request.user)
     return render(
         request,
@@ -108,9 +120,11 @@ def booking_list(request):
 @login_required
 def booking_detail(request, pk):
     # Both the owner who sent the request and the caregiver it was sent to can see it.
-    visible = Booking.objects.filter(
-        Q(owner=request.user) | Q(caregiver__user=request.user)
-    ).select_related(*RELATED)
+    visible = (
+        Booking.objects.filter(Q(owner=request.user) | Q(caregiver__user=request.user))
+        .select_related(*RELATED)
+        .prefetch_related("pets__pet_type")
+    )
     booking = get_object_or_404(visible, pk=pk)
     is_caregiver = booking.caregiver.user_id == request.user.pk
     return render(
@@ -277,7 +291,7 @@ def response_message(booking, new_status):
     when = dateformat.format(
         timezone.localtime(booking.start_time), r"D, M j \a\t g:i A"
     )
-    details = f"{booking.pet.name} · {booking.service_type.name} on {when}"
+    details = f"{booking.pet_names} · {booking.service_type.name} on {when}"
     owner = owner_name(booking.owner)
     if new_status == Booking.Status.ACCEPTED:
         return (
