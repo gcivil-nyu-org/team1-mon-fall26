@@ -1,0 +1,45 @@
+{% load report_tags review_tags %}
+{# Figma "Pet-Friendly Places Report": every report on the place, the place, and "Mark as resolved". #}
+<article class="card report-detail place-report-detail" aria-labelledby="report-title">
+  <header class="report-detail-head">
+    <span class="report-icon report-icon-large">{% include "reports/partials/kind_icon.html" with kind="place" %}</span>
+    <div>
+      <h2 id="report-title">{{ selected.get_reason_display }}</h2>
+      <p class="muted">Place · Reported by {{ selected.reporter|display_name }} · {{ selected.created_at|when_long }}</p>
+    </div>
+    {% include "reports/partials/place_status_pill.html" with report=selected %}
+  </header>
+
+  {% if done %}
+    <p class="report-done" role="status"><span class="report-check" aria-hidden="true">{% include "partials/check_icon.html" %}</span> {{ done }}</p>
+  {% elif not selected.is_open and selected.resolved_by %}
+    <p class="report-handled-banner"><span class="report-check" aria-hidden="true">{% include "partials/check_icon.html" %}</span> Resolved by {{ selected.resolved_by|reviewer_name }} · {{ selected.resolved_at|when_long }}</p>
+  {% endif %}
+
+  <h3>{{ place_reports|length }} report{{ place_reports|length|pluralize }} on this place</h3>
+  <ul class="place-report-quotes">
+    {% for item in place_reports %}
+      <li>
+        <span class="muted">{{ item.reporter|display_name }} · {{ item.created_at|when_short }}{% if item.reason != selected.reason %} · {{ item.get_reason_display }}{% endif %}</span>
+        <p>“{{ item.details }}”</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Place</h3>
+  <a class="place-report-card cat-{{ selected.place.category }}" href="{% url 'places:manage_detail' selected.place.pk %}">
+    <span class="place-report-letter" aria-hidden="true">{{ selected.place.name|first|upper }}</span>
+    <span class="place-report-card-text">
+      <strong>{{ selected.place.name }}</strong>
+      <span class="muted">{{ selected.place.get_category_display }}{% if selected.place.place_line %} · {{ selected.place.place_line }}{% endif %}{% if not selected.place.is_active %} · Hidden{% endif %}</span>
+    </span>
+    <span class="place-report-open">Open in Explore <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </a>
+
+  {% if selected.is_open %}
+    <form method="post" action="{% url 'reports:admin_place_resolve' selected.pk %}" class="report-actions">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-dark">Mark as resolved</button>
+    </form>
+  {% endif %}
+</article>

@@ -322,29 +322,57 @@ class ReportWrongInfoTests(ExploreData):
     def test_report(self):
         back = f"{EXPLORE}?location=Park+Slope&place={self.cafe.pk}"
         response = self.client.post(
-            self.url(), {"details": " Closes at 5 PM now. ", "next": back}, follow=True
+            self.url(),
+            {"reason": "wrong_hours", "details": " Closes at 5 PM now. ", "next": back},
+            follow=True,
         )
         self.assertRedirects(response, back)
         report = PlaceReport.objects.get()
         self.assertEqual(report.details, "Closes at 5 PM now.")
+        self.assertEqual(report.reason, "wrong_hours")
         self.assertEqual(report.reporter, self.owner)
-        self.assertFalse(report.is_resolved)
-        self.assertContains(
-            response, "Thanks! We&#x27;ll check the information for Bark"
-        )
+        self.assertTrue(report.is_open)
+        self.assertContains(response, "Thanks! Our team will check and update it.")
+        # Figma "Report Wrong Info (Reported)": the link becomes a tag.
+        self.assertContains(response, "Reported</span>")
+        self.assertNotContains(response, f"{self.url()}?next=")
 
-    def test_empty_or_too_long(self):
+    def test_missing_reason_details_or_too_long(self):
         response = self.client.post(self.url(), {"details": "  "})
+        self.assertContains(response, "Pick what&#x27;s wrong.")
         self.assertContains(response, "Tell us what&#x27;s wrong")
         response = self.client.post(
-            self.url(), {"details": "x" * (MAX_REPORT_LENGTH + 1)}
+            self.url(),
+            {"reason": "other", "details": "x" * (MAX_REPORT_LENGTH + 1)},
         )
         self.assertContains(response, f"Keep it to {MAX_REPORT_LENGTH} characters.")
         self.assertFalse(PlaceReport.objects.exists())
 
+    def test_popup(self):
+        """Explore sends the form in the background and shows the answer in a pop-up."""
+        popup = {"HTTP_X_REQUESTED_WITH": "fetch"}
+        response = self.client.get(self.url(), **popup)
+        self.assertTemplateUsed(response, "places/partials/report_card.html")
+        self.assertNotContains(response, "<html")
+        self.assertContains(response, "Permanently closed")
+        response = self.client.post(self.url(), {"details": "Moved."}, **popup)
+        self.assertContains(response, "Pick what&#x27;s wrong.")
+        response = self.client.post(
+            self.url(), {"reason": "closed", "details": "It closed."}, **popup
+        )
+        self.assertContains(response, "Report sent")
+        self.assertContains(response, "Thanks! Our team will check and update it.")
+        # Reporting again while the first is open doesn't add a second report.
+        response = self.client.get(self.url(), **popup)
+        self.assertContains(response, "already reported this place")
+        response = self.client.post(self.url(), {"next": EXPLORE})
+        self.assertRedirects(response, EXPLORE, fetch_redirect_response=False)
+        self.assertEqual(PlaceReport.objects.count(), 1)
+
     def test_back_link_must_stay_on_pawpal(self):
         response = self.client.post(
-            self.url(), {"details": "Moved.", "next": "https://evil.example/"}
+            self.url(),
+            {"reason": "other", "details": "Moved.", "next": "https://evil.example/"},
         )
         self.assertRedirects(
             response, f"{EXPLORE}?place={self.cafe.pk}", fetch_redirect_response=False

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if selected %}{{ selected.name }} · {% endif %}Pet-friendly places · PawPal admin{% endblock %}
+
+{% block main_class %}page page-manage-places{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'css/manage_places.css' %}?v=1">
+  <h1 class="admin-title">Pet-friendly places</h1>
+
+  <nav class="admin-tabs" aria-label="Which places">
+    {% for t in tabs %}
+      <a class="admin-tab{% if t.key == tab %} is-active{% endif %}" href="{% url 'places:manage' %}?{% if query %}q={{ query|urlencode }}&amp;{% endif %}tab={{ t.key }}"{% if t.key == tab %} aria-current="page"{% endif %}>
+        {{ t.label }} <span class="admin-tab-count">{{ t.count }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <div class="manage-layout">
+    <section class="manage-list" aria-label="Places">
+      {# There are about a hundred dog parks, so the list can be searched, like Users. #}
+      <form method="get" action="{% url 'places:manage' %}" class="manage-search" role="search">
+        <svg class="manage-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <label class="visually-hidden" for="manage-search">Search places by name or address</label>
+        <input type="search" id="manage-search" name="q" value="{{ query }}" placeholder="Search name or address" autocomplete="off">
+        {% if tab != "all" %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+        <button type="submit" class="visually-hidden">Search</button>
+      </form>
+      {% if query %}
+        <p class="muted manage-count">{{ page.paginator.count }} place{{ page.paginator.count|pluralize }} found</p>
+      {% endif %}
+
+      {% if page.object_list %}
+        <ul class="manage-rows">
+          {% for place in page %}
+            <li>
+              <a class="manage-row cat-{{ place.category }}{% if selected and place.pk == selected.pk %} is-selected{% endif %}{% if not place.is_active %} is-hidden{% endif %}" href="{% url 'places:manage_detail' place.pk %}{% if keep %}?{{ keep }}{% if page.number > 1 %}&amp;page={{ page.number }}{% endif %}{% elif page.number > 1 %}?page={{ page.number }}{% endif %}"{% if selected and place.pk == selected.pk %} aria-current="true"{% endif %}>
+                <span class="place-icon">{% include "places/partials/category_icon.html" with category=place.category %}</span>
+                <span class="manage-row-text">
+                  <strong>{{ place.name }}</strong>
+                  {% if place.place_line %}<span class="manage-row-address">{{ place.place_line }}</span>{% endif %}
+                  {% if place.open_reports %}<span class="manage-report-tag">{{ place.open_reports }} report{{ place.open_reports|pluralize }}</span>{% endif %}
+                </span>
+                {% include "places/partials/visibility_pill.html" with place=place %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if page.has_other_pages %}
+          <nav class="manage-pages" aria-label="Pages">
+            {% if page.has_previous %}<a class="btn btn-outline btn-small" href="{% url 'places:manage' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.previous_page_number }}">Previous</a>{% endif %}
+            <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a class="btn btn-outline btn-small" href="{% url 'places:manage' %}?{% if keep %}{{ keep }}&amp;{% endif %}page={{ page.next_page_number }}">Next</a>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="muted manage-empty">
+          {% if query %}No places match “{{ query }}”.{% elif tab == "hidden" %}No hidden places. Everything is on the map.{% else %}No places yet.{% endif %}
+        </p>
+      {% endif %}
+    </section>
+
+    {% if selected %}
+      <article class="manage-panel cat-{{ selected.category }}" aria-labelledby="place-title">
+        <header class="manage-head">
+          <span class="place-icon place-icon-large">{% include "places/partials/category_icon.html" with category=selected.category %}</span>
+          <div>
+            <h2 id="place-title">{{ selected.name }}</h2>
+            <p class="muted">{{ selected.get_category_display }}{% if selected.neighborhood %} · {{ selected.neighborhood }}{% endif %}</p>
+          </div>
+          {% include "places/partials/visibility_pill.html" with place=selected %}
+        </header>
+
+        {% if form %}
+          {% include "places/partials/manage_form.html" %}
+        {% else %}
+          {% if done %}
+            <p class="manage-banner is-done" role="status"><span class="manage-check" aria-hidden="true">{% include "partials/check_icon.html" %}</span> {{ done }}</p>
+          {% endif %}
+          {% if not selected.is_active %}
+            <p class="manage-banner is-hidden"><span class="manage-check" aria-hidden="true">{% include "partials/check_icon.html" %}</span> Hidden. Users can't see this place.</p>
+          {% endif %}
+          {% if open_reports %}
+            <p class="manage-reports-bar">
+              <span>{% include "reports/partials/flag_icon.html" %} {{ open_reports|length }} report{{ open_reports|length|pluralize }} open</span>
+              <a href="{% url 'reports:admin_place' open_reports.0.pk %}">View in Reports</a>
+            </p>
+          {% endif %}
+
+          <div class="manage-tile">
+            <span class="manage-tile-label">Address</span>
+            <strong>{{ selected.place_line|default:"Not listed yet" }}</strong>
+          </div>
+
+          <div class="manage-tile manage-hours">
+            <div class="manage-tile-top">
+              <span class="manage-tile-label">Hours</span>
+              {% if open_now is True %}<span class="manage-pill is-active"><span class="status-dot" aria-hidden="true"></span>Open now</span>{% elif open_now is False %}<span class="manage-pill is-hidden"><span class="status-dot" aria-hidden="true"></span>Closed now</span>{% endif %}
+            </div>
+            {% if week %}
+              <dl class="manage-week">
+                {% for day in week %}
+                  <div class="manage-day{% if day.is_today %} is-today{% endif %}">
+                    <dt>{{ day.name }}{% if day.is_today %}<span class="visually-hidden"> (today)</span>{% endif %}</dt>
+                    <dd{% if not day.hours %} class="is-closed"{% endif %}>{{ day.hours|default:"Closed" }}</dd>
+                  </div>
+                {% endfor %}
+              </dl>
+            {% elif selected.hours %}
+              <strong>{{ selected.hours }}</strong>
+            {% else %}
+              <strong class="muted">Not listed yet</strong>
+            {% endif %}
+          </div>
+
+          <section class="manage-amenities" aria-labelledby="amenities-title">
+            <h3 id="amenities-title">Pet amenities</h3>
+            {% if selected.feature_list %}
+              <ul>
+                {% for feature in selected.feature_list %}
+                  <li><span class="manage-tick" aria-hidden="true"><svg viewBox="0 0 12 12" focusable="false"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>{{ feature }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted">None listed yet.</p>
+            {% endif %}
+          </section>
+
+          <p class="manage-source">
+            Source: {{ selected.get_source_display }}{% if selected.checked_on %} · verified {{ selected.checked_on|date:"M j, Y" }}{% endif %}{% if selected.edited_at %} · edited by an admin {{ selected.edited_at|date:"M j, Y" }}{% endif %}
+          </p>
+
+          <div class="manage-actions">
+            <a class="btn btn-outline" href="{% url 'places:manage_edit' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Edit details</a>
+            {% if selected.is_active %}
+              <a class="manage-hide-link" href="{% url 'places:manage_detail' selected.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=hide">Hide place</a>
+            {% else %}
+              <form method="post" action="{% url 'places:manage_show' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-dark">Show place</button>
+              </form>
+            {% endif %}
+          </div>
+
+          {% if confirm_hide %}
+            {# Figma "Hide Place": the question under the buttons. #}
+            <form method="post" action="{% url 'places:manage_hide' selected.pk %}{% if keep %}?{{ keep }}{% endif %}" class="manage-confirm" role="alertdialog" aria-labelledby="hide-title" aria-describedby="hide-text">
+              {% csrf_token %}
+              <div>
+                <strong id="hide-title">Hide this place?</strong>
+                <p id="hide-text">Users won't see this place until you show it again.</p>
+              </div>
+              <a class="btn btn-outline" href="{% url 'places:manage_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
+              <button type="submit" class="btn btn-dark" autofocus>Hide it</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </article>
+    {% endif %}
+  </div>
+{% endblock %}

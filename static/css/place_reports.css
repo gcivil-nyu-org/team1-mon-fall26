@@ -1,0 +1,35 @@
+/* Reports of wrong place information on the admin Reports page (#107,
+   Figma "Pet-Friendly Places Report"). The row and header reuse reports.css. */
+
+.place-report-detail h3 { margin-bottom: 0; }
+
+.place-report-quotes { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.place-report-quotes li { padding: 12px 14px; background: #fff6dd; border-radius: 14px; }
+.place-report-quotes span { font-size: 12px; }
+.place-report-quotes p { margin: 4px 0 0; font-size: 15px; line-height: 22px; overflow-wrap: anywhere; }
+
+.cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; }
+.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
+.cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
+
+.place-report-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #faf5f2;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.place-report-card:hover { border-color: var(--line-strong); }
+.place-report-card:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.place-report-letter { display: grid; flex: none; place-items: center; width: 36px; height: 36px; background: var(--cat-bg); border-radius: 50%; color: var(--cat-ink); font-weight: 700; }
+.place-report-card-text { display: grid; flex: 1; min-width: 0; gap: 2px; }
+.place-report-card-text strong { font-size: 15px; }
+.place-report-card-text span { font-size: 13px; overflow-wrap: anywhere; }
+.place-report-open { display: inline-flex; flex: none; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; }
+
+.report-status-place-resolved { background: var(--success-bg); color: var(--success-ink); }
