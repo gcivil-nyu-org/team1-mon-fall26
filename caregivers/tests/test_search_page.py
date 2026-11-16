@@ -64,7 +64,7 @@ class CardHelperTests(SimpleTestCase):
         self.assertEqual(initials(""), "?")
 
     def test_experience_ranges(self):
-        self.assertEqual(experience_range(0), "Under 1 year")
+        self.assertEqual(experience_range(0), "Less than 1 year")
         self.assertEqual(experience_range(2), "1–2 years")
         self.assertEqual(experience_range(4), "3–5 years")
         self.assertEqual(experience_range(9), "5+ years")
