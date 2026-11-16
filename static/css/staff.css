@@ -84,7 +84,10 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
   font-size: 16px;
 }
 
-.staff-avatar-caregiver { background: var(--mint); color: var(--success-ink); }
+/* Each person's Messages color (Figma "Users"), with the same peach and yellow as Messages. */
+.staff-avatar[class*="theme-"] { background: var(--theme-bg); color: var(--theme-ink); }
+.staff-avatar.theme-peach { --theme-bg: var(--orange); --theme-ink: var(--ink); }
+.staff-avatar.theme-yellow { --theme-bg: var(--yellow); --theme-ink: var(--ink); }
 .staff-avatar-admin { background: var(--lavender); color: var(--purple-dark); }
 .staff-avatar-large { width: 64px; height: 64px; font-size: 22px; }
 

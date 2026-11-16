@@ -386,11 +386,13 @@ def caregiver_list(request):
     by distance and sorted.
     """
     params = request.GET
-    if params.get("looking_for") == "places":
-        # "Looking for: Pet-friendly places" on the Explore form.
-        from places.views import explore_url
+    # "Looking for" on the Explore form: places, or pets for caregivers.
+    from places.views import explore_url
 
+    if params.get("looking_for") == "places":
         return redirect(explore_url("places:explore", params))
+    if params.get("looking_for") == "pets":
+        return redirect(explore_url("opportunities:browse", params))
     notice = ""
 
     availability = params.get("availability", "available")
@@ -434,6 +436,21 @@ def caregiver_list(request):
         else:
             caregivers = offering_service(caregivers, service)
 
+    # Pet type, the "Pet" dropdown in the Figma "Find Caregivers" frame:
+    # only caregivers who say they care for it.
+    from pets.models import PetType
+
+    pet_types = list(PetType.objects.order_by("name"))
+    pet_code = params.get("pet_type", "").strip()
+    pet_type = None
+    if pet_code:
+        pet_type = next((pt for pt in pet_types if str(pt.pk) == pet_code), None)
+        if pet_type is None:
+            notice = "Choose a pet from the list."
+            pet_code = ""
+        else:
+            caregivers = caregivers.filter(supported_pet_types=pet_type).distinct()
+
     distance = _choice(params.get("distance"), DISTANCE_CHOICES, DEFAULT_DISTANCE)
     sort = params.get("sort", "closest")
     if sort not in SORT_CHOICES:
@@ -444,6 +461,11 @@ def caregiver_list(request):
     area_code = params.get("area", "").strip()
     current = params.get("here") == "1"
     latitude, longitude = _coordinates(params)
+    if not (text or area_code or current or "location" in params):
+        # Before a search, start from the owner's own neighborhood, as in the
+        # Figma "Find Caregivers" frame ("4 caregivers near Park Slope").
+        profile = getattr(request.user, "account_profile", None)
+        text = (getattr(profile, "neighborhood", "") or "").strip()
 
     origin = None  # {"label", "latitude", "longitude"}
     results = None
@@ -558,6 +580,11 @@ def caregiver_list(request):
             ),
             "show_map": params.get("map") == "1",
             "query_without_service": _without(params, "service"),
+            "pet_type": pet_type,
+            "query_without_pet": _without(params, "pet_type"),
+            "pet_filters": [
+                {"type": pt, "query": _with(params, pet_type=pt.pk)} for pt in pet_types
+            ],
             # One chip per service (#34); each link keeps the rest of the search.
             "service_filters": [
                 {"type": st, "query": _with(params, service=st.pk)}
@@ -688,7 +715,7 @@ def manage_availability(request):
             "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
             "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
             "status": booking.status,
-            "pet": booking.pet.name if booking.pet else "Pet",
+            "pet": booking.pet_names if booking.pet else "Pet",
         }
         for booking in bookings
     ]

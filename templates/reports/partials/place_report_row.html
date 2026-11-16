@@ -1,0 +1,11 @@
+{% load report_tags %}
+{# One row per place on the Reports page (Figma "Pet-Friendly Places Report"). #}
+<a class="report-row{% if selected.is_place_report and report.pk == selected.pk %} is-selected{% endif %}" href="{% url 'reports:admin_place' report.pk %}"{% if selected.is_place_report and report.pk == selected.pk %} aria-current="true"{% endif %}>
+  <span class="report-icon">{% include "reports/partials/kind_icon.html" with kind="place" %}</span>
+  <span class="report-row-text">
+    <strong>{{ report.get_reason_display }}</strong>
+    <span>Place: {{ report.place.name }}</span>
+    <span class="muted">Reported by {{ report.reporter|display_name }}{% if report.others %} +{{ report.others }}{% endif %} · <span class="nowrap">{{ report.created_at|when_short }}</span></span>
+  </span>
+  {% include "reports/partials/place_status_pill.html" %}
+</a>

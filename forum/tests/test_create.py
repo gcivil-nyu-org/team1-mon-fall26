@@ -70,7 +70,7 @@ class CreatePostTests(ForumTestData):
         self.assertRedirects(response, f"{LIST_URL}?post={post.pk}")
         self.assertEqual(response.context["selected"], post)
         self.assertContains(
-            response, "<strong>Posted!</strong> Others can now see and comment."
+            response, "<span>Posted! Others can now see and comment.</span>"
         )
         self.assertContains(response, '<span class="forum-new-badge">New</span>')
         self.assertContains(response, "No comments yet. Be the first!")

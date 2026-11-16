@@ -527,3 +527,6 @@
 /* Pet photos in booking rows, the request page and the caregiver's request panel. */
 img.booking-avatar,
 img.request-avatar { object-fit: cover; padding: 0; background: var(--theme-bg); }
+
+/* A request for several pets: each pet's name above its care summary. */
+.request-pet-name { margin: 14px 0 6px; font-size: 16px; }

@@ -39,7 +39,7 @@
               <a class="request-row{% if booking == selected %} selected{% endif %}" href="?status={{ active_tab }}&amp;b={{ booking.pk }}"{% if booking == selected %} aria-current="true"{% endif %}>
                 {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="request-avatar" %}
                 <span class="request-row-text">
-                  <span><strong>{{ booking.pet.name }}</strong> <span class="muted">· {{ booking.pet.pet_type }}</span></span>
+                  <span><strong>{{ booking.pet_names }}</strong> <span class="muted">· {% if booking.all_pets|length > 1 %}{{ booking.all_pets|length }} pets{% else %}{{ booking.pet.pet_type }}{% endif %}</span></span>
                   <span class="request-row-meta">{{ booking.service_type.name }} · {{ booking.start_time|date:"D, M j · g:i A" }}</span>
                 </span>
                 <span class="request-row-tags">
@@ -56,8 +56,8 @@
           <div class="request-panel-header">
             {% include "bookings/partials/pet_avatar.html" with pet=b.pet classes="request-avatar request-avatar-large" %}
             <div>
-              <h2>{{ b.pet.name }}</h2>
-              <p class="muted">{{ b.pet.pet_type }}{% if b.pet.age_short %} · {{ b.pet.age_short }}{% endif %} · Owner: {{ b.owner|short_name }}</p>
+              <h2>{{ b.pet_names }}</h2>
+              <p class="muted">{% if b.all_pets|length > 1 %}{{ b.all_pets|length }} pets · you and the owner agree on the price{% else %}{{ b.pet.pet_type }}{% if b.pet.age_short %} · {{ b.pet.age_short }}{% endif %}{% endif %} · Owner: {{ b.owner|short_name }}</p>
             </div>
           </div>
           {% include "bookings/partials/status_pill.html" with status=b.status label=b.get_status_display %}
@@ -67,11 +67,14 @@
             <div class="tile tile-type"><dt>When</dt><dd>{{ b.start_time|date:"D, M j" }} ·<br>{{ b.start_time|date:"g:i A" }}</dd></div>
           </dl>
 
-          {% include "pets/partials/care_summary.html" with pet=b.pet show_contacts=b.shows_emergency_contacts %}
+          {% for pet in b.all_pets %}
+            {% if b.all_pets|length > 1 %}<h3 class="request-pet-name">{{ pet.name }} <span class="muted">· {{ pet.pet_type }}{% if pet.age_short %} · {{ pet.age_short }}{% endif %}</span></h3>{% endif %}
+            {% include "pets/partials/care_summary.html" with pet=pet show_contacts=b.shows_emergency_contacts %}
 
-          {% if b.shows_pet_care_info %}
-            <a class="btn btn-outline btn-block pet-care-link" href="{% url 'pets:care_view' b.pet.pk %}">View {{ b.pet.name }}'s full profile</a>
-          {% endif %}
+            {% if b.shows_pet_care_info %}
+              <a class="btn btn-outline btn-block pet-care-link" href="{% url 'pets:care_view' pet.pk %}">View {{ pet.name }}'s full profile</a>
+            {% endif %}
+          {% endfor %}
 
           {% if b.notes %}
             <div class="request-note">
@@ -131,7 +134,7 @@
                   <span class="date-chip-day">{{ booking.start_time|date:"j" }}</span>
                 </span>
                 <span class="upcoming-text">
-                  <strong>{{ booking.pet.name }} · {{ booking.service_type.name }}</strong>
+                  <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong>
                   <span class="muted">{{ booking.start_time|date:"D g:i A" }} · {{ booking.owner|short_name }}</span>
                 </span>
               </a>

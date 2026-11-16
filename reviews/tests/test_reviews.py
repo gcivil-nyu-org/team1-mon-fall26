@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from bookings.models import Booking
 from caregivers.models import CaregiverProfile, ServiceType
+from messaging.inbox import person
 from pets.models import Pet, PetType
 
 from ..models import Review
@@ -307,4 +308,6 @@ class FigmaReviewFlowTests(ReviewTestData):
         response = self.client.get(reverse("caregiver", args=[self.caregiver.pk]))
         self.assertContains(response, "Kat W.")
         self.assertContains(response, ">KW<")
-        self.assertContains(response, f"review-avatar tone-{self.owner.pk % 3}")
+        self.assertContains(
+            response, f"review-avatar theme-{person(self.owner)['theme']}"
+        )

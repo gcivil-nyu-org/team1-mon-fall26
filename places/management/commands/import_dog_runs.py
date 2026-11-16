@@ -28,13 +28,16 @@ FIELDS = (
 def update_dog_parks(runs, checked_on):
     """Add new dog runs, update changed ones and hide those NYC Parks no longer
     lists. Addresses are only changed when the runs have them (the directory
-    was read). Returns (added, updated, hidden)."""
+    was read). Dog parks an admin edited on the "Pet-friendly places" page are
+    left as the admin set them. Returns (added, updated, hidden)."""
     existing = {
         p.source_id: p for p in Place.objects.filter(source=Place.Source.NYC_PARKS)
     }
     added = updated = 0
     for run in runs:
         place = existing.pop(run["source_id"], None)
+        if place is not None and place.edited_at is not None:
+            continue
         if place is None:
             Place.objects.create(
                 category=Place.Category.DOG_PARK,
@@ -54,7 +57,7 @@ def update_dog_parks(runs, checked_on):
             place.save()
             updated += 1
     hidden = Place.objects.filter(
-        pk__in=[p.pk for p in existing.values()], is_active=True
+        pk__in=[p.pk for p in existing.values()], is_active=True, edited_at=None
     ).update(is_active=False)
     return added, updated, hidden
 

@@ -5,6 +5,7 @@ As in the Figma's "Comment posted" frame, the new comment is highlighted."""
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from forum.authors import theme
 from forum.models import COMMENT_LENGTH, Comment
 
 from .test_browse import LIST_URL, ForumTestData, detail_url
@@ -65,9 +66,11 @@ class CommentTests(ForumTestData):
             ["Try Hillside Dog Park!", "Thanks, adding it to my list."],
         )
         self.assertContains(page, "Kat W.")
-        self.assertContains(page, "Chloe S.")
-        # Caregivers' initials are on blue, as everywhere on PawPal.
-        self.assertContains(page, "forum-avatar-caregiver forum-avatar-small")
+        self.assertContains(page, "Chloe Shih")
+        # Each person in their Messages color, as in the Figma.
+        self.assertContains(
+            page, f"forum-avatar theme-{theme(self.sitter)} forum-avatar-small"
+        )
 
     def test_comments_stay_with_their_post(self):
         self.comment(self.newer)

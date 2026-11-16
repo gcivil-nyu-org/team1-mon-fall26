@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from accounts.models import AccountProfile
 from caregivers.models import CaregiverProfile
+from reports.templatetags.report_tags import person_theme
 from staff.accounts import account_status, account_type
 
 User = get_user_model()
@@ -92,6 +93,18 @@ class ListTests(StaffTestData):
             "Active",
         ):
             self.assertContains(response, text)
+
+    def test_names_and_avatars_match_messages(self):
+        # Figma "Users": pet owners as "Sam L.", caregivers by full name, and
+        # each person in their Messages avatar color.
+        response = self.client.get(detail_url(self.new))
+        self.assertContains(response, "<strong>Sam L.</strong>", html=True)
+        self.assertContains(response, 'id="account-name">Sam L.</h2>')
+        self.assertNotContains(response, "Sam Lee")
+        self.assertContains(response, "<strong>Chloe Shih</strong>", html=True)
+        for user in (self.new, self.sitter):
+            self.assertContains(response, f"staff-avatar theme-{person_theme(user)}")
+        self.assertNotContains(response, "staff-avatar-pet-owner")
 
     def test_admin_accounts_are_not_listed(self):
         # Only pet owners and caregivers, as in the Figma.

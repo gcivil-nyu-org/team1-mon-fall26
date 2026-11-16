@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -25,9 +25,13 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
         related_name="bookings",
     )
+    # The first pet picked. Every pet in the request, this one included, is in
+    # `pets`: one request can cover several of the owner's pets, and the
+    # caregiver sets the price for them.
     pet = models.ForeignKey(
         "pets.Pet", on_delete=models.PROTECT, related_name="bookings"
     )
+    pets = models.ManyToManyField("pets.Pet", related_name="group_bookings", blank=True)
     caregiver = models.ForeignKey(
         "caregivers.CaregiverProfile",
         on_delete=models.PROTECT,
@@ -59,6 +63,30 @@ class Booking(models.Model):
 
     def get_absolute_url(self):
         return reverse("bookings:booking_detail", args=[self.pk])
+
+    @classmethod
+    def for_pet(cls, pet):
+        """Every booking that includes this pet, as the first pet or another one."""
+        return cls.objects.filter(Q(pet=pet) | Q(pets=pet)).distinct()
+
+    @property
+    def all_pets(self):
+        """The pets in this booking, the first pet picked first, then by name."""
+        if not hasattr(self, "_all_pets"):
+            others = sorted(
+                (p for p in self.pets.all() if p.pk != self.pet_id),
+                key=lambda p: p.name.lower(),
+            )
+            self._all_pets = [self.pet, *others]
+        return self._all_pets
+
+    @property
+    def pet_names(self):
+        """ "Max", "Max & Bella" or "Max, Bella & Coco"."""
+        names = [p.name for p in self.all_pets]
+        if len(names) == 1:
+            return names[0]
+        return f"{', '.join(names[:-1])} & {names[-1]}"
 
     @property
     def shows_pet_care_info(self):

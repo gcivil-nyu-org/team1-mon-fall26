@@ -404,3 +404,6 @@
     padding: 22px;
   }
 }
+
+/* Several pets can share one request; the caregiver confirms the price. */
+.booking-step-hint { margin: -4px 0 12px; font-size: 13px; }

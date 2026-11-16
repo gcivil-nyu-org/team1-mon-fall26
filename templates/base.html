@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="{% static 'css/style.css' %}?v=21" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=22" rel="stylesheet">
   <link href="{% static 'css/bookings.css' %}?v=17" rel="stylesheet">
 </head>
 <body>
@@ -31,14 +31,16 @@
         {% open_report_count as open_reports %}
         <a href="{% url 'reports:admin_list' %}" class="{% if section == 'reports' %}active{% endif %}">Reports{% if open_reports %} <span class="nav-count">{{ open_reports }}<span class="visually-hidden"> open</span></span>{% endif %}</a>
         <a href="{% url 'staff:user_list' %}" class="{% if section == 'staff' %}active{% endif %}">Users</a>
-        <a href="{{ find_caregivers_url|default:'#' }}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
+        {# #107: admins manage the pet-friendly places from Explore. #}
+        <a href="{% url 'places:manage' %}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
+        <a href="{% url 'announcements:manage' %}" class="{% if section == 'announcements' %}active{% endif %}">Announcements</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}
         <a href="{% url 'bookings:caregiver_requests' %}" class="{% if section == 'bookings' %}active{% endif %}">Requests</a>
-        <a href="{% url 'opportunities:browse' %}" class="{% if section == 'opportunities' and request.resolver_match.url_name == 'browse' %}active{% endif %}">Find pets</a>
-        {# Kat's 11/12 Figma gives caregivers Explore too, for pet-friendly places and the forum. #}
-        <a href="{% url 'places:explore' %}" class="{% if section == 'places' or section == 'forum' %}active{% endif %}">Explore</a>
+        {# Figma "Explore (Caregiver)": pets needing care, pet-friendly places and the forum are all under Explore. #}
+        {# Explore opens on Pets needing care; without a caregiver profile yet, on pet-friendly places. #}
+        <a href="{% if user.caregiver_profile %}{% url 'opportunities:browse' %}{% else %}{% url 'places:explore' %}{% endif %}" class="{% if section == 'places' or section == 'forum' or section == 'opportunities' and request.resolver_match.url_name == 'browse' %}active{% endif %}">Explore</a>
         {% if user.caregiver_profile %}
           <a href="{% url 'manage_availability' %}" class="{% if request.resolver_match.url_name == 'manage_availability' or request.resolver_match.url_name == 'edit_availability' %}active{% endif %}">Availability</a>
         {% endif %}
@@ -96,6 +98,10 @@
   <main class="{% block main_class %}page{% endblock %}">
     {% block messages %}
       {% include "partials/messages.html" %}
+    {% endblock %}
+    {# Platform announcements (Figma "Announcements (Pet owners)"): the newest one not yet closed. #}
+    {% block announcement %}
+      {% include "announcements/partials/banner.html" %}
     {% endblock %}
     {% block content %}{% endblock %}
   </main>

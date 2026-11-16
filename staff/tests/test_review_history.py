@@ -72,8 +72,8 @@ class ReviewHistoryTests(ReviewHistoryData):
 
     def test_caregiver_sees_the_same_reviews_the_other_way(self):
         response = self.client.get(detail_url(self.sitter))
-        self.assertContains(response, "About Kat W &amp; Miso")
-        self.assertContains(response, "From Kat W")
+        self.assertContains(response, "About Kat W. &amp; Miso")
+        self.assertContains(response, "From Kat W.")
         self.assertContains(response, "Miso · Dog walking")
 
     def test_rating_only_review(self):
