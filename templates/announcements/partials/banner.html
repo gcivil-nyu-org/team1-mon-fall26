@@ -2,7 +2,7 @@
 {# The newest announcement for this user (Figma "Announcements (Pet owners)" and "(Caregivers)"). #}
 {% if current_announcement %}
   {% with a=current_announcement %}
-    <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/announcements.css' %}?v=3">
     <aside class="announcement-banner kind-{{ a.kind }}" role="status" aria-label="Announcement">
       <span class="announcement-icon" aria-hidden="true">{% include "announcements/partials/kind_icon.html" with kind=a.kind %}</span>
       <div class="announcement-banner-text">
