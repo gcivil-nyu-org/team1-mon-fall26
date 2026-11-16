@@ -28,6 +28,17 @@ NAMES = {
     Place.Category.DOG_FOUNTAIN: ("dog fountain", "dog fountains"),
 }
 
+# Chip order on Explore: the dog spots first, then the businesses.
+CHIP_ORDER = [
+    Place.Category.DOG_PARK,
+    Place.Category.OFF_LEASH,
+    Place.Category.DOG_FOUNTAIN,
+    Place.Category.CAFE,
+    Place.Category.PET_STORE,
+    Place.Category.RESTAURANT,
+    Place.Category.OUTDOOR_DINING,
+]
+
 # Chip labels that aren't just the plural name.
 CHIP_LABELS = {
     Place.Category.OUTDOOR_DINING: "Outdoor dining",

@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from caregivers.geocoding import GeocodingUnavailable, Location
 from places.models import MAX_REPORT_LENGTH, Place, PlaceReport
+from places.search import CHIP_ORDER
 
 EXPLORE = reverse("places:explore")
 CAREGIVERS = reverse("caregiver_list")
@@ -184,15 +185,17 @@ class ViewNearbyPlacesTests(ExploreData):
             [
                 "All",
                 "Dog parks",
+                "Off-leash areas",
+                "Dog fountains",
                 "Cafés",
                 "Pet stores",
                 "Restaurants",
                 "Outdoor dining",
-                "Off-leash areas",
-                "Dog fountains",
             ],
         )
-        cafes = response.context["chips"][2]["query"]
+        # Every place type has exactly one chip.
+        self.assertCountEqual(CHIP_ORDER, Place.Category.values)
+        cafes = response.context["chips"][4]["query"]
         self.assertIn("category=cafe", cafes)
         self.assertIn("location=Park+Slope", cafes)
         self.assertNotIn("place=", cafes)

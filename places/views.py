@@ -15,6 +15,7 @@ from .forms import PlaceReportForm
 from .models import Place, PlaceReport
 from .search import (
     CHIP_LABELS,
+    CHIP_ORDER,
     MAX_OUTDOOR_DINING,
     NAMES,
     find_origin,
@@ -104,10 +105,7 @@ def explore_places(request):
             ),
         }
         for value, label in [("", "All")]
-        + [
-            (c, CHIP_LABELS.get(c, NAMES[c][1].capitalize()))
-            for c in Place.Category.values
-        ]
+        + [(c, CHIP_LABELS.get(c, NAMES[c][1].capitalize())) for c in CHIP_ORDER]
     ]
 
     return render(
