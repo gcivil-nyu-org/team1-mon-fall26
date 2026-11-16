@@ -69,18 +69,24 @@ class Place(models.Model):
         RESTAURANT = "restaurant", "Restaurant"
         OUTDOOR_DINING = "outdoor_dining", "Outdoor dining"
         OFF_LEASH = "off_leash", "Off-leash area"
+        DOG_FOUNTAIN = "dog_fountain", "Dog fountain"
 
     class Source(models.TextChoices):
         NYC_PARKS = "nyc_parks", "NYC Parks on NYC Open Data"
         PAWPAL = "pawpal", "the PawPal team"
         DINING_OUT = "dining_out", "NYC DOT Dining Out NYC on NYC Open Data"
         NYC_PARKS_DOG_AREAS = "nyc_parks_dog_areas", "NYC Parks dog areas directory"
+        NYC_PARKS_FOUNTAINS = (
+            "nyc_parks_fountains",
+            "NYC Parks Drinking Fountains on NYC Open Data",
+        )
 
     # The NYC Open Data page each source's information comes from.
     SOURCE_URLS = {
         Source.NYC_PARKS: "https://data.cityofnewyork.us/d/hxx3-bwgv",
         Source.DINING_OUT: "https://data.cityofnewyork.us/d/fpeh-f7ci",
         Source.NYC_PARKS_DOG_AREAS: "https://data.cityofnewyork.us/d/ipbu-mtcs",
+        Source.NYC_PARKS_FOUNTAINS: "https://data.cityofnewyork.us/d/qnv7-p7a2",
     }
 
     name = models.CharField(max_length=150)

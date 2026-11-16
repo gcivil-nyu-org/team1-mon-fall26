@@ -25,6 +25,7 @@ NAMES = {
     Place.Category.RESTAURANT: ("restaurant", "restaurants"),
     Place.Category.OUTDOOR_DINING: ("outdoor dining spot", "outdoor dining spots"),
     Place.Category.OFF_LEASH: ("off-leash area", "off-leash areas"),
+    Place.Category.DOG_FOUNTAIN: ("dog fountain", "dog fountains"),
 }
 
 # Chip labels that aren't just the plural name.

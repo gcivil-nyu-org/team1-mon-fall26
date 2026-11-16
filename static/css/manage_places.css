@@ -8,6 +8,7 @@
 .cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
 .cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
 .cat-outdoor_dining { --cat-bg: #cfe2fb; --cat-ink: #1f4e79; }
+.cat-dog_fountain { --cat-bg: #c8eef0; --cat-ink: #0f5257; }
 .cat-off_leash { --cat-bg: #e6defa; --cat-ink: #4c3480; }
 
 main.page-manage-places { max-width: 1224px; width: 100%; box-sizing: border-box; padding-left: 24px; padding-right: 24px; }
