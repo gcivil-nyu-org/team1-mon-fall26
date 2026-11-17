@@ -1,5 +1,7 @@
 import secrets
 import string
+import json
+import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -92,7 +94,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
+        passwords_json = os.environ.get("EVALUATOR_PASSWORDS_JSON")
+        passwords = json.loads(passwords_json) if passwords_json else None
 
+        if passwords is not None:
+            expected = {
+                f"{prefix}_{suffix}"
+                for prefix, *_ in EVALUATORS
+                for suffix in ("owner", "caregiver")
+            }
+            if not isinstance(passwords, dict) or set(passwords) != expected:
+                raise CommandError("Invalid evaluator password configuration.")
+            if any(not isinstance(p, str) or not p for p in passwords.values()):
+                raise CommandError("Invalid evaluator password configuration.")
         if not settings.DEBUG and not dry_run:
             if not options["allow_production"]:
                 raise CommandError(
@@ -137,7 +151,11 @@ class Command(BaseCommand):
                         self.stdout.write(f"  EXISTS: {username}")
                         continue
 
-                    password = generate_password()
+                    password = (
+                        passwords[username]
+                        if passwords is not None
+                        else generate_password()
+                    )
 
                     user = User.objects.create_user(
                         username=username,
@@ -200,7 +218,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("\nSetup completed successfully."))
 
-        if credentials:
+        if credentials and passwords is None:
             self.stdout.write("\nNEW ACCOUNT CREDENTIALS — SAVE PRIVATELY")
 
             for username, password in credentials:
