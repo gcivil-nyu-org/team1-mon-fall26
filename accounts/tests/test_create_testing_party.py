@@ -5,6 +5,9 @@ pet. It prints each new password once and never resets an existing one."""
 import io
 import re
 import string
+import json
+import os
+from unittest.mock import patch
 
 import json
 import os
@@ -151,3 +154,33 @@ class CreateTestingPartyTests(TestCase):
         with self.assertRaisesMessage(CommandError, "missing or different role"):
             run("--allow-production")
         self.assertFalse(User.objects.filter(username="prof_owner").exists())
+
+    def test_configured_passwords_are_used_without_being_logged(self):
+        passwords = {
+            username: f"TestPassword_{username}_123!" for username in USERNAMES
+        }
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps(passwords)},
+        ):
+            output = run("--allow-production")
+
+        self.assertEqual(User.objects.filter(username__in=USERNAMES).count(), 14)
+        for username, password in passwords.items():
+            self.assertTrue(
+                User.objects.get(username=username).check_password(password)
+            )
+            self.assertNotIn(password, output)
+        self.assertNotIn("NEW ACCOUNT CREDENTIALS", output)
+
+    def test_invalid_password_json_is_rejected(self):
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": "{invalid-json"},
+        ):
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password JSON"
+            ):
+                run("--allow-production")
+
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())

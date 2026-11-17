@@ -95,7 +95,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         passwords_json = os.environ.get("EVALUATOR_PASSWORDS_JSON")
-        passwords = json.loads(passwords_json) if passwords_json else None
+        try:
+            passwords = json.loads(passwords_json) if passwords_json else None
+        except json.JSONDecodeError as exc:
+            raise CommandError("Invalid evaluator password JSON.") from exc
 
         if passwords is not None:
             expected = {
