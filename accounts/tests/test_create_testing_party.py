@@ -9,9 +9,6 @@ import json
 import os
 from unittest.mock import patch
 
-import json
-import os
-from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.management import CommandError, call_command
