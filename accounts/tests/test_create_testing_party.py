@@ -181,3 +181,32 @@ class CreateTestingPartyTests(TestCase):
                 run("--allow-production")
 
         self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
+
+    def test_rejects_incomplete_password_configuration(self):
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps({"prof_owner": "Test123!"})},
+        ):
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password configuration"
+            ):
+                run("--allow-production")
+
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
+
+    def test_rejects_empty_configured_password(self):
+        passwords = {
+            username: f"TestPassword_{username}_123!" for username in USERNAMES
+        }
+        passwords["prof_owner"] = ""
+
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps(passwords)},
+        ):
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password configuration"
+            ):
+                run("--allow-production")
+
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
