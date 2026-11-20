@@ -9,6 +9,12 @@ BODY_LENGTH = 5000
 COMMENT_LENGTH = 1000
 
 
+class ForumQuerySet(models.QuerySet):
+    def visible(self):
+        """#102: what regular users see. Admins also see removed content."""
+        return self.filter(removed_at__isnull=True)
+
+
 class Post(models.Model):
     class Topic(models.TextChoices):
         # The topic chips on the Forum page (Kat's 11/12 Figma).
@@ -25,6 +31,11 @@ class Post(models.Model):
     topic = models.CharField(max_length=20, choices=Topic.choices, default=Topic.TIPS)
     body = models.TextField(max_length=BODY_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
+    # #102: an admin removed it (spam or abuse). It's hidden from everyone
+    # but admins, who still see it marked Removed.
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ForumQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at", "-pk"]
@@ -44,6 +55,10 @@ class Comment(models.Model):
     )
     body = models.TextField(max_length=COMMENT_LENGTH)
     created_at = models.DateTimeField(auto_now_add=True)
+    # #102: removed by an admin, like a removed post.
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ForumQuerySet.as_manager()
 
     class Meta:
         ordering = ["created_at", "pk"]

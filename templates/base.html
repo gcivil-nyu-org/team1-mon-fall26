@@ -34,6 +34,8 @@
         {# #107: admins manage the pet-friendly places from Explore. #}
         <a href="{% url 'places:manage' %}" class="{% if section == 'caregivers' or section == 'places' %}active{% endif %}">Explore</a>
         <a href="{% url 'announcements:manage' %}" class="{% if section == 'announcements' %}active{% endif %}">Announcements</a>
+        {# #102: admins open the forum to remove spam or abusive posts and comments. #}
+        <a href="{% url 'forum:list' %}" class="{% if section == 'forum' %}active{% endif %}">Forum</a>
       {# A caregiver is anyone who signed up as one, even before they create their caregiver profile. #}
         {% elif user.caregiver_profile or user.account_profile.role == "caregiver" %}
         {# Caregivers get their own navigation, as in the Figma caregiver screens. #}

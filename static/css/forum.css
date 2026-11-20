@@ -204,6 +204,19 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
 .forum-posted { margin-bottom: 20px; padding: 11px 14px; border-radius: 14px; font-size: 15px; font-weight: 700; }
 .forum-new-badge { padding: 2px 9px; border-radius: 999px; background: var(--purple); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
 
+/* ---------- Removed by an admin (#102) ---------- */
+
+.forum-removed-tag { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--error-bg); color: var(--error); font-size: 12px; font-weight: 700; line-height: 18px; }
+.forum-row.is-removed .forum-row-text strong,
+.forum-title.is-removed,
+.forum-body.is-removed,
+.forum-comment.is-removed .forum-comment-body { color: var(--muted); text-decoration: line-through; }
+.forum-removed-note { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.forum-admin-actions { display: flex; justify-content: flex-end; padding-top: 14px; }
+.forum-comment-remove { flex: none; margin-left: auto; color: var(--error); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.forum-comment.is-removed .forum-removed-tag { margin-left: auto; }
+.forum-confirm .modal-quote { overflow-wrap: anywhere; }
+
 @media (max-width: 860px) {
   .forum-layout { grid-template-columns: minmax(0, 1fr); }
   .forum-heading h1 { font-size: 34px; line-height: 1.1; }

@@ -9,4 +9,7 @@ urlpatterns = [
     path("new/", views.post_create, name="create"),
     path("<int:pk>/", views.post_detail, name="detail"),
     path("<int:pk>/comments/", views.add_comment, name="comment"),
+    # #102: admins remove spam or abusive posts and comments.
+    path("<int:pk>/remove/", views.remove_post, name="remove_post"),
+    path("comments/<int:pk>/remove/", views.remove_comment, name="remove_comment"),
 ]
