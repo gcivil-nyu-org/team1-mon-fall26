@@ -1,0 +1,19 @@
+{% load forum_tags %}
+{# #102: confirm before removing a post or comment, like the Reports page's Remove popup (#97). #}
+{% with item=confirm_post|default:confirm_comment %}
+  <div class="modal-backdrop">
+    <form method="post" action="{% if confirm_post %}{% url 'forum:remove_post' item.pk %}{% else %}{% url 'forum:remove_comment' item.pk %}{% endif %}" class="modal-card forum-confirm" role="dialog" aria-modal="true" aria-labelledby="remove-title">
+      {% csrf_token %}
+      <span class="modal-icon" aria-hidden="true">!</span>
+      <h2 id="remove-title">Remove this {% if confirm_post %}post{% else %}comment{% endif %}?</h2>
+      <p class="muted">{% if confirm_post %}Users won’t see it or its comments anymore.{% else %}Users won’t see it anymore.{% endif %} Only admins can still see it, marked Removed.</p>
+      <div class="modal-quote">
+        <span><strong>{{ item.author_name }}</strong> · {{ item.created_at|ago }}<br>{% if confirm_post %}“{{ item.title }}”{% else %}“{{ item.body|truncatechars:140 }}”{% endif %}</span>
+      </div>
+      <div class="modal-actions">
+        <a class="btn btn-outline" href="?post={{ selected.pk }}">Cancel</a>
+        <button type="submit" class="btn btn-danger" autofocus>Remove</button>
+      </div>
+    </form>
+  </div>
+{% endwith %}

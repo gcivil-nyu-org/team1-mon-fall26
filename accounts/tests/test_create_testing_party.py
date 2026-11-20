@@ -1,203 +1,212 @@
-import csv
+"""create_testing_party sets up the demo accounts for the professor, the TA and
+the other teams: a pet owner and a caregiver each, a caregiver profile and a
+pet. It prints each new password once and never resets an existing one."""
+
 import io
+import re
+import string
+import json
 import os
-import tempfile
-from pathlib import Path
-from unittest import mock
+from unittest.mock import patch
+
 
 from django.contrib.auth import get_user_model
-from django.core.management import call_command
-from django.core.management.base import CommandError
+from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
 
 from accounts.management.commands.create_testing_party import (
+    CAREGIVER_DATA,
     EVALUATORS,
-    INTEGRATION_HOST,
     generate_password,
-    load_demo_passwords,
 )
 from accounts.models import AccountProfile
 from caregivers.models import CaregiverProfile
 from pets.models import Pet
 
 User = get_user_model()
+USERNAMES = [
+    f"{prefix}_{suffix}"
+    for prefix, *_ in EVALUATORS
+    for suffix in ("owner", "caregiver")
+]
 
 
-@override_settings(DEBUG=True)
+def run(*args):
+    out = io.StringIO()
+    call_command("create_testing_party", *args, stdout=out)
+    return out.getvalue()
+
+
+def printed_passwords(output):
+    """{username: password} from the credentials block."""
+    block = output.split("NEW ACCOUNT CREDENTIALS")[-1]
+    return dict(re.findall(r"^(\w+_(?:owner|caregiver)): (\S+)$", block, re.M))
+
+
+class GeneratePasswordTests(TestCase):
+    def test_random_passwords_of_the_given_length(self):
+        alphabet = set(string.ascii_letters + string.digits + "!@#$%")
+        first, second = generate_password(), generate_password(12)
+        self.assertEqual(len(first), 20)
+        self.assertEqual(len(second), 12)
+        self.assertLessEqual(set(first), alphabet)
+        self.assertNotEqual(first, generate_password())
+
+
 class CreateTestingPartyTests(TestCase):
-    def run_command(self, *args, **kwargs):
-        output = io.StringIO()
-        call_command("create_testing_party", *args, stdout=output, **kwargs)
-        return output.getvalue()
+    def test_blocked_on_production_without_the_flag(self):
+        # The test runner runs with DEBUG=False, like the servers.
+        with self.assertRaisesMessage(CommandError, "Production changes are blocked"):
+            run()
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
 
-    def make_csv(self, directory, passwords=None):
-        path = Path(directory) / "credentials.csv"
+    def test_dry_run_only_prints_the_plan(self):
+        output = run("--dry-run")
+        self.assertIn("PLAN: prof_owner", output)
+        self.assertIn("PLAN: ta_caregiver", output)
+        self.assertIn("PLAN: Caregiver profile for Sophie Bennett", output)
+        self.assertIn("PLAN: Mochi (Cat)", output)
+        self.assertIn("DRY RUN", output)
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
+        self.assertFalse(CaregiverProfile.objects.exists())
 
-        with path.open("w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow(["username", "password"])
-
-            for prefix, *_ in EVALUATORS:
-                for suffix in ("owner", "caregiver"):
-                    username = f"{prefix}_{suffix}"
-                    password = (
-                        passwords[username]
-                        if passwords is not None
-                        else f"TestPassword!{username}"
-                    )
-                    writer.writerow([username, password])
-
-        return path
-
-    def test_creates_all_demo_accounts_and_sample_data(self):
-        self.run_command()
-
-        self.assertEqual(User.objects.filter(username__startswith="prof_").count(), 2)
-
-        for prefix, *_ in EVALUATORS:
+    def test_creates_every_account_profile_and_pet(self):
+        output = run("--allow-production")
+        self.assertIn("Setup completed successfully.", output)
+        for prefix, label, pet_name, pet_type in EVALUATORS:
             owner = User.objects.get(username=f"{prefix}_owner")
             caregiver = User.objects.get(username=f"{prefix}_caregiver")
-
+            self.assertEqual(owner.account_profile.role, AccountProfile.Role.PET_OWNER)
             self.assertEqual(
-                AccountProfile.objects.get(user=owner).role,
-                AccountProfile.Role.PET_OWNER,
+                caregiver.account_profile.role, AccountProfile.Role.CAREGIVER
             )
-            self.assertEqual(
-                AccountProfile.objects.get(user=caregiver).role,
-                AccountProfile.Role.CAREGIVER,
+            # Demo accounts can log in straight away.
+            self.assertTrue(owner.account_profile.email_verified)
+            self.assertTrue(caregiver.account_profile.email_verified)
+            profile = CaregiverProfile.objects.get(user=caregiver)
+            self.assertEqual((profile.name, profile.bio), CAREGIVER_DATA[prefix])
+            pet = Pet.objects.get(owner=owner)
+            self.assertEqual((pet.name, pet.pet_type.name), (pet_name, pet_type))
+        self.assertEqual(User.objects.filter(username__in=USERNAMES).count(), 14)
+
+    def test_printed_passwords_log_in(self):
+        passwords = printed_passwords(run("--allow-production"))
+        self.assertEqual(sorted(passwords), sorted(USERNAMES))
+        self.assertTrue(
+            self.client.login(username="prof_owner", password=passwords["prof_owner"])
+        )
+        self.assertTrue(
+            self.client.login(
+                username="team5_caregiver", password=passwords["team5_caregiver"]
             )
-
-            self.assertTrue(CaregiverProfile.objects.filter(user=caregiver).exists())
-            self.assertTrue(Pet.objects.filter(owner=owner).exists())
-
-        self.assertEqual(
-            User.objects.filter(
-                username__in=[
-                    f"{prefix}_{suffix}"
-                    for prefix, *_ in EVALUATORS
-                    for suffix in ("owner", "caregiver")
-                ]
-            ).count(),
-            14,
         )
 
-    def test_running_twice_does_not_create_duplicates(self):
-        self.run_command()
-        self.run_command()
+    @override_settings(DEBUG=True)
+    def test_runs_locally_without_the_flag(self):
+        run()
+        self.assertEqual(User.objects.filter(username__in=USERNAMES).count(), 14)
 
-        self.assertEqual(User.objects.count(), 14)
+    def test_running_again_keeps_accounts_and_passwords(self):
+        first = printed_passwords(run("--allow-production"))
+        output = run("--allow-production")
+        self.assertIn("EXISTS: prof_owner", output)
+        self.assertIn("EXISTS CAREGIVER PROFILE: Sophie Bennett", output)
+        self.assertIn("EXISTS PET: Mochi", output)
+        self.assertNotIn("NEW ACCOUNT CREDENTIALS", output)
+        self.assertEqual(User.objects.filter(username__in=USERNAMES).count(), 14)
         self.assertEqual(CaregiverProfile.objects.count(), 7)
-        self.assertEqual(Pet.objects.count(), 7)
+        self.assertEqual(Pet.objects.filter(owner__username__in=USERNAMES).count(), 7)
+        # The first passwords still work: nothing was reset.
+        self.assertTrue(
+            self.client.login(username="ta_owner", password=first["ta_owner"])
+        )
 
-    def test_dry_run_does_not_modify_database(self):
-        output = self.run_command(dry_run=True)
+    def test_only_missing_accounts_are_created(self):
+        run("--allow-production")
+        User.objects.get(username="team3_owner").delete()
+        passwords = printed_passwords(run("--allow-production"))
+        self.assertEqual(list(passwords), ["team3_owner"])
+        self.assertTrue(
+            Pet.objects.filter(owner__username="team3_owner", name="Milo").exists()
+        )
 
-        self.assertIn("DRY RUN", output)
-        self.assertIn("PLAN:", output)
-        self.assertEqual(User.objects.count(), 0)
-        self.assertEqual(Pet.objects.count(), 0)
+    def test_existing_account_with_another_role_stops_everything(self):
+        taken = User.objects.create_user(
+            username="team2_owner", password="x-Taken-pass-9"
+        )
+        AccountProfile.objects.update_or_create(
+            user=taken, defaults={"role": AccountProfile.Role.CAREGIVER}
+        )
+        with self.assertRaisesMessage(CommandError, "team2_owner already exists"):
+            run("--allow-production")
+        # One transaction: the accounts made before team2 were rolled back too.
+        self.assertFalse(User.objects.filter(username="prof_owner").exists())
+        self.assertFalse(CaregiverProfile.objects.exists())
 
-    def test_csv_passwords_are_applied(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = self.make_csv(directory)
+    def test_existing_account_without_a_profile_stops_everything(self):
+        user = User.objects.create_user(
+            username="prof_caregiver", password="x-Taken-pass-9"
+        )
+        AccountProfile.objects.filter(user=user).delete()
+        with self.assertRaisesMessage(CommandError, "missing or different role"):
+            run("--allow-production")
+        self.assertFalse(User.objects.filter(username="prof_owner").exists())
 
-            self.run_command(credentials_file=path)
-
-            for prefix, *_ in EVALUATORS:
-                for suffix in ("owner", "caregiver"):
-                    username = f"{prefix}_{suffix}"
-                    user = User.objects.get(username=username)
-                    self.assertTrue(user.check_password(f"TestPassword!{username}"))
-
-    def test_existing_passwords_are_updated_from_csv(self):
-        self.run_command()
-
-        with tempfile.TemporaryDirectory() as directory:
-            path = self.make_csv(directory)
-            self.run_command(credentials_file=path)
-
-            user = User.objects.get(username="prof_owner")
-            self.assertTrue(user.check_password("TestPassword!prof_owner"))
-
-    def test_missing_csv_is_rejected(self):
-        with self.assertRaisesMessage(CommandError, "Credentials file not found"):
-            load_demo_passwords(Path("nonexistent_credentials_file.csv"))
-
-    def test_duplicate_csv_username_is_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = self.make_csv(directory)
-
-            with path.open("a", encoding="utf-8") as file:
-                file.write("\nprof_owner,DuplicatePassword")
-
-            with self.assertRaisesMessage(CommandError, "Duplicate username"):
-                load_demo_passwords(path)
-
-    def test_csv_missing_required_columns_is_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "bad.csv"
-            path.write_text("name,secret\nalice,hello\n", encoding="utf-8")
-
-            with self.assertRaisesMessage(CommandError, "username,password columns"):
-                load_demo_passwords(path)
-
-    def test_csv_missing_accounts_is_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "incomplete.csv"
-            path.write_text(
-                "username,password\nprof_owner,TestPassword!",
-                encoding="utf-8",
-            )
-
-            with self.assertRaisesMessage(CommandError, "exactly the 14 expected"):
-                load_demo_passwords(path)
-
-    def test_empty_csv_password_is_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "empty_password.csv"
-            path.write_text(
-                "username,password\nprof_owner,\n",
-                encoding="utf-8",
-            )
-
-            with self.assertRaisesMessage(CommandError, "Empty password"):
-                load_demo_passwords(path)
-
-    def test_wrong_existing_role_is_rejected(self):
-        self.run_command()
-
-        profile = AccountProfile.objects.get(user__username="prof_owner")
-        profile.role = AccountProfile.Role.CAREGIVER
-        profile.save()
-
-        with self.assertRaisesMessage(CommandError, "missing or incorrect role"):
-            self.run_command()
-
-    @override_settings(DEBUG=False)
-    def test_production_requires_explicit_permission(self):
-        with self.assertRaisesMessage(CommandError, "requires --allow-production"):
-            self.run_command()
-
-    @override_settings(DEBUG=False)
-    def test_non_integration_environment_is_rejected(self):
-        with mock.patch.dict(
+    def test_configured_passwords_are_used_without_being_logged(self):
+        passwords = {
+            username: f"TestPassword_{username}_123!" for username in USERNAMES
+        }
+        with patch.dict(
             os.environ,
-            {"DJANGO_ALLOWED_HOSTS": "pawpal-env.example.com"},
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps(passwords)},
         ):
-            with self.assertRaisesMessage(CommandError, "non-integration environment"):
-                self.run_command(allow_production=True)
+            output = run("--allow-production")
 
-    @override_settings(DEBUG=False)
-    def test_integration_requires_credentials_file(self):
-        with mock.patch.dict(
+        self.assertEqual(User.objects.filter(username__in=USERNAMES).count(), 14)
+        for username, password in passwords.items():
+            self.assertTrue(
+                User.objects.get(username=username).check_password(password)
+            )
+            self.assertNotIn(password, output)
+        self.assertNotIn("NEW ACCOUNT CREDENTIALS", output)
+
+    def test_invalid_password_json_is_rejected(self):
+        with patch.dict(
             os.environ,
-            {"DJANGO_ALLOWED_HOSTS": INTEGRATION_HOST},
+            {"EVALUATOR_PASSWORDS_JSON": "{invalid-json"},
         ):
-            with self.assertRaisesMessage(CommandError, "requires --credentials-file"):
-                self.run_command(allow_production=True)
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password JSON"
+            ):
+                run("--allow-production")
 
-    def test_generated_password_length(self):
-        password = generate_password()
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
 
-        self.assertEqual(len(password), 20)
-        self.assertTrue(any(char.isdigit() for char in password))
+    def test_rejects_incomplete_password_configuration(self):
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps({"prof_owner": "Test123!"})},
+        ):
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password configuration"
+            ):
+                run("--allow-production")
+
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
+
+    def test_rejects_empty_configured_password(self):
+        passwords = {
+            username: f"TestPassword_{username}_123!" for username in USERNAMES
+        }
+        passwords["prof_owner"] = ""
+
+        with patch.dict(
+            os.environ,
+            {"EVALUATOR_PASSWORDS_JSON": json.dumps(passwords)},
+        ):
+            with self.assertRaisesMessage(
+                CommandError, "Invalid evaluator password configuration"
+            ):
+                run("--allow-production")
+
+        self.assertFalse(User.objects.filter(username__in=USERNAMES).exists())
