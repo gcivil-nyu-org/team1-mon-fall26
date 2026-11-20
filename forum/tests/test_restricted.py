@@ -1,7 +1,9 @@
-"""#103 Restrict Forum Posting: an account whose forum posting an admin
-restricted can still read the forum and use the rest of PawPal, but can't
-write posts or comments until an admin restores it."""
+"""#103 Restrict Forum Posting (Kat's Figma "Restricted User"): an account
+whose forum posting an admin restricted can still read the forum and use the
+rest of PawPal, but can't write posts or comments until an admin restores
+it. Admins can restrict a post's author from the forum."""
 
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from accounts.restriction import restore_forum, restrict_forum
@@ -23,10 +25,10 @@ class RestrictedPostingTests(ForumTestData):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Quiet dog runs?")
         self.assertContains(response, NOTE)
-        # No New post button or comment box.
+        # New post is greyed out, and there's no comment box.
         self.assertNotContains(response, f'href="{CREATE_URL}"')
+        self.assertContains(response, "forum-new is-disabled")
         self.assertNotContains(response, 'class="forum-comment-form"')
-        self.assertContains(response, "You can’t comment in the forum right now.")
 
     def test_they_cant_post(self):
         response = self.client.get(CREATE_URL)
@@ -74,3 +76,22 @@ class RestrictedPostingTests(ForumTestData):
             CREATE_URL, {"title": "Back!", "topic": "tips", "body": "Hello again"}
         )
         self.assertTrue(Post.objects.filter(title="Back!").exists())
+
+
+class RestrictFromForumTests(ForumTestData):
+    """On the Forum page, admins see Restrict posting next to Remove post."""
+
+    def setUp(self):
+        self.admin = get_user_model().objects.create_user("ada", is_staff=True)
+        self.client.force_login(self.admin)
+
+    def test_restrict_posting_opens_the_authors_account(self):
+        response = self.client.get(detail_url(self.older))
+        url = reverse("staff:user_detail", args=[self.sitter.pk])
+        self.assertContains(response, f'href="{url}?confirm=forum"')
+        self.assertContains(response, "Restrict posting")
+
+    def test_not_for_authors_already_restricted(self):
+        restrict_forum(self.sitter)
+        response = self.client.get(detail_url(self.older))
+        self.assertNotContains(response, "Restrict posting")

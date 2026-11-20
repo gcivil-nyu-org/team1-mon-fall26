@@ -1,0 +1,5 @@
+{# Admin Explore (Kat's Figma "Monitor Forum Activity"): pet-friendly places (#107) and the forum (#102). #}
+<nav class="admin-tabs admin-explore-tabs" aria-label="Explore">
+  <a class="admin-tab{% if current == 'places' %} is-active{% endif %}" href="{% url 'places:manage' %}"{% if current == 'places' %} aria-current="page"{% endif %}>Pet-friendly places</a>
+  <a class="admin-tab{% if current == 'forum' %} is-active{% endif %}" href="{% url 'forum:list' %}"{% if current == 'forum' %} aria-current="page"{% endif %}>Forum</a>
+</nav>

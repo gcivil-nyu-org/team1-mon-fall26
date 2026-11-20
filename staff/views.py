@@ -43,11 +43,12 @@ def staff_required(view):
     return wrapper
 
 
-# After restricting or reinstating, the account page shows a banner (?done=).
+# After restricting or reinstating, the account page shows a banner (?done=)
+# while the account still has one of these statuses.
 DONE_STATUS = {
-    "restricted": "restricted",
-    "reinstated": "active",
-    "deleted": "deleted",  # #93
+    "restricted": ("restricted",),
+    "reinstated": ("active", "forum_restricted"),  # #103: forum only
+    "deleted": ("deleted",),  # #93
 }
 # After removing a review from the history (#99).
 REVIEW_REMOVED = "review_removed"
@@ -113,7 +114,7 @@ def user_list(request, pk=None, restrict_form=None):
             and can_restrict(request.user, selected)
             and selected.status_key != "restricted",
             # The banner only shows while the account is still in that state.
-            done=done if DONE_STATUS.get(done) == selected.status_key else "",
+            done=done if selected.status_key in DONE_STATUS.get(done, ()) else "",
             review_removed=done == REVIEW_REMOVED,
             # #93: deleting an account asks for confirmation first (?confirm=delete).
             confirm_delete=request.GET.get("confirm") == "delete"

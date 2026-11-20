@@ -6,7 +6,7 @@
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=13">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=14">
 
   <h1 class="admin-title">Users</h1>
 
@@ -117,12 +117,27 @@
             </div>
           {% endif %}
 
+          {% if forum_restricted %}
+            {# #103: Kat's Figma "Restrict Forum Posting Confirmation". #}
+            <div class="staff-forum-restricted">
+              <span class="staff-forum-icon">{% include "forum/partials/forum_off_icon.html" %}</span>
+              <span class="staff-forum-text">
+                <strong>Can’t post in the forum since {{ account.account_profile.forum_restricted_at|since_day }}</strong>
+                <span>{{ account.first_name|default:account.username }} can’t create posts or comments. The rest of PawPal works as usual.</span>
+              </span>
+              {% if can_restrict %}
+                <form method="post" action="{% url 'staff:restore_forum' account.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-small">Restore posting</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+
           <dl class="staff-facts">
             <div><dt>Email</dt><dd>{{ account.email|default:"—" }}</dd></div>
             <div><dt>Joined</dt><dd>{{ account.date_joined|date:"M Y" }}</dd></div>
             <div><dt>Reports</dt><dd>{{ report_count }}</dd></div>
-            {# #103: forum posting only. #}
-            <div><dt>Forum</dt><dd>{% if forum_restricted %}Restricted since {{ account.account_profile.forum_restricted_at|since_day }}{% else %}Can post{% endif %}</dd></div>
           </dl>
 
           {% if pets or account.type_label == "Pet owner" %}
@@ -184,6 +199,10 @@
           <div class="staff-actions">
             {% if caregiver %}<a class="btn btn-outline" href="{% url 'caregiver' caregiver.pk %}">View public profile</a>{% endif %}
             {% if can_restrict %}
+              {% if not forum_restricted %}
+                {# #103: forum posting only; the rest of PawPal keeps working. #}
+                <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=forum">Restrict forum posting</a>
+              {% endif %}
               {% if account.status_key == "restricted" %}
                 <form method="post" action="{% url 'staff:reinstate_user' account.pk %}">
                   {% csrf_token %}
@@ -191,15 +210,6 @@
                 </form>
               {% else %}
                 <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=restrict">Restrict account</a>
-              {% endif %}
-              {# #103: forum posting only; the rest of PawPal keeps working. #}
-              {% if forum_restricted %}
-                <form method="post" action="{% url 'staff:restore_forum' account.pk %}">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-outline">Restore forum posting</button>
-                </form>
-              {% else %}
-                <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=forum">Restrict forum posting</a>
               {% endif %}
               {# #93: delete the account, after a confirm popup. #}
               <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=delete">Delete account</a>
@@ -252,10 +262,10 @@
     <div class="modal-backdrop">
       <form method="post" action="{% url 'staff:restrict_forum' selected.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="forum-title">
         {% csrf_token %}
-        <span class="modal-icon" aria-hidden="true">!</span>
+        <span class="modal-icon" aria-hidden="true">{% include "forum/partials/forum_off_icon.html" %}</span>
         {% with first=selected.first_name|default:selected.username %}
-          <h2 id="forum-title">Restrict {{ first }}’s forum posting?</h2>
-          <p class="muted">{{ first }} won’t be able to write forum posts or comments until you restore it. They can still read the forum and use the rest of PawPal.</p>
+          <h2 id="forum-title">Restrict {{ first }} from the forum?</h2>
+          <p class="muted">{{ first }} won’t be able to create posts or comments. The rest of PawPal still works as usual.</p>
         {% endwith %}
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>

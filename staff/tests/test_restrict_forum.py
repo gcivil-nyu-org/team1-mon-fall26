@@ -1,6 +1,6 @@
-"""#103 Restrict Forum Posting: on the Users page, admins stop an account
-posting in the forum without restricting the whole account, and restore it
-later."""
+"""#103 Restrict Forum Posting, as in Kat's Figma: on the Users page, admins
+stop an account posting in the forum without restricting the whole account,
+and restore it later."""
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -29,10 +29,9 @@ def restore_url(user):
 class RestrictForumTests(StaffTestData):
     def test_accounts_have_a_restrict_forum_button(self):
         response = self.client.get(detail_url(self.owner))
-        self.assertContains(response, "<dt>Forum</dt><dd>Can post</dd>")
         self.assertContains(response, "confirm=forum")
         self.assertContains(response, "Restrict forum posting")
-        self.assertNotContains(response, "Restore forum posting")
+        self.assertNotContains(response, "Restore posting")
 
     def test_no_button_for_deleted_accounts(self):
         response = self.client.get(detail_url(self.gone))
@@ -40,9 +39,11 @@ class RestrictForumTests(StaffTestData):
 
     def test_restrict_asks_for_confirmation_first(self):
         response = self.client.get(detail_url(self.owner) + "?confirm=forum")
-        self.assertContains(response, "Restrict Kat’s forum posting?")
+        self.assertContains(response, "Restrict Kat from the forum?")
         self.assertContains(
-            response, "They can still read the forum and use the rest of PawPal."
+            response,
+            "Kat won’t be able to create posts or comments. "
+            "The rest of PawPal still works as usual.",
         )
         self.assertContains(response, f'action="{restrict_url(self.owner)}"')
         self.assertFalse(is_forum_restricted(self.owner))
@@ -51,7 +52,7 @@ class RestrictForumTests(StaffTestData):
         restrict_forum(self.owner)
         for account in (self.owner, self.gone):
             response = self.client.get(detail_url(account) + "?confirm=forum")
-            self.assertNotContains(response, "forum posting?</h2>")
+            self.assertNotContains(response, "from the forum?</h2>")
 
     def test_restricting(self):
         response = self.client.post(restrict_url(self.owner), follow=True)
@@ -63,9 +64,15 @@ class RestrictForumTests(StaffTestData):
             "Forum posting restricted. Kat can still use the rest of PawPal.",
         )
         self.assertTrue(is_forum_restricted(self.owner))
-        self.assertContains(response, "<dt>Forum</dt><dd>Restricted since Today</dd>")
-        self.assertContains(response, "Restore forum posting")
+        self.assertContains(response, "Forum restricted</span>")
+        self.assertContains(response, "Can’t post in the forum since Today")
+        self.assertContains(
+            response,
+            "Kat can’t create posts or comments. The rest of PawPal works as usual.",
+        )
+        self.assertContains(response, "Restore posting")
         self.assertContains(response, f'action="{restore_url(self.owner)}"')
+        self.assertNotContains(response, "Restrict forum posting")
         # Only the forum: the account itself isn't restricted (#92).
         self.owner.account_profile.refresh_from_db()
         self.assertIsNone(self.owner.account_profile.restricted_at)
@@ -89,6 +96,21 @@ class RestrictForumTests(StaffTestData):
         )
         self.assertFalse(is_forum_restricted(self.owner))
         self.assertContains(response, "Restrict forum posting")
+
+    def test_restricted_tab_lists_it(self):
+        restrict_forum(self.owner)
+        response = self.client.get(reverse("staff:user_list") + "?tab=restricted")
+        self.assertContains(response, "Kat W")
+        self.assertNotContains(response, "Chloe Shih")
+
+    def test_reinstating_an_account_keeps_the_forum_restriction(self):
+        restriction.restrict(self.owner, "Spam")
+        restrict_forum(self.owner)
+        response = self.client.post(
+            reverse("staff:reinstate_user", args=[self.owner.pk]), follow=True
+        )
+        self.assertContains(response, "Account reinstated.")
+        self.assertContains(response, "Forum restricted</span>")
 
     def test_banner_only_while_in_that_state(self):
         response = self.client.get(detail_url(self.owner) + "?done=forum_restricted")

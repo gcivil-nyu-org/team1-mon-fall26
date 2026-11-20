@@ -9,49 +9,47 @@
     </span>
     {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
   </header>
-  {% if post.removed_at %}
-    {# #102: only admins still see removed posts. #}
-    <p class="forum-removed-note"><span class="forum-removed-tag">Removed</span> Users can’t see this post or its comments.</p>
-  {% endif %}
-  <h2 class="forum-title{% if post.removed_at %} is-removed{% endif %}" id="forum-post-title">{{ post.title }}</h2>
-  <div class="forum-body{% if post.removed_at %} is-removed{% endif %}">{{ post.body|linebreaks }}</div>
-  {% if user.is_staff and not post.removed_at %}
-    {# #102: admins remove spam or abusive posts, after a confirm popup. #}
-    <div class="forum-admin-actions">
-      <a class="btn btn-outline-danger btn-small" href="?post={{ post.pk }}&amp;remove_post={{ post.pk }}">Remove post</a>
+  <h2 class="forum-title" id="forum-post-title">{{ post.title }}</h2>
+  <div class="forum-body{% if admin %} has-actions{% endif %}">{{ post.body|linebreaks }}</div>
+  {% if admin %}
+    {# #102: Kat's Figma "Monitor Forum Activity". Remove asks first in a popup. #}
+    <div class="forum-post-actions">
+      {% if can_restrict_author %}
+        {# #103: restrict the author from the forum, on their Users page. #}
+        <a class="forum-action" href="{% url 'staff:user_detail' post.author_id %}?confirm=forum">{% include "forum/partials/restrict_icon.html" %} Restrict posting</a>
+      {% endif %}
+      <a class="forum-action is-danger" href="?post={{ post.pk }}&amp;remove_post={{ post.pk }}">{% include "forum/partials/trash_icon.html" %} Remove post</a>
     </div>
   {% endif %}
 
   <section class="forum-comments" id="comments" aria-labelledby="comments-title">
-    <h3 id="comments-title">{{ comment_count }} comment{{ comment_count|pluralize }}</h3>
+    <h3 id="comments-title">{{ comments|length }} comment{{ comments|length|pluralize }}</h3>
     {% if comments %}
       <ol class="forum-comment-list">
         {% for comment in comments %}
-          <li class="forum-comment{% if comment.pk == new_comment %} is-new{% endif %}{% if comment.removed_at %} is-removed{% endif %}" id="comment-{{ comment.pk }}">
+          <li class="forum-comment{% if comment.pk == new_comment %} is-new{% endif %}" id="comment-{{ comment.pk }}">
             {% include "forum/partials/avatar.html" with person=comment small=True %}
             <span class="forum-comment-text">
               <span class="forum-comment-who"><strong>{{ comment.author_name }}</strong> <span class="muted">· {{ comment.created_at|ago }}</span></span>
               <span class="forum-comment-body">{{ comment.body|linebreaksbr }}</span>
             </span>
-            {% if comment.removed_at %}
-              <span class="forum-removed-tag">Removed</span>
-            {% elif user.is_staff and not post.removed_at %}
-              {# #102 #}
-              <a class="forum-comment-remove" href="?post={{ post.pk }}&amp;remove_comment={{ comment.pk }}">Remove<span class="visually-hidden"> comment by {{ comment.author_name }}</span></a>
+            {% if admin %}
+              {# #102: Figma "Monitor Forum Comments" #}
+              <a class="forum-comment-remove" href="?post={{ post.pk }}&amp;remove_comment={{ comment.pk }}" title="Remove comment">{% include "forum/partials/trash_icon.html" %}<span class="visually-hidden">Remove comment by {{ comment.author_name }}</span></a>
             {% endif %}
           </li>
         {% endfor %}
       </ol>
-    {% elif not post.removed_at %}
+    {% elif admin %}
+      <p class="muted forum-no-comments">No comments yet.</p>
+    {% else %}
       <p class="muted forum-no-comments">No comments yet. Be the first!</p>
     {% endif %}
 
-    {% if post.removed_at %}
-      <p class="muted forum-no-comments">No one can comment on a removed post.</p>
-    {% elif not can_post %}
-      {# #103 #}
-      <p class="muted forum-no-comments">You can’t comment in the forum right now.</p>
-    {% else %}
+    {% if not admin and not can_post %}
+      {# #103: Kat's Figma "Restricted User" #}
+      <p class="forum-restricted-note">{% include "forum/partials/forum_off_icon.html" %} You can’t post or comment in the forum right now.</p>
+    {% elif not admin %}
       <form method="post" action="{% url 'forum:comment' post.pk %}" class="forum-comment-form" novalidate>
         {% csrf_token %}
         <span class="forum-avatar forum-avatar-me theme-{{ my_theme }}" aria-hidden="true">{{ my_initials }}</span>
@@ -64,6 +62,7 @@
   </section>
 </article>
 
+{% if not admin %}
 <script>
   // The Comment button turns dark once something is typed, as in the Figma.
   (function () {
@@ -75,3 +74,4 @@
     });
   })();
 </script>
+{% endif %}

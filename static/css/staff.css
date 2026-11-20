@@ -109,6 +109,8 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .account-status-unverified { background: #ffe9b8; color: #6b4500; }
 .account-status-deleted { background: #efe9e6; color: #5a4038; }
 .account-status-restricted { background: #fdecea; color: var(--error); }
+/* #103 */
+.account-status-forum_restricted { background: #efe9e6; color: #5a4038; }
 
 /* ---------- Selected account ---------- */
 
@@ -136,6 +138,17 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-restricted { margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: #fff3f1; font-size: 15px; }
 .staff-restricted strong { color: var(--error); font-size: 16px; }
 .staff-restricted p { margin: 4px 0 0; }
+/* #103: Kat's Figma "Restrict Forum Posting Confirmation" */
+.staff-forum-restricted { display: flex; align-items: center; gap: 14px; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: #fff3f1; font-size: 15px; }
+.staff-forum-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: #fdecea; color: var(--error); }
+.staff-forum-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.staff-forum-text strong { color: var(--error); font-size: 16px; }
+.staff-forum-restricted form { flex: none; }
+.staff-forum-restricted .btn { background: #fff; }
+.page-staff .modal-icon .forum-icon { width: 26px; height: 26px; }
+@media (max-width: 560px) {
+  .staff-forum-restricted { flex-wrap: wrap; }
+}
 
 .staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
 .staff-facts > div { padding: 12px 14px; border-radius: 14px; background: var(--bg); }
