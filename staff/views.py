@@ -1,5 +1,6 @@
 """Admin pages for PawPal accounts (#89 View User Accounts, #90 Search,
-#91 View User Account Details, #92 Restrict or Reinstate)."""
+#91 View User Account Details, #92 Restrict or Reinstate, #103 Restrict
+Forum Posting)."""
 
 from functools import wraps
 
@@ -12,6 +13,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.deletion import delete_account
+from accounts import restriction
 from accounts.restriction import is_restricted, reinstate, restrict
 from reports import moderation
 
@@ -49,6 +51,8 @@ DONE_STATUS = {
 }
 # After removing a review from the history (#99).
 REVIEW_REMOVED = "review_removed"
+# After restricting or restoring forum posting (#103): whether it's restricted.
+FORUM_DONE = {"forum_restricted": True, "forum_restored": False}
 
 
 @staff_required
@@ -96,6 +100,7 @@ def user_list(request, pk=None, restrict_form=None):
     }
     if selected is not None:
         done = request.GET.get("done")
+        forum_restricted = restriction.is_forum_restricted(selected)
         context.update(
             details(selected),
             can_restrict=can_restrict(request.user, selected),
@@ -115,6 +120,12 @@ def user_list(request, pk=None, restrict_form=None):
             and can_restrict(request.user, selected),
             # #99: removing a review asks for confirmation first (?remove_review=<pk>).
             confirm_review=_review_to_confirm(request, selected),
+            # #103: forum posting only, with its own popup (?confirm=forum).
+            forum_restricted=forum_restricted,
+            confirm_forum=request.GET.get("confirm") == "forum"
+            and can_restrict(request.user, selected)
+            and not forum_restricted,
+            forum_done=done if FORUM_DONE.get(done) == forum_restricted else "",
         )
     return render(request, "staff/user_list.html", context)
 
@@ -201,3 +212,23 @@ def delete_user(request, pk):
     account = _restrictable(request, pk)
     delete_account(account)
     return _done(account, "deleted")
+
+
+@require_POST
+@staff_required
+def restrict_forum(request, pk):
+    """#103: stop an account posting in the forum, for community violations,
+    without restricting the whole account (#92)."""
+    account = _restrictable(request, pk)
+    if not restriction.is_forum_restricted(account):
+        restriction.restrict_forum(account)
+    return _done(account, "forum_restricted")
+
+
+@require_POST
+@staff_required
+def restore_forum(request, pk):
+    """#103: let the account post in the forum again."""
+    account = _restrictable(request, pk)
+    restriction.restore_forum(account)
+    return _done(account, "forum_restored")

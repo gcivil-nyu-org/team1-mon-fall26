@@ -48,6 +48,9 @@
 
     {% if post.removed_at %}
       <p class="muted forum-no-comments">No one can comment on a removed post.</p>
+    {% elif not can_post %}
+      {# #103 #}
+      <p class="muted forum-no-comments">You can’t comment in the forum right now.</p>
     {% else %}
       <form method="post" action="{% url 'forum:comment' post.pk %}" class="forum-comment-form" novalidate>
         {% csrf_token %}

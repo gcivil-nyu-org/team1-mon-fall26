@@ -13,8 +13,15 @@
 
   <div class="forum-heading">
     <h1>Forum</h1>
-    <a class="btn btn-dark forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} New post</a>
+    {% if can_post %}
+      <a class="btn btn-dark forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} New post</a>
+    {% endif %}
   </div>
+
+  {% if not can_post %}
+    {# #103: an admin restricted this account's forum posting. #}
+    <div class="alert alert-info forum-posted" role="status">{{ restricted_message }}</div>
+  {% endif %}
 
   {# #68: filter by topic #}
   <nav class="forum-topics" aria-label="Topics">
@@ -79,7 +86,7 @@
     <div class="card empty-state">
       <h2>{% if topic %}No posts in this topic yet{% else %}No posts yet{% endif %}</h2>
       <p class="muted">Know a great pet-friendly spot? Be the first to share it.</p>
-      <a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>
+      {% if can_post %}<a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>{% endif %}
     </div>
   {% endif %}
 
