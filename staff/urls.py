@@ -20,4 +20,19 @@ urlpatterns = [
         views.remove_review,
         name="remove_review",
     ),
+    path(
+        "types/",
+        views.manage_types,
+        name="manage_types",
+    ),
+    path(
+        "types/rename/",
+        views.rename_type,
+        name="rename_type",
+    ),
+    path(
+        "types/add/",
+        views.add_type,
+        name="add_type",
+    ),
 ]
