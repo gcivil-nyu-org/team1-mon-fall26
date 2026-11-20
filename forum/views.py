@@ -7,7 +7,9 @@ the right.
 #69 Comment on Forum Posts: comments under the selected post.
 #102 Remove Inappropriate Forum Content: admins remove a post or comment,
 after a confirm popup. Users don't see it anymore; admins see it marked
-Removed."""
+Removed.
+#103 Restrict Forum Posting: an account an admin restricted can still read
+the forum, but can't write posts or comments."""
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -17,6 +19,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from accounts.restriction import FORUM_RESTRICTED_MESSAGE, is_forum_restricted
 from staff.views import staff_required
 
 from .authors import describe, initials, theme
@@ -107,6 +110,9 @@ def _forum(request, selected=None, form=None, post_form=None):
             "confirm_comment": admin
             and _to_confirm(request, "remove_comment", selected, comments),
             "removed": REMOVED.get(request.GET.get("done")) if admin else None,
+            # #103: no New post button or comment box.
+            "can_post": not is_forum_restricted(request.user),
+            "restricted_message": FORUM_RESTRICTED_MESSAGE,
         },
     )
 
@@ -140,6 +146,9 @@ def post_detail(request, pk):
 def add_comment(request, pk):
     # No new comments on a removed post (#102).
     post = get_object_or_404(_posts(), pk=pk)
+    if is_forum_restricted(request.user):
+        # #103: the Forum page says why there's no comment box.
+        return redirect(post_url(post))
     form = CommentForm(request.POST)
     if not form.is_valid():
         return _forum(request, selected=post, form=form)
@@ -154,6 +163,9 @@ def add_comment(request, pk):
 @login_required
 def post_create(request):
     """The "New post" popup over the Forum page (Figma "Create Forum Post")."""
+    if is_forum_restricted(request.user):
+        # #103: the Forum page says why there's no New post button.
+        return redirect("forum:list")
     form = PostForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         post = form.save(commit=False)
