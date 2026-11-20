@@ -3,7 +3,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from accounts.restriction import is_restricted
+from accounts.restriction import is_forum_restricted, is_restricted
 from bookings.models import Booking
 from pets.models import Pet
 from reports.models import Report
@@ -28,13 +28,15 @@ def account_status(user):
     """(key, label) for the status pill.
 
     Deleted accounts are deactivated (#48); admins can restrict an account
-    (#92); new sign-ups haven't confirmed their email until they click the
-    link (#197).
+    (#92) or only its forum posting (#103); new sign-ups haven't confirmed
+    their email until they click the link (#197).
     """
     if not user.is_active:
         return "deleted", "Deleted"
     if is_restricted(user):
         return "restricted", "Restricted"
+    if is_forum_restricted(user):
+        return "forum_restricted", "Forum restricted"
     profile = getattr(user, "account_profile", None)
     if profile is not None and not profile.email_verified:
         return "unverified", "Email not confirmed"
@@ -71,8 +73,13 @@ def all_accounts():
 
 
 def restricted(accounts):
-    """#92: the Restricted tab. Deleted accounts aren't counted as restricted."""
-    return accounts.filter(is_active=True, account_profile__restricted_at__isnull=False)
+    """#92: the Restricted tab, with accounts restricted from the forum too
+    (#103). Deleted accounts aren't counted as restricted."""
+    return accounts.filter(
+        Q(account_profile__restricted_at__isnull=False)
+        | Q(account_profile__forum_restricted_at__isnull=False),
+        is_active=True,
+    )
 
 
 def search(accounts, query):

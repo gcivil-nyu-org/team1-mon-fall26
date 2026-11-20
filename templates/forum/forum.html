@@ -7,14 +7,27 @@
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=11">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=13">
 
-  <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
+  {% if admin %}
+    {# Kat's Figma "Monitor Forum Activity": admins open the forum from Explore (#102). #}
+    <div class="forum-heading">
+      <h1>Explore</h1>
+    </div>
+    {% include "partials/admin_explore_tabs.html" with current="forum" %}
+  {% else %}
+    <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
 
-  <div class="forum-heading">
-    <h1>Forum</h1>
-    <a class="btn btn-dark forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} New post</a>
-  </div>
+    <div class="forum-heading">
+      <h1>Forum</h1>
+      {% if can_post %}
+        <a class="btn btn-dark forum-new" href="{% url 'forum:create' %}">{% include "forum/partials/plus_icon.html" %} New post</a>
+      {% else %}
+        {# #103: greyed out, as in Kat's Figma "Restricted User". #}
+        <span class="btn forum-new is-disabled" aria-disabled="true">{% include "forum/partials/plus_icon.html" %} New post</span>
+      {% endif %}
+    </div>
+  {% endif %}
 
   {# #68: filter by topic #}
   <nav class="forum-topics" aria-label="Topics">
@@ -32,10 +45,10 @@
   {% endif %}
 
   {% if removed %}
-    {# #102: after an admin removes a post or comment. #}
-    <div class="alert alert-error forum-posted" role="status">
+    {# #102: Figma "Remove Inappropriate Forum Content Confirmation". #}
+    <div class="alert alert-success forum-posted" role="status">
       <span class="alert-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
-      <span>{{ removed }} removed. Users won’t see it anymore.</span>
+      <span>{{ removed }} removed. Users can no longer see it.</span>
     </div>
   {% endif %}
 
@@ -46,7 +59,7 @@
         <ul class="forum-list">
           {% for post in page %}
             <li>
-              <a class="forum-row{% if post == selected %} is-selected{% endif %}{% if post.removed_at %} is-removed{% endif %}" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if page.number > 1 %}page={{ page.number }}&amp;{% endif %}post={{ post.pk }}"{% if post == selected %} aria-current="true"{% endif %}>
+              <a class="forum-row{% if post == selected %} is-selected{% endif %}" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if page.number > 1 %}page={{ page.number }}&amp;{% endif %}post={{ post.pk }}"{% if post == selected %} aria-current="true"{% endif %}>
                 {% include "forum/partials/avatar.html" with person=post %}
                 <span class="forum-row-text">
                   <strong>{{ post.title }}</strong>
@@ -55,7 +68,6 @@
                     {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
                     <span class="forum-count">{% include "forum/partials/comment_icon.html" %} {{ post.comment_count }}<span class="visually-hidden"> comment{{ post.comment_count|pluralize }}</span></span>
                     {% if post.pk == just_posted %}<span class="forum-new-badge">New</span>{% endif %}
-                    {% if post.removed_at %}<span class="forum-removed-tag">Removed</span>{% endif %}
                   </span>
                 </span>
               </a>
@@ -79,7 +91,7 @@
     <div class="card empty-state">
       <h2>{% if topic %}No posts in this topic yet{% else %}No posts yet{% endif %}</h2>
       <p class="muted">Know a great pet-friendly spot? Be the first to share it.</p>
-      <a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>
+      {% if not admin and can_post %}<a class="btn btn-dark btn-small" href="{% url 'forum:create' %}">Write a post</a>{% endif %}
     </div>
   {% endif %}
 

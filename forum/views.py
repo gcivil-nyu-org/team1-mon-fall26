@@ -5,9 +5,11 @@ the right.
 #68 Browse Forum Posts: recent posts, filtered by topic, and the whole post.
 #67 Create Forum Post: a form that publishes a post to the forum.
 #69 Comment on Forum Posts: comments under the selected post.
-#102 Remove Inappropriate Forum Content: admins remove a post or comment,
-after a confirm popup. Users don't see it anymore; admins see it marked
-Removed."""
+#102 Remove Inappropriate Forum Content: admins open the forum from
+Explore and remove a post or comment, after a confirm popup (Kat's Figma
+"Remove Inappropriate Forum Content"). It's hidden from everyone.
+#103 Restrict Forum Posting: an account an admin restricted can still read
+the forum, but can't write posts or comments (Figma "Restricted User")."""
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -17,6 +19,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from accounts.restriction import is_forum_restricted
+from staff.accounts import can_restrict
 from staff.views import staff_required
 
 from .authors import describe, initials, theme
@@ -31,12 +35,9 @@ VISIBLE_COMMENTS = Count("comments", filter=Q(comments__removed_at__isnull=True)
 REMOVED = {"post_removed": "Post", "comment_removed": "Comment"}
 
 
-def _posts(user=None):
-    """Posts this person can see: admins see removed ones too (#102)."""
-    posts = Post.objects.select_related(*AUTHOR)
-    if user is None or not user.is_staff:
-        posts = posts.visible()
-    return posts
+def _posts():
+    """Posts that are still up: removed ones (#102) are hidden from everyone."""
+    return Post.objects.visible().select_related(*AUTHOR)
 
 
 def post_url(post):
@@ -54,9 +55,7 @@ def _forum(request, selected=None, form=None, post_form=None):
     # Meta.ordering isn't used once posts are grouped to count comments.
     admin = request.user.is_staff
     posts = (
-        _posts(request.user)
-        .annotate(comment_count=VISIBLE_COMMENTS)
-        .order_by("-created_at", "-pk")
+        _posts().annotate(comment_count=VISIBLE_COMMENTS).order_by("-created_at", "-pk")
     )
     if topic:
         posts = posts.filter(topic=topic)
@@ -67,17 +66,17 @@ def _forum(request, selected=None, form=None, post_form=None):
     if selected is None:
         wanted = request.GET.get("post", "")
         if wanted.isdigit():
-            selected = _posts(request.user).filter(pk=wanted).first()
+            selected = _posts().filter(pk=wanted).first()
         if selected is None and page.object_list:
             selected = page.object_list[0]
 
     comments = []
     if selected is not None:
         describe(selected)
-        comments = selected.comments.select_related(*AUTHOR)
-        if not admin:
-            comments = comments.visible()
-        comments = [describe(comment) for comment in comments]
+        comments = [
+            describe(comment)
+            for comment in selected.comments.visible().select_related(*AUTHOR)
+        ]
 
     new_comment = request.GET.get("new_comment", "")
     # Right after publishing: the "Posted!" banner and a NEW badge.
@@ -95,13 +94,22 @@ def _forum(request, selected=None, form=None, post_form=None):
             "topics": topics,
             "selected": selected,
             "comments": comments,
-            "comment_count": sum(1 for c in comments if c.removed_at is None),
             "form": form or CommentForm(),
             "new_comment": int(new_comment) if new_comment.isdigit() else None,
             "my_initials": initials(request.user),
             "my_theme": theme(request.user),
             "just_posted": just_posted,
             "post_form": post_form,
+            # Admins look after the forum from Explore (Figma "Monitor Forum
+            # Activity"): they don't write posts or comments there.
+            "admin": admin,
+            # #103: no New post or comment box for a restricted account.
+            "can_post": not is_forum_restricted(request.user),
+            # #103: admins can restrict the author's forum posting.
+            "can_restrict_author": admin
+            and selected is not None
+            and can_restrict(request.user, selected.author)
+            and not is_forum_restricted(selected.author),
             # #102: Remove asks for confirmation in a popup first.
             "confirm_post": admin and _to_confirm(request, "remove_post", selected),
             "confirm_comment": admin
@@ -112,16 +120,12 @@ def _forum(request, selected=None, form=None, post_form=None):
 
 
 def _to_confirm(request, key, selected, comments=()):
-    """The post (or one of its comments) the Remove popup is about, if it's
-    still up."""
+    """The post (or one of its comments) the Remove popup is about."""
     pk = request.GET.get(key, "")
     if selected is None or not pk.isdigit():
         return None
     items = comments if key == "remove_comment" else [selected]
-    return next(
-        (item for item in items if item.pk == int(pk) and item.removed_at is None),
-        None,
-    )
+    return next((item for item in items if item.pk == int(pk)), None)
 
 
 @login_required
@@ -132,7 +136,7 @@ def post_list(request):
 @login_required
 def post_detail(request, pk):
     """Old links to a post open it on the Forum page."""
-    return redirect(post_url(get_object_or_404(_posts(request.user), pk=pk)))
+    return redirect(post_url(get_object_or_404(_posts(), pk=pk)))
 
 
 @require_POST
@@ -140,6 +144,9 @@ def post_detail(request, pk):
 def add_comment(request, pk):
     # No new comments on a removed post (#102).
     post = get_object_or_404(_posts(), pk=pk)
+    if is_forum_restricted(request.user):
+        # #103: the Forum page says why there's no comment box.
+        return redirect(post_url(post))
     form = CommentForm(request.POST)
     if not form.is_valid():
         return _forum(request, selected=post, form=form)
@@ -154,6 +161,9 @@ def add_comment(request, pk):
 @login_required
 def post_create(request):
     """The "New post" popup over the Forum page (Figma "Create Forum Post")."""
+    if is_forum_restricted(request.user):
+        # #103: the Forum page says why New post is greyed out.
+        return redirect("forum:list")
     form = PostForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         post = form.save(commit=False)
@@ -173,11 +183,11 @@ def _remove(item):
 @require_POST
 @staff_required
 def remove_post(request, pk):
-    """#102: an admin removes a spam or abusive post. Users don't see it (or
-    its comments) anymore."""
+    """#102: an admin removes a spam or abusive post. No one sees it (or its
+    comments) anymore, so the Forum page opens on the newest post."""
     post = get_object_or_404(Post, pk=pk)
     _remove(post)
-    return redirect(f"{post_url(post)}&done=post_removed")
+    return redirect(f"{reverse('forum:list')}?done=post_removed")
 
 
 @require_POST
@@ -186,6 +196,4 @@ def remove_comment(request, pk):
     """#102: an admin removes a spam or abusive comment."""
     comment = get_object_or_404(Comment.objects.select_related("post"), pk=pk)
     _remove(comment)
-    return redirect(
-        f"{post_url(comment.post)}&done=comment_removed#comment-{comment.pk}"
-    )
+    return redirect(f"{post_url(comment.post)}&done=comment_removed")

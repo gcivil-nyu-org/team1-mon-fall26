@@ -1,6 +1,6 @@
-"""#102 Remove Inappropriate Forum Content: admins remove spam or abusive posts
-and comments from the Forum page, after a confirm popup. Users don't see them
-anymore; admins still see them, marked Removed."""
+"""#102 Remove Inappropriate Forum Content, as in Kat's Figma: admins open the
+forum from Explore and remove spam or abusive posts and comments, after a
+confirm popup. They're hidden from everyone."""
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -12,6 +12,7 @@ from .test_browse import LIST_URL, ForumTestData, detail_url
 
 User = get_user_model()
 EXPLORE_URL = reverse("places:explore")
+MANAGE_URL = reverse("places:manage")
 
 
 def remove_post_url(post):
@@ -46,9 +47,22 @@ class RemoveTestData(ForumTestData):
 
 
 class AdminForumTests(RemoveTestData):
-    def test_admins_have_a_forum_link(self):
+    def test_admins_open_the_forum_from_explore(self):
+        response = self.client.get(MANAGE_URL)
+        self.assertContains(
+            response, f'<a class="admin-tab" href="{LIST_URL}">Forum</a>'
+        )
         response = self.client.get(LIST_URL)
-        self.assertContains(response, f'href="{LIST_URL}" class="active">Forum</a>')
+        self.assertContains(response, f'href="{MANAGE_URL}" class="active">Explore</a>')
+        self.assertContains(response, "<h1>Explore</h1>")
+        self.assertContains(
+            response,
+            f'<a class="admin-tab is-active" href="{LIST_URL}" aria-current="page">'
+            "Forum</a>",
+        )
+        # Admins look after the forum; they don't post or comment there.
+        self.assertNotContains(response, reverse("forum:create"))
+        self.assertNotContains(response, 'class="forum-comment-form"')
 
     def test_admins_see_remove_buttons(self):
         response = self.client.get(detail_url(self.newer))
@@ -57,12 +71,17 @@ class AdminForumTests(RemoveTestData):
         self.assertContains(response, f"remove_comment={self.nice.pk}")
         self.assertContains(response, f"remove_comment={self.rude.pk}")
 
+    def test_no_comments_yet(self):
+        response = self.client.get(detail_url(self.spam))
+        self.assertContains(response, "No comments yet.</p>")
+
     def test_users_dont(self):
         self.client.force_login(self.owner)
         response = self.client.get(detail_url(self.newer))
         self.assertNotContains(response, "remove_post=")
         self.assertNotContains(response, "remove_comment=")
-        self.assertNotContains(response, f'href="{LIST_URL}" class="active">Forum</a>')
+        self.assertNotContains(response, "admin-explore-tabs")
+        self.assertContains(response, "<h1>Forum</h1>")
 
 
 class ConfirmTests(RemoveTestData):
@@ -71,8 +90,10 @@ class ConfirmTests(RemoveTestData):
             detail_url(self.spam) + f"&remove_post={self.spam.pk}"
         )
         self.assertContains(response, "Remove this post?")
-        self.assertContains(response, "Users won’t see it or its comments anymore.")
-        self.assertContains(response, "“Cheap pills here”")
+        self.assertContains(
+            response, "It will be hidden from everyone. This can’t be undone."
+        )
+        self.assertContains(response, "Remove post</button>")
         self.assertContains(response, f'action="{remove_post_url(self.spam)}"')
         self.assertContains(response, f'href="?post={self.spam.pk}">Cancel</a>')
         self.spam.refresh_from_db()
@@ -83,7 +104,7 @@ class ConfirmTests(RemoveTestData):
             detail_url(self.newer) + f"&remove_comment={self.rude.pk}"
         )
         self.assertContains(response, "Remove this comment?")
-        self.assertContains(response, "“What a dumb question”")
+        self.assertContains(response, "Remove comment</button>")
         self.assertContains(response, f'action="{remove_comment_url(self.rude)}"')
 
     def test_no_popup_for_removed_or_other_content(self):
@@ -110,17 +131,17 @@ class ConfirmTests(RemoveTestData):
 class RemovePostTests(RemoveTestData):
     def test_removing_a_post(self):
         response = self.client.post(remove_post_url(self.spam), follow=True)
-        self.assertRedirects(response, detail_url(self.spam) + "&done=post_removed")
-        self.assertContains(response, "Post removed. Users won’t see it anymore.")
+        self.assertRedirects(response, LIST_URL + "?done=post_removed")
+        self.assertContains(response, "Post removed. Users can no longer see it.")
         self.spam.refresh_from_db()
         self.assertIsNotNone(self.spam.removed_at)
         self.assertNotIn(self.spam, Post.objects.visible())
-        # Admins still see it, crossed out and marked Removed.
-        self.assertContains(response, "forum-row is-selected is-removed")
-        self.assertContains(response, "forum-title is-removed")
-        self.assertContains(response, "Users can’t see this post or its comments.")
-        self.assertContains(response, "No one can comment on a removed post.")
-        self.assertNotContains(response, "Remove post")
+        # It's gone for admins too; the newest post that's still up opens.
+        self.assertNotContains(response, "Cheap pills here")
+        self.assertContains(
+            response,
+            '<h2 class="forum-title" id="forum-post-title">Best cafes for dogs</h2>',
+        )
 
     def test_users_dont_see_a_removed_post(self):
         self.remove(self.spam)
@@ -161,16 +182,13 @@ class RemovePostTests(RemoveTestData):
 
 class RemoveCommentTests(RemoveTestData):
     def test_removing_a_comment(self):
-        response = self.client.post(remove_comment_url(self.rude))
-        landing = f"{detail_url(self.newer)}&done=comment_removed"
-        self.assertEqual(response.url, f"{landing}#comment-{self.rude.pk}")
-        response = self.client.get(landing)
-        self.assertContains(response, "Comment removed. Users won’t see it anymore.")
+        response = self.client.post(remove_comment_url(self.rude), follow=True)
+        self.assertRedirects(response, f"{detail_url(self.newer)}&done=comment_removed")
+        self.assertContains(response, "Comment removed. Users can no longer see it.")
         self.rude.refresh_from_db()
         self.assertIsNotNone(self.rude.removed_at)
-        # Admins still see it, marked Removed; it isn't counted.
-        self.assertContains(response, "forum-comment is-removed")
-        self.assertContains(response, "What a dumb question")
+        # It's gone for admins too, and isn't counted.
+        self.assertNotContains(response, "What a dumb question")
         self.assertContains(response, "1 comment<")
         self.nice.refresh_from_db()
         self.assertIsNone(self.nice.removed_at)

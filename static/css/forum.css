@@ -204,18 +204,59 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
 .forum-posted { margin-bottom: 20px; padding: 11px 14px; border-radius: 14px; font-size: 15px; font-weight: 700; }
 .forum-new-badge { padding: 2px 9px; border-radius: 999px; background: var(--purple); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
 
-/* ---------- Removed by an admin (#102) ---------- */
+/* ---------- Admins look after the forum (#102, Figma "Monitor Forum Activity") ---------- */
 
-.forum-removed-tag { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--error-bg); color: var(--error); font-size: 12px; font-weight: 700; line-height: 18px; }
-.forum-row.is-removed .forum-row-text strong,
-.forum-title.is-removed,
-.forum-body.is-removed,
-.forum-comment.is-removed .forum-comment-body { color: var(--muted); text-decoration: line-through; }
-.forum-removed-note { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: var(--muted); font-size: 14px; }
-.forum-admin-actions { display: flex; justify-content: flex-end; padding-top: 14px; }
-.forum-comment-remove { flex: none; margin-left: auto; color: var(--error); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.forum-comment.is-removed .forum-removed-tag { margin-left: auto; }
-.forum-confirm .modal-quote { overflow-wrap: anywhere; }
+.admin-explore-tabs { margin: 2px 0 18px; padding: 5px; }
+.admin-explore-tabs .admin-tab { padding: 8px 18px; font-size: 16px; line-height: 24px; }
+.forum-body.has-actions { border-bottom: 0; padding-bottom: 14px; }
+.forum-post-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 18px; border-bottom: 1.5px solid var(--line); }
+.forum-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 0 var(--line);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.forum-action:hover { border-color: var(--ink); }
+.forum-action.is-danger { border-color: #f0c9c4; color: var(--error); }
+.forum-action.is-danger:hover { border-color: var(--error); }
+.forum-icon { flex: none; }
+.forum-comment-remove {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  align-self: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  border: 1.5px solid #f0c9c4;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--error);
+}
+.forum-comment-remove:hover { border-color: var(--error); }
+
+/* Figma "Remove this post?" popup */
+.forum-confirm { display: grid; gap: 10px; width: min(100%, 440px); padding: 26px 24px 24px; border-radius: 24px; background: #fff; box-shadow: 0 6px 0 var(--line); }
+.forum-confirm h2 { margin: 0; font-size: 24px; line-height: 1.2; }
+.forum-confirm p { margin: 0 0 8px; font-size: 15px; }
+.forum-confirm-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.forum-confirm-actions .btn { justify-content: center; min-height: 50px; font-size: 16px; }
+
+/* ---------- Restricted from the forum (#103, Figma "Restricted User") ---------- */
+
+.forum-heading .forum-new.is-disabled { background: #ece4e0; color: #8c7d77; box-shadow: none; cursor: not-allowed; }
+.forum-restricted-note { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border-radius: 14px; background: #f3ece8; color: #5a4a44; font-size: 14px; }
 
 @media (max-width: 860px) {
   .forum-layout { grid-template-columns: minmax(0, 1fr); }
