@@ -315,6 +315,8 @@ def rename_type(request):
 
     messages.success(request, "Changes saved successfully.")
     return redirect(redirect_url)
+
+
 @require_POST
 @staff_required
 def restrict_forum(request, pk):
@@ -374,6 +376,10 @@ def add_type(request):
     )
 
     return redirect(f"{redirect_url}&selected={item.pk}")
+
+
+@require_POST
+@staff_required
 def restore_forum(request, pk):
     """#103: let the account post in the forum again."""
     account = _restrictable(request, pk)
