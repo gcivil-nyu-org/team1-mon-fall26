@@ -7,7 +7,7 @@
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=11">
 
   <a class="back-link" href="{% url 'places:explore' %}">{% include "partials/chevron_left_icon.html" %} Pet-friendly places</a>
 
@@ -31,6 +31,14 @@
     </div>
   {% endif %}
 
+  {% if removed %}
+    {# #102: after an admin removes a post or comment. #}
+    <div class="alert alert-error forum-posted" role="status">
+      <span class="alert-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
+      <span>{{ removed }} removed. Users won’t see it anymore.</span>
+    </div>
+  {% endif %}
+
   {% if page.object_list %}
     <div class="forum-layout">
       <section class="card forum-list-card" aria-labelledby="forum-recent">
@@ -38,7 +46,7 @@
         <ul class="forum-list">
           {% for post in page %}
             <li>
-              <a class="forum-row{% if post == selected %} is-selected{% endif %}" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if page.number > 1 %}page={{ page.number }}&amp;{% endif %}post={{ post.pk }}"{% if post == selected %} aria-current="true"{% endif %}>
+              <a class="forum-row{% if post == selected %} is-selected{% endif %}{% if post.removed_at %} is-removed{% endif %}" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if page.number > 1 %}page={{ page.number }}&amp;{% endif %}post={{ post.pk }}"{% if post == selected %} aria-current="true"{% endif %}>
                 {% include "forum/partials/avatar.html" with person=post %}
                 <span class="forum-row-text">
                   <strong>{{ post.title }}</strong>
@@ -47,6 +55,7 @@
                     {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
                     <span class="forum-count">{% include "forum/partials/comment_icon.html" %} {{ post.comment_count }}<span class="visually-hidden"> comment{{ post.comment_count|pluralize }}</span></span>
                     {% if post.pk == just_posted %}<span class="forum-new-badge">New</span>{% endif %}
+                    {% if post.removed_at %}<span class="forum-removed-tag">Removed</span>{% endif %}
                   </span>
                 </span>
               </a>
@@ -76,5 +85,9 @@
 
   {% if post_form %}
     {% include "forum/partials/new_post_popup.html" with form=post_form %}
+  {% endif %}
+
+  {% if confirm_post or confirm_comment %}
+    {% include "forum/partials/remove_popup.html" %}
   {% endif %}
 {% endblock %}
