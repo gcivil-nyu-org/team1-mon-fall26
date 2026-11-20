@@ -32,12 +32,6 @@ def reinstate(user):
 
 # #103: only forum posting is restricted. They can still read the forum and
 # use the rest of PawPal.
-FORUM_RESTRICTED_MESSAGE = (
-    "You can’t post or comment in the forum right now. Contact the PawPal "
-    "team if you think this is a mistake."
-)
-
-
 def is_forum_restricted(user):
     profile = getattr(user, "account_profile", None)
     return profile is not None and profile.forum_restricted_at is not None
