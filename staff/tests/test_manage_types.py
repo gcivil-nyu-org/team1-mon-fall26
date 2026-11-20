@@ -6,6 +6,9 @@ from django.urls import reverse
 
 from caregivers.models import ServiceType
 from pets.models import PetType
+from unittest.mock import patch
+
+from django.db import IntegrityError
 
 User = get_user_model()
 
@@ -232,3 +235,143 @@ class ManageTypesTests(TestCase):
         response = self.client.get(self.rename_url)
 
         self.assertEqual(response.status_code, 405)
+
+    def test_invalid_category_is_rejected(self):
+        self.client.force_login(self.admin)
+
+        add_response = self.client.post(
+            self.add_url,
+            {"tab": "invalid", "name": "New Type"},
+        )
+        rename_response = self.client.post(
+            self.rename_url,
+            {
+                "tab": "invalid",
+                "type_id": self.pet_type.pk,
+                "name": "New Name",
+            },
+        )
+
+        self.assertEqual(add_response.status_code, 400)
+        self.assertEqual(rename_response.status_code, 400)
+
+    def test_invalid_rename_type_id_is_rejected(self):
+        self.client.force_login(self.admin)
+
+        for type_id in ("", "abc"):
+            with self.subTest(type_id=type_id):
+                response = self.client.post(
+                    self.rename_url,
+                    {
+                        "tab": "pets",
+                        "type_id": type_id,
+                        "name": "New Name",
+                    },
+                )
+                self.assertEqual(response.status_code, 400)
+
+    def test_empty_rename_name_is_rejected(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            self.rename_url,
+            {
+                "tab": "pets",
+                "type_id": self.pet_type.pk,
+                "name": "   ",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.pet_type.refresh_from_db()
+        self.assertEqual(self.pet_type.name, "Test Dog")
+
+    def test_rename_name_over_100_characters_is_rejected(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            self.rename_url,
+            {
+                "tab": "pets",
+                "type_id": self.pet_type.pk,
+                "name": "A" * 101,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.pet_type.refresh_from_db()
+        self.assertEqual(self.pet_type.name, "Test Dog")
+
+    def test_rename_to_same_name_is_allowed(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            self.rename_url,
+            {
+                "tab": "pets",
+                "type_id": self.pet_type.pk,
+                "name": "Test Dog",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.pet_type.refresh_from_db()
+        self.assertEqual(self.pet_type.name, "Test Dog")
+
+    def test_add_name_over_100_characters_is_rejected(self):
+        self.client.force_login(self.admin)
+
+        original_count = PetType.objects.count()
+
+        response = self.client.post(
+            self.add_url,
+            {
+                "tab": "pets",
+                "name": "A" * 101,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PetType.objects.count(), original_count)
+
+    def test_rename_handles_integrity_error(self):
+        self.client.force_login(self.admin)
+
+        with patch.object(
+            PetType,
+            "save",
+            side_effect=IntegrityError("Duplicate type"),
+        ):
+            response = self.client.post(
+                self.rename_url,
+                {
+                    "tab": "pets",
+                    "type_id": self.pet_type.pk,
+                    "name": "New Test Name",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.pet_type.refresh_from_db()
+        self.assertEqual(self.pet_type.name, "Test Dog")
+
+    def test_add_handles_integrity_error(self):
+        self.client.force_login(self.admin)
+
+        original_count = PetType.objects.count()
+
+        with patch.object(
+            PetType.objects,
+            "create",
+            side_effect=IntegrityError("Duplicate type"),
+        ):
+            response = self.client.post(
+                self.add_url,
+                {
+                    "tab": "pets",
+                    "name": "New Test Type",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PetType.objects.count(), original_count)
