@@ -28,7 +28,7 @@ from staff.views import staff_required
 
 from .authors import describe, initials, theme
 from .forms import CommentForm, PostForm
-from .models import Comment, Post
+from .models import Comment, GuidelineRule, Post, guidelines_updated_at
 
 PER_PAGE = 20
 AUTHOR = ("author", "author__account_profile", "author__caregiver_profile")
@@ -128,8 +128,21 @@ def _forum(request, selected=None, form=None, post_form=None):
             and _to_confirm(request, "remove_comment", selected, comments),
             "removed": REMOVED.get(request.GET.get("done")) if admin else None,
             "pin_done": PIN_DONE.get(request.GET.get("done")) if admin else None,
+            # #105: everyone else reads the community guidelines in a popup
+            # (Kat's Figma "Community Guidelines (User)"); admins edit them
+            # on their own page.
+            **_guidelines_popup(request, admin),
         },
     )
+
+
+def _guidelines_popup(request, admin):
+    if admin or request.GET.get("guidelines") != "1":
+        return {}
+    return {
+        "guidelines": list(GuidelineRule.objects.shown()),
+        "guidelines_updated_at": guidelines_updated_at(),
+    }
 
 
 def _to_confirm(request, key, selected, comments=()):

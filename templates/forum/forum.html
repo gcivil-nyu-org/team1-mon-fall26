@@ -7,7 +7,7 @@
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=14">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=19">
 
   {% if admin %}
     {# Kat's Figma "Monitor Forum Activity": admins open the forum from Explore (#102). #}
@@ -29,12 +29,16 @@
     </div>
   {% endif %}
 
-  {# #68: filter by topic #}
-  <nav class="forum-topics" aria-label="Topics">
-    {% for item in topics %}
-      <a class="forum-chip{% if item.active %} is-active{% endif %}" href="{% url 'forum:list' %}{% if item.value %}?topic={{ item.value }}{% endif %}"{% if item.active %} aria-current="true"{% endif %}>{{ item.label }}</a>
-    {% endfor %}
-  </nav>
+  <div class="forum-topics-row">
+    {# #68: filter by topic #}
+    <nav class="forum-topics" aria-label="Topics">
+      {% for item in topics %}
+        <a class="forum-chip{% if item.active %} is-active{% endif %}" href="{% url 'forum:list' %}{% if item.value %}?topic={{ item.value }}{% endif %}"{% if item.active %} aria-current="true"{% endif %}>{{ item.label }}</a>
+      {% endfor %}
+    </nav>
+    {# #105: admins manage the guidelines; everyone else reads them in a popup. #}
+    <a class="forum-guidelines-link" href="{% if admin %}{% url 'forum:guidelines' %}{% else %}?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if selected %}post={{ selected.pk }}&amp;{% endif %}guidelines=1{% endif %}">{% include "forum/partials/doc_icon.html" %} Community guidelines</a>
+  </div>
 
   {% if just_posted and selected.pk == just_posted %}
     {# Figma "Create Forum Post Confirmation" #}
@@ -103,5 +107,9 @@
 
   {% if confirm_post or confirm_comment %}
     {% include "forum/partials/remove_popup.html" %}
+  {% endif %}
+
+  {% if guidelines is not None %}
+    {% include "forum/partials/guidelines_popup.html" %}
   {% endif %}
 {% endblock %}

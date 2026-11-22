@@ -1,0 +1,25 @@
+{# #105: Kat's Figma "Community Guidelines (User)": the rules over the Forum, closed with Got it. #}
+<div class="modal-backdrop">
+  <section class="guidelines-popup" role="dialog" aria-modal="true" aria-labelledby="guidelines-popup-title">
+    <div class="guidelines-popup-head">
+      <h2 id="guidelines-popup-title">Community guidelines</h2>
+      {% if guidelines_updated_at %}<p class="guidelines-popup-updated">Last updated {{ guidelines_updated_at|date:"M j, Y" }}</p>{% endif %}
+    </div>
+    {% if guidelines %}
+      <ol class="guidelines-popup-list">
+        {% for rule in guidelines %}
+          <li>
+            <span class="guideline-number" aria-hidden="true">{{ forloop.counter }}</span>
+            <div>
+              <strong>{{ rule.title }}</strong>
+              <p>{{ rule.text }}</p>
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="muted">No guidelines yet. Be kind and keep it about pets.</p>
+    {% endif %}
+    <a class="btn btn-dark guidelines-popup-done" href="?{% if topic %}topic={{ topic }}&amp;{% endif %}{% if selected %}post={{ selected.pk }}{% endif %}">Got it</a>
+  </section>
+</div>
