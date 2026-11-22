@@ -7,13 +7,22 @@
       <strong>{{ post.author_name }}</strong>
       <span class="muted">{{ post.author_role }} · <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|ago }}</time></span>
     </span>
-    {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
+    <span class="forum-panel-tags">
+      {% if post.is_pinned %}<span class="forum-pinned-pill">{% include "forum/partials/pin_icon.html" with size=11 %} Pinned</span>{% endif %}
+      {% include "forum/partials/topic_tag.html" with topic=post.topic label=post.get_topic_display %}
+    </span>
   </header>
   <h2 class="forum-title" id="forum-post-title">{{ post.title }}</h2>
   <div class="forum-body{% if admin %} has-actions{% endif %}">{{ post.body|linebreaks }}</div>
   {% if admin %}
     {# #102: Kat's Figma "Monitor Forum Activity". Remove asks first in a popup. #}
     <div class="forum-post-actions">
+      {# #104: pin a helpful post to the top of the forum, or unpin it. #}
+      {% if post.is_pinned %}
+        <form method="post" action="{% url 'forum:unpin_post' post.pk %}">{% csrf_token %}<button type="submit" class="forum-action">{% include "forum/partials/pin_icon.html" %} Unpin post</button></form>
+      {% else %}
+        <form method="post" action="{% url 'forum:pin_post' post.pk %}">{% csrf_token %}<button type="submit" class="forum-action">{% include "forum/partials/pin_icon.html" %} Pin post</button></form>
+      {% endif %}
       {% if can_restrict_author %}
         {# #103: restrict the author from the forum, on their Users page. #}
         <a class="forum-action" href="{% url 'staff:user_detail' post.author_id %}?confirm=forum">{% include "forum/partials/restrict_icon.html" %} Restrict posting</a>

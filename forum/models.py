@@ -14,6 +14,13 @@ class ForumQuerySet(models.QuerySet):
         """#102: what regular users see. Admins also see removed content."""
         return self.filter(removed_at__isnull=True)
 
+    def pinned(self):
+        """#104: posts an admin pinned, the most recently pinned first."""
+        return self.filter(pinned_at__isnull=False).order_by("-pinned_at", "-pk")
+
+    def unpinned(self):
+        return self.filter(pinned_at__isnull=True)
+
 
 class Post(models.Model):
     class Topic(models.TextChoices):
@@ -34,6 +41,16 @@ class Post(models.Model):
     # #102: an admin removed it (spam or abuse). It's hidden from everyone
     # but admins, who still see it marked Removed.
     removed_at = models.DateTimeField(null=True, blank=True)
+    # #104 Pin Helpful Forum Posts: an admin pinned it, so it shows at the top
+    # of the forum for everyone (Kat's Figma "Pin Helpful Forum Posts").
+    pinned_at = models.DateTimeField(null=True, blank=True)
+    pinned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
 
     objects = ForumQuerySet.as_manager()
 
@@ -42,6 +59,10 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def is_pinned(self):
+        return self.pinned_at is not None
 
 
 class Comment(models.Model):
