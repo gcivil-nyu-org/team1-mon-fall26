@@ -18,9 +18,12 @@ RULES = [
         "Keep personal info private",
         "Don’t share addresses, phone numbers or door codes in posts.",
     ),
+    # Forum posts can't be reported yet, so instead of the Figma's "Use Report"
+    # this rule says what happens when the rules are broken.
     (
-        "Report problems",
-        "Use Report if something breaks these rules. Admins will review it.",
+        "Play by the rules",
+        "Posts or comments that break these rules get removed, and repeat "
+        "offenders may be restricted from posting.",
     ),
 ]
 

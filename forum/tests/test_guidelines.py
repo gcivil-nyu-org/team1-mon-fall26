@@ -21,7 +21,7 @@ DEFAULTS = [
     "Keep it about pets",
     "No spam or ads",
     "Keep personal info private",
-    "Report problems",
+    "Play by the rules",
 ]
 
 
@@ -225,7 +225,7 @@ class RemoveTests(GuidelinesTestData):
         self.assertRedirects(response, f"{PAGE}?done=removed")
         self.assertContains(response, "Rule removed. Users no longer see it.")
         self.assertNotIn("Keep personal info private", self.shown_titles())
-        # Report problems moves up to number 4.
+        # "Play by the rules" moves up to number 4.
         self.assertContains(response, 'class="guideline-number" aria-hidden="true">4<')
         self.assertNotContains(
             response, 'class="guideline-number" aria-hidden="true">5<'
