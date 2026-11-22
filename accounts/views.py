@@ -31,13 +31,14 @@ RESET_SENT_TO = "password_reset_sent_to"
 
 
 def home_view(request):
-    """Send people to their own start page: log in, Users (admins), My pets, or
-    caregiver requests."""
+    """Send people to their own start page: log in, Reports (admins), My pets,
+    or caregiver requests."""
     user = request.user
     if not user.is_authenticated:
         return redirect("login")
     if user.is_staff:
-        return redirect("staff:user_list")
+        # Admins start on Reports, the first tab of their menu.
+        return redirect("reports:admin_list")
     profile = getattr(user, "account_profile", None)
     if hasattr(user, "caregiver_profile") or (profile and profile.role == "caregiver"):
         return redirect("bookings:caregiver_requests")
