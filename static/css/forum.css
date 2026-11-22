@@ -321,3 +321,38 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
   .forum-strip-cards { grid-template-columns: minmax(0, 1fr); }
   .forum-strip-empty { flex-wrap: wrap; }
 }
+
+/* ---------- Pinned posts (#104, Kat's Figma "Pin Helpful Forum Posts") ---------- */
+
+.forum-list-pinned { margin-bottom: 16px; }
+.forum-row { position: relative; }
+.forum-row.is-pinned { padding-right: 44px; }
+.forum-pin-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+}
+.forum-panel-tags { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; align-self: center; }
+.forum-panel-tags .forum-tag { margin-left: 0; }
+.forum-pinned-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.forum-post-actions form { margin: 0; }
