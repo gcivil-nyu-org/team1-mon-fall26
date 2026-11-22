@@ -1,0 +1,492 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pet & service types · PawPal{% endblock %}
+{% block main_class %}page page-staff{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/staff.css' %}?v=18">
+
+<div class="staff-types-page">
+
+  <!-- Back navigation -->
+  <a
+    class="staff-types-back"
+    href="{% url 'staff:user_list' %}"
+  >
+    ‹ Users
+  </a>
+
+  <!-- Page heading and Add button -->
+  <div class="staff-types-header">
+    <h1 class="admin-title">Pet &amp; service types</h1>
+
+    <button
+      type="button"
+      class="staff-types-add-button"
+      id="staff-open-add-modal"
+    >
+      + Add
+      {% if active_tab == 'pets' %}
+        pet type
+      {% else %}
+        service type
+      {% endif %}
+    </button>
+  </div>
+
+  <!-- Pet / service tabs -->
+  <div class="staff-types-tabs">
+
+    <a
+      href="{% url 'staff:manage_types' %}?tab=pets"
+      class="{% if active_tab == 'pets' %}active{% endif %}"
+    >
+      Pet types
+      <span>{{ pet_type_count }}</span>
+    </a>
+
+    <a
+      href="{% url 'staff:manage_types' %}?tab=services"
+      class="{% if active_tab == 'services' %}active{% endif %}"
+    >
+      Service types
+      <span>{{ service_type_count }}</span>
+    </a>
+
+  </div>
+
+  <!-- Main two-column layout -->
+  <div class="staff-types-grid">
+
+    <!-- LEFT: Type list -->
+    <div class="staff-types-list">
+
+      {% if active_tab == 'pets' %}
+
+        {% for item in pet_types %}
+
+          <a
+            href="?tab=pets&amp;selected={{ item.pk }}"
+            class="staff-types-list-item {% if selected.pk == item.pk %}selected{% endif %}"
+          >
+            <div class="staff-types-avatar">
+              {{ item.name|slice:":1"|upper }}
+            </div>
+
+            <div>
+              <strong>{{ item.name }}</strong>
+              <small>
+                {{ item.pet_count }} pets ·
+                {{ item.caregiver_count }} caregivers
+              </small>
+            </div>
+          </a>
+
+        {% empty %}
+
+          <p>No pet types available.</p>
+
+        {% endfor %}
+
+      {% else %}
+
+        {% for item in service_types %}
+
+          <a
+            href="?tab=services&amp;selected={{ item.pk }}"
+            class="staff-types-list-item {% if selected.pk == item.pk %}selected{% endif %}"
+          >
+            <div class="staff-types-avatar">🐾</div>
+
+            <div>
+              <strong>{{ item.name }}</strong>
+              <small>
+                {{ item.caregiver_count }} caregivers ·
+                {{ item.booking_count }} bookings
+              </small>
+            </div>
+          </a>
+
+        {% empty %}
+
+          <p>No service types available.</p>
+
+        {% endfor %}
+
+      {% endif %}
+
+    </div>
+
+    <!-- RIGHT: Selected type details -->
+    <div class="staff-types-detail">
+
+      {% if selected %}
+
+        <div class="staff-types-detail-heading">
+
+          <div class="staff-types-avatar">
+            {% if active_tab == 'pets' %}
+              {{ selected.name|slice:":1"|upper }}
+            {% else %}
+              🐾
+            {% endif %}
+          </div>
+
+          <div>
+            <h2>{{ selected.name }}</h2>
+
+            <small>
+              {% if active_tab == 'pets' %}
+                Pet type
+              {% else %}
+                Service type
+              {% endif %}
+            </small>
+          </div>
+
+        </div>
+
+        <!-- Usage statistics -->
+        <div class="staff-types-stats">
+
+          {% if active_tab == 'pets' %}
+
+            <div class="staff-types-stat">
+              <small>PETS</small>
+              <strong>{{ selected.pet_count }}</strong>
+            </div>
+
+            <div class="staff-types-stat">
+              <small>CAREGIVERS WHO CARE FOR IT</small>
+              <strong>{{ selected.caregiver_count }}</strong>
+            </div>
+
+          {% else %}
+
+            <div class="staff-types-stat">
+              <small>CAREGIVERS OFFERING</small>
+              <strong>{{ selected.caregiver_count }}</strong>
+            </div>
+
+            <div class="staff-types-stat">
+              <small>BOOKINGS</small>
+              <strong>{{ selected.booking_count }}</strong>
+            </div>
+
+          {% endif %}
+
+        </div>
+
+        <!-- Rename type form -->
+        <div class="staff-types-edit">
+
+          <form
+            method="post"
+            action="{% url 'staff:rename_type' %}"
+            id="staff-rename-form"
+          >
+            {% csrf_token %}
+
+            <input
+              type="hidden"
+              name="tab"
+              value="{{ active_tab }}"
+            >
+
+            <input
+              type="hidden"
+              name="type_id"
+              value="{{ selected.pk }}"
+            >
+
+            <label for="type-name">
+              Name <span>*</span>
+            </label>
+
+            <input
+              id="type-name"
+              type="text"
+              name="name"
+              value="{{ selected.name }}"
+              maxlength="100"
+              required
+              data-original-name="{{ selected.name }}"
+            >
+
+            <p>
+              Changes update everywhere this type is used.
+            </p>
+
+            <div class="staff-types-edit-actions">
+
+              <button
+                type="button"
+                class="staff-types-cancel"
+                id="staff-rename-cancel"
+                hidden
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                class="staff-types-save"
+                id="staff-rename-save"
+                disabled
+              >
+                Save changes
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      {% else %}
+
+        <h2>No types available</h2>
+        <p>Add a type to get started.</p>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ADD TYPE MODAL -->
+<div
+  class="staff-types-modal-overlay"
+  id="staff-add-modal"
+  hidden
+>
+  <div
+    class="staff-types-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="staff-add-modal-title"
+  >
+
+    <div class="staff-types-modal-heading">
+      <h2 id="staff-add-modal-title">
+        {% if active_tab == 'pets' %}
+          Add pet type
+        {% else %}
+          Add service type
+        {% endif %}
+      </h2>
+
+      <button
+        type="button"
+        class="staff-types-modal-close"
+        id="staff-close-add-modal"
+        aria-label="Close"
+      >
+        &times;
+      </button>
+    </div>
+
+    <p class="staff-types-modal-description">
+      {% if active_tab == 'pets' %}
+        Add a new pet type for pets and caregivers to use.
+      {% else %}
+        Add a new service type for caregivers to offer.
+      {% endif %}
+    </p>
+
+    <form
+      method="post"
+      action="{% url 'staff:add_type' %}"
+      id="staff-add-form"
+    >
+      {% csrf_token %}
+
+      <input
+        type="hidden"
+        name="tab"
+        value="{{ active_tab }}"
+      >
+
+      <label for="staff-new-type-name">
+        Name <span>*</span>
+      </label>
+
+      <input
+        id="staff-new-type-name"
+        type="text"
+        name="name"
+        maxlength="100"
+        placeholder="{% if active_tab == 'pets' %}e.g. Hamster{% else %}e.g. Dog walking{% endif %}"
+        required
+      >
+
+      <div class="staff-types-modal-actions">
+
+        <button
+          type="button"
+          class="staff-types-cancel"
+          id="staff-cancel-add-modal"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="staff-types-save"
+          id="staff-submit-add"
+          disabled
+        >
+          Add
+          {% if active_tab == 'pets' %}
+            pet type
+          {% else %}
+            service type
+          {% endif %}
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- Page interactions -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ----------------------------------
+    // Rename existing type
+    // ----------------------------------
+
+    const renameForm = document.getElementById("staff-rename-form");
+
+    if (renameForm) {
+        const nameInput = document.getElementById("type-name");
+        const saveButton = document.getElementById("staff-rename-save");
+        const cancelButton = document.getElementById("staff-rename-cancel");
+
+        const originalName = nameInput.dataset.originalName;
+
+        function updateRenameButtons() {
+            const currentName = nameInput.value.trim();
+            const changed = currentName !== originalName;
+
+            saveButton.disabled = !changed || !currentName;
+            cancelButton.hidden = !changed;
+        }
+
+        nameInput.addEventListener("input", updateRenameButtons);
+
+        cancelButton.addEventListener("click", function () {
+            nameInput.value = originalName;
+            updateRenameButtons();
+        });
+
+        renameForm.addEventListener("submit", function (event) {
+            if (!nameInput.value.trim()) {
+                event.preventDefault();
+                nameInput.focus();
+            }
+        });
+
+        updateRenameButtons();
+    }
+
+    // ----------------------------------
+    // Add type modal
+    // ----------------------------------
+
+    const modal = document.getElementById("staff-add-modal");
+    const openButton = document.getElementById("staff-open-add-modal");
+    const closeButton = document.getElementById("staff-close-add-modal");
+    const cancelButton = document.getElementById("staff-cancel-add-modal");
+
+    const addForm = document.getElementById("staff-add-form");
+    const addInput = document.getElementById("staff-new-type-name");
+    const addButton = document.getElementById("staff-submit-add");
+
+    let previousFocus = null;
+
+    function updateAddButton() {
+        addButton.disabled = !addInput.value.trim();
+    }
+
+    function openModal() {
+        previousFocus = document.activeElement;
+        modal.hidden = false;
+        addForm.reset();
+        updateAddButton();
+        addInput.focus();
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        addForm.reset();
+        updateAddButton();
+
+        if (previousFocus) {
+            previousFocus.focus();
+        }
+    }
+
+    openButton.addEventListener("click", openModal);
+    closeButton.addEventListener("click", closeModal);
+    cancelButton.addEventListener("click", closeModal);
+
+    addInput.addEventListener("input", updateAddButton);
+
+    // Clicking outside the dialog closes it.
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Escape closes the modal.
+    // Tab stays within the modal while it is open.
+    modal.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeModal();
+            return;
+        }
+
+        if (event.key === "Tab") {
+            const focusable = Array.from(
+                modal.querySelectorAll(
+                    'button:not([disabled]), input:not([disabled])'
+                )
+            ).filter(function (element) {
+                return !element.hidden;
+            });
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+    });
+
+    addForm.addEventListener("submit", function (event) {
+        if (!addInput.value.trim()) {
+            event.preventDefault();
+            addInput.focus();
+        }
+    });
+
+    updateAddButton();
+
+});
+</script>
+
+{% endblock %}

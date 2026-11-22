@@ -8,7 +8,25 @@
 {% block content %}
   <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=14">
 
-  <h1 class="admin-title">Users</h1>
+  <div class="staff-users-heading">
+    <h1 class="admin-title">Users</h1>
+
+    <a href="{% url 'staff:manage_types' %}"
+      class="staff-types-shortcut">
+
+      <span class="staff-types-icon" aria-hidden="true">🐾</span>
+
+      <span class="staff-types-text">
+        <strong>Pet &amp; service types</strong>
+        <small>
+          {{ pet_type_count }} pet types ·
+          {{ service_type_count }} services
+        </small>
+      </span>
+
+      <span class="staff-types-arrow" aria-hidden="true">›</span>
+    </a>
+  </div>
 
   <nav class="admin-tabs" aria-label="Account status">
     {% for t in tabs %}

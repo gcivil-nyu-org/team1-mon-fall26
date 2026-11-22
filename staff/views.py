@@ -4,10 +4,13 @@ Forum Posting)."""
 
 from functools import wraps
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.http import QueryDict
+from django.db import IntegrityError, transaction
+from django.db.models import Count
+from django.http import HttpResponseBadRequest, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -15,6 +18,8 @@ from django.views.decorators.http import require_POST
 from accounts.deletion import delete_account
 from accounts import restriction
 from accounts.restriction import is_restricted, reinstate, restrict
+from caregivers.models import ServiceType
+from pets.models import PetType
 from reports import moderation
 
 from .accounts import (
@@ -98,6 +103,8 @@ def user_list(request, pk=None, restrict_form=None):
         "tabs": tabs,
         "keep": keep.urlencode(),
         "selected": selected,
+        "pet_type_count": PetType.objects.count(),
+        "service_type_count": ServiceType.objects.count(),
     }
     if selected is not None:
         done = request.GET.get("done")
@@ -215,6 +222,101 @@ def delete_user(request, pk):
     return _done(account, "deleted")
 
 
+@staff_required
+def manage_types(request):
+    """Display pet and service types with their usage counts."""
+
+    active_tab = "services" if request.GET.get("tab") == "services" else "pets"
+
+    pet_types = PetType.objects.annotate(
+        pet_count=Count("pet", distinct=True),
+        caregiver_count=Count("caregiverprofile", distinct=True),
+    ).order_by("name")
+
+    service_types = ServiceType.objects.annotate(
+        caregiver_count=Count(
+            "caregiverservice__caregiver",
+            distinct=True,
+        ),
+        booking_count=Count("bookings", distinct=True),
+    ).order_by("name")
+
+    # Determine which type should be selected.
+    items = list(service_types if active_tab == "services" else pet_types)
+
+    selected_id = request.GET.get("selected")
+
+    selected = next(
+        (item for item in items if str(item.pk) == selected_id),
+        None,
+    )
+
+    # Select the first type by default, as shown in Figma.
+    if selected is None and items:
+        selected = items[0]
+
+    context = {
+        "active_tab": active_tab,
+        "pet_types": pet_types,
+        "service_types": service_types,
+        "pet_type_count": pet_types.count(),
+        "service_type_count": service_types.count(),
+        "selected": selected,
+    }
+
+    return render(request, "staff/manage_types.html", context)
+
+
+@require_POST
+@staff_required
+def rename_type(request):
+    """Rename an existing pet or service type."""
+
+    tab = request.POST.get("tab")
+    type_id = request.POST.get("type_id")
+    name = request.POST.get("name", "").strip()
+
+    if tab == "pets":
+        model = PetType
+    elif tab == "services":
+        model = ServiceType
+    else:
+        return HttpResponseBadRequest("Invalid type category.")
+
+    if not type_id or not type_id.isdigit():
+        return HttpResponseBadRequest("Invalid type ID.")
+
+    item = get_object_or_404(model, pk=type_id)
+
+    redirect_url = f"{reverse('staff:manage_types')}" f"?tab={tab}&selected={item.pk}"
+
+    if not name:
+        messages.error(request, "The name cannot be empty.")
+        return redirect(redirect_url)
+
+    if len(name) > 100:
+        messages.error(request, "The name must be 100 characters or fewer.")
+        return redirect(redirect_url)
+
+    if model.objects.filter(name__iexact=name).exclude(pk=item.pk).exists():
+        messages.error(request, f'"{name}" already exists.')
+        return redirect(redirect_url)
+
+    if item.name == name:
+        return redirect(redirect_url)
+
+    try:
+        with transaction.atomic():
+            item.name = name
+            item.save(update_fields=["name"])
+    except IntegrityError:
+        messages.error(request, "That name already exists.")
+        return redirect(redirect_url)
+
+    messages.success(request, "Changes saved successfully.")
+    return redirect(redirect_url)
+
+
 @require_POST
 @staff_required
 def restrict_forum(request, pk):
@@ -224,6 +326,56 @@ def restrict_forum(request, pk):
     if not restriction.is_forum_restricted(account):
         restriction.restrict_forum(account)
     return _done(account, "forum_restricted")
+
+
+@require_POST
+@staff_required
+def add_type(request):
+    """Create a new pet or service type."""
+
+    tab = request.POST.get("tab")
+    name = request.POST.get("name", "").strip()
+
+    if tab == "pets":
+        model = PetType
+    elif tab == "services":
+        model = ServiceType
+    else:
+        return HttpResponseBadRequest("Invalid type category.")
+
+    redirect_url = f"{reverse('staff:manage_types')}?tab={tab}"
+
+    if not name:
+        messages.error(request, "The name cannot be empty.")
+        return redirect(redirect_url)
+
+    if len(name) > 100:
+        messages.error(
+            request,
+            "The name must be 100 characters or fewer.",
+        )
+        return redirect(redirect_url)
+
+    if model.objects.filter(name__iexact=name).exists():
+        messages.error(
+            request,
+            f'"{name}" already exists.',
+        )
+        return redirect(redirect_url)
+
+    try:
+        with transaction.atomic():
+            item = model.objects.create(name=name)
+    except IntegrityError:
+        messages.error(request, "That name already exists.")
+        return redirect(redirect_url)
+
+    messages.success(
+        request,
+        f'"{item.name}" added successfully!',
+    )
+
+    return redirect(f"{redirect_url}&selected={item.pk}")
 
 
 @require_POST
