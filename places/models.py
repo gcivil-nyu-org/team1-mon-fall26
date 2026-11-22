@@ -80,6 +80,8 @@ class Place(models.Model):
             "nyc_parks_fountains",
             "NYC Parks Drinking Fountains on NYC Open Data",
         )
+        # Pet stores and dog-friendly cafés and restaurants (places/osm.py).
+        OPENSTREETMAP = "osm", "OpenStreetMap contributors"
 
     # The NYC Open Data page each source's information comes from.
     SOURCE_URLS = {
@@ -205,8 +207,18 @@ class Place(models.Model):
         return hours
 
     def source_url(self):
-        """The NYC Open Data page this place's information came from, or ""."""
+        """The page this place's information came from, or "": its NYC Open
+        Data dataset, or the place itself on OpenStreetMap."""
+        if self.source == self.Source.OPENSTREETMAP and self.source_id:
+            return f"https://www.openstreetmap.org/{self.source_id}"
         return self.SOURCE_URLS.get(self.source, "")
+
+    def source_name(self):
+        """Who to credit on the card ("© OpenStreetMap contributors" asks for
+        OpenStreetMap by name)."""
+        if self.source == self.Source.OPENSTREETMAP:
+            return "OpenStreetMap"
+        return "NYC Open Data" if self.source_url() else "PawPal team"
 
     def directions_url(self):
         return (

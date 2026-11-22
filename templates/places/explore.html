@@ -152,7 +152,7 @@
 
             {# Use Reliable Location Data: say where this came from and when it was last verified. #}
             <p class="place-source">
-              Source: {% if place.source_url %}<a href="{{ place.source_url }}" target="_blank" rel="noopener" title="{{ place.get_source_display }}">NYC Open Data</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
+              Source: {% if place.source_url %}<a href="{{ place.source_url }}" target="_blank" rel="noopener" title="{{ place.get_source_display }}">{{ place.source_name }}</a>{% else %}PawPal team{% endif %}{% if place.checked_on %} · verified {{ place.checked_on|date:"M j, Y" }}{% endif %}
             </p>
           </article>
         {% endfor %}
