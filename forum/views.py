@@ -9,7 +9,10 @@ the right.
 Explore and remove a post or comment, after a confirm popup (Kat's Figma
 "Remove Inappropriate Forum Content"). It's hidden from everyone.
 #103 Restrict Forum Posting: an account an admin restricted can still read
-the forum, but can't write posts or comments (Figma "Restricted User")."""
+the forum, but can't write posts or comments (Figma "Restricted User").
+#104 Pin Helpful Forum Posts: admins pin a post so it shows under "Pinned" at
+the top of the forum for everyone, and unpin it again (Kat's Figma "Pin
+Helpful Forum Posts" and "Unpin Forum Posts")."""
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -25,7 +28,7 @@ from staff.views import staff_required
 
 from .authors import describe, initials, theme
 from .forms import CommentForm, PostForm
-from .models import Comment, Post
+from .models import Comment, GuidelineRule, Post, guidelines_updated_at
 
 PER_PAGE = 20
 AUTHOR = ("author", "author__account_profile", "author__caregiver_profile")
@@ -33,6 +36,11 @@ AUTHOR = ("author", "author__account_profile", "author__caregiver_profile")
 VISIBLE_COMMENTS = Count("comments", filter=Q(comments__removed_at__isnull=True))
 # After removing, the Forum page shows a banner (?done=).
 REMOVED = {"post_removed": "Post", "comment_removed": "Comment"}
+# #104: the banner after pinning or unpinning, with the Figma's wording.
+PIN_DONE = {
+    "pinned": "Post pinned. It now shows at the top of the forum.",
+    "unpinned": "Post unpinned. It no longer shows at the top of the forum.",
+}
 
 
 def _posts():
@@ -54,21 +62,24 @@ def _forum(request, selected=None, form=None, post_form=None):
         topic = ""
     # Meta.ordering isn't used once posts are grouped to count comments.
     admin = request.user.is_staff
-    posts = (
-        _posts().annotate(comment_count=VISIBLE_COMMENTS).order_by("-created_at", "-pk")
-    )
+    posts = _posts().annotate(comment_count=VISIBLE_COMMENTS)
     if topic:
         posts = posts.filter(topic=topic)
-    page = Paginator(posts, PER_PAGE).get_page(request.GET.get("page"))
-    for post in page:
+    # #104: pinned posts sit above the recent ones, on the first page.
+    page = Paginator(
+        posts.unpinned().order_by("-created_at", "-pk"), PER_PAGE
+    ).get_page(request.GET.get("page"))
+    pinned = list(posts.pinned()) if page.number == 1 else []
+    for post in [*pinned, *page]:
         describe(post)
 
     if selected is None:
         wanted = request.GET.get("post", "")
         if wanted.isdigit():
             selected = _posts().filter(pk=wanted).first()
-        if selected is None and page.object_list:
-            selected = page.object_list[0]
+        if selected is None:
+            shown = [*pinned, *page.object_list]
+            selected = shown[0] if shown else None
 
     comments = []
     if selected is not None:
@@ -90,6 +101,7 @@ def _forum(request, selected=None, form=None, post_form=None):
         "forum/forum.html",
         {
             "page": page,
+            "pinned": pinned,
             "topic": topic,
             "topics": topics,
             "selected": selected,
@@ -115,8 +127,22 @@ def _forum(request, selected=None, form=None, post_form=None):
             "confirm_comment": admin
             and _to_confirm(request, "remove_comment", selected, comments),
             "removed": REMOVED.get(request.GET.get("done")) if admin else None,
+            "pin_done": PIN_DONE.get(request.GET.get("done")) if admin else None,
+            # #105: everyone else reads the community guidelines in a popup
+            # (Kat's Figma "Community Guidelines (User)"); admins edit them
+            # on their own page.
+            **_guidelines_popup(request, admin),
         },
     )
+
+
+def _guidelines_popup(request, admin):
+    if admin or request.GET.get("guidelines") != "1":
+        return {}
+    return {
+        "guidelines": list(GuidelineRule.objects.shown()),
+        "guidelines_updated_at": guidelines_updated_at(),
+    }
 
 
 def _to_confirm(request, key, selected, comments=()):
@@ -197,3 +223,28 @@ def remove_comment(request, pk):
     comment = get_object_or_404(Comment.objects.select_related("post"), pk=pk)
     _remove(comment)
     return redirect(f"{post_url(comment.post)}&done=comment_removed")
+
+
+@require_POST
+@staff_required
+def pin_post(request, pk):
+    """#104: an admin pins a helpful post to the top of the forum. Only posts
+    still up can be pinned: removed ones (#102) give Not found."""
+    post = get_object_or_404(_posts(), pk=pk)
+    if post.pinned_at is None:
+        post.pinned_at = timezone.now()
+        post.pinned_by = request.user
+        post.save(update_fields=["pinned_at", "pinned_by"])
+    return redirect(f"{post_url(post)}&done=pinned")
+
+
+@require_POST
+@staff_required
+def unpin_post(request, pk):
+    """#104: the post goes back among the recent posts."""
+    post = get_object_or_404(Post, pk=pk)
+    if post.pinned_at is not None:
+        post.pinned_at = None
+        post.pinned_by = None
+        post.save(update_fields=["pinned_at", "pinned_by"])
+    return redirect(f"{post_url(post)}&done=unpinned")

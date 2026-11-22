@@ -321,3 +321,125 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
   .forum-strip-cards { grid-template-columns: minmax(0, 1fr); }
   .forum-strip-empty { flex-wrap: wrap; }
 }
+
+/* ---------- Pinned posts (#104, Kat's Figma "Pin Helpful Forum Posts") ---------- */
+
+.forum-list-pinned { margin-bottom: 16px; }
+.forum-row { position: relative; }
+.forum-row.is-pinned { padding-right: 44px; }
+.forum-pin-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+}
+.forum-panel-tags { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; align-self: center; }
+.forum-panel-tags .forum-tag { margin-left: 0; }
+.forum-pinned-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.forum-post-actions form { margin: 0; }
+
+/* ---------- #105 Community guidelines ----------
+   Sizes and colors are from Kat's Figma "PawPal - Admin (Community Guidelines)". */
+
+/* Forum: the topic chips with "Community guidelines" on the right (Figma "Forum (User)"). */
+.forum-topics-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; margin-bottom: 20px; }
+.forum-topics-row .forum-topics { margin-bottom: 0; }
+.forum-guidelines-link { display: inline-flex; align-items: center; gap: 8px; color: #5c3d2e; font-size: 15px; font-weight: 700; line-height: 23.25px; text-decoration: underline; text-underline-position: from-font; }
+.forum-guidelines-link svg { width: 18px; height: 18px; }
+
+/* Admin page (Figma "Manage Community Guidelines"): 1176px of content, like the other admin pages. */
+main.page-guidelines { max-width: 1240px; }
+.page-guidelines .back-link { margin-bottom: 8px; color: #5c3d2e; font-weight: 700; }
+.guidelines-title { margin: 0 0 20px; font-size: 46px; line-height: 48.3px; letter-spacing: -0.23px; }
+
+/* Green banner after a change (Figma "... Confirmation"). */
+.guidelines-done { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px 14px; border-radius: 16px; background: #cdefdc; color: #14532d; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.guidelines-done .alert-icon { display: grid; flex: none; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #14532d; }
+
+.guidelines-card { display: grid; gap: 12px; padding: 30px; border-radius: 28px; background: #fff; box-shadow: 0 0 0 1.5px var(--line), 0 6px 0 var(--line); }
+.guidelines-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; }
+.guidelines-head p { margin: 0; color: #6a5a54; font-size: 14px; line-height: 21.7px; }
+.guidelines-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.guideline-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: #faf5f2; }
+.guideline-number { display: grid; flex: none; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #ffe9b8; color: #6b4500; font-size: 14px; font-weight: 800; line-height: 1; }
+.guideline-text { flex: 1; min-width: 0; }
+.guideline-text strong { display: block; color: var(--ink); font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.guideline-text p { margin: 2px 0 0; color: #3d322e; font-size: 16px; line-height: 24.8px; overflow-wrap: anywhere; }
+.guideline-icon { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border-radius: 18px; color: var(--ink); }
+.guideline-icon:hover { background: #f3e7e1; }
+.guideline-icon.is-danger { color: #c2281b; }
+.guideline-icon svg { width: 17px; height: 17px; }
+.guidelines-add { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border: 2px dashed #ead3c9; border-radius: 18px; color: #5a4038; font-size: 16px; font-weight: 700; line-height: 24.8px; text-decoration: none; }
+.guidelines-add:hover { background: #fffaf7; }
+.guidelines-add svg { width: 18px; height: 18px; }
+.guidelines-empty { margin: 4px 0; color: #6a5a54; font-size: 15px; }
+
+/* Editing or adding a rule in place (Figma "Edit Community Guidelines"). */
+.guideline-row.is-editing { display: block; padding: 16px 18px; border: 2px solid var(--ink); background: #fff; }
+.guideline-form { display: grid; gap: 10px; }
+.guideline-form-top { display: flex; align-items: center; gap: 14px; }
+.guideline-form input[type=text],
+.guideline-form textarea { width: 100%; box-sizing: border-box; padding: 12px 16px; border: 2px solid #ead3c9; border-radius: 16px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; line-height: 24.8px; }
+.guideline-form input[type=text] { min-height: 52px; font-weight: 700; }
+.guideline-form textarea { min-height: 78px; resize: vertical; }
+.guideline-form input::placeholder,
+.guideline-form textarea::placeholder { color: #a59a95; font-weight: 400; }
+.guideline-form input:focus,
+.guideline-form textarea:focus { border-color: #d9b9ab; outline: none; }
+.guideline-form [aria-invalid=true] { border-color: #c2281b; }
+.guideline-form .field-error { margin: -4px 0 0; }
+.guideline-form-actions { display: flex; gap: 10px; }
+.guideline-form-actions .btn { min-height: 42px; padding: 0 18px; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.guideline-form-actions .btn-outline { border: 0; background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); }
+.guideline-form-actions .btn-dark { border: 0; background: #1c1a1a; box-shadow: 0 4px 0 #f4a27a; color: #fff; }
+.guideline-form-actions .btn:disabled { background: #efe9e6; box-shadow: none; color: #a59a95; cursor: not-allowed; }
+
+/* Remove popup (Figma "Remove Community Guidelines"): 460px, 150px from the top. */
+.guidelines-confirm { align-self: start; gap: 12px; width: min(100%, 460px); margin-top: clamp(0px, calc((100vh - 340px) / 2 - 16px), 134px); padding: 30px; border-radius: 28px; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.guidelines-confirm .modal-icon { width: 60px; height: 60px; background: #ffe4e0; color: #b42318; font-family: var(--font-display); font-size: 30px; font-weight: 600; }
+.guidelines-confirm h2 { font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+.guidelines-confirm p { color: #6a5a54; font-size: 16px; line-height: 24.8px; }
+.guidelines-confirm .modal-actions { margin-top: 0; padding-top: 4px; }
+.guidelines-confirm .modal-actions .btn { min-height: 50px; padding: 0 26px; border: 0; font-size: 16px; font-weight: 700; }
+.guidelines-confirm .btn-outline { background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); }
+.guidelines-confirm .btn-danger { background: #b42318; box-shadow: 0 4px 0 #7e180f; color: #fff; }
+.guidelines-confirm .btn:focus:not(:focus-visible) { outline: none; }
+
+/* The rules for everyone, over the Forum (Figma "Community Guidelines (User)"): 560px, 150px from the top. */
+.guidelines-popup { display: grid; gap: 16px; align-self: start; width: min(100%, 560px); margin-top: clamp(0px, calc((100vh - 680px) / 2 - 16px), 134px); max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; padding: 30px; border-radius: 28px; background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.guidelines-popup h2 { margin: 0; font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+.guidelines-popup-updated { margin: 0; color: #6a5a54; font-size: 14px; line-height: 21.7px; }
+.guidelines-popup-head { display: grid; }
+.guidelines-popup-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.guidelines-popup-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 16px; background: #faf5f2; }
+.guidelines-popup-list .guideline-number { width: 26px; height: 26px; font-size: 13px; }
+.guidelines-popup-list strong { display: block; color: var(--ink); font-size: 15px; line-height: 23.25px; }
+.guidelines-popup-list p { margin: 0; color: #3d322e; font-size: 14px; line-height: 21.7px; }
+.guidelines-popup-done { justify-content: center; min-height: 50px; padding: 0 26px; border: 0; background: #1c1a1a; box-shadow: 0 4px 0 #f4a27a; color: #fff; font-size: 16px; font-weight: 700; }
+.guidelines-popup-done:focus:not(:focus-visible) { outline: none; }
+
+@media (max-width: 640px) {
+  .guidelines-title { font-size: 34px; line-height: 1.1; }
+  .guidelines-card { padding: 18px; }
+  .guideline-row { padding: 14px; gap: 10px; }
+  .guidelines-popup, .guidelines-confirm { padding: 22px; }
+}

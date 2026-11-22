@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Comment, Post
+from .models import Comment, GuidelineRule, Post
 
 
 @admin.register(Post)
@@ -17,3 +17,11 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ("removed_at",)
     search_fields = ("body", "author__username", "post__title")
     readonly_fields = ("created_at",)
+
+
+@admin.register(GuidelineRule)
+class GuidelineRuleAdmin(admin.ModelAdmin):
+    list_display = ("title", "position", "updated_at", "removed_at")
+    list_filter = ("removed_at",)
+    search_fields = ("title", "text")
+    readonly_fields = ("updated_at",)

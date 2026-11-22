@@ -1,0 +1,19 @@
+{# #105: a rule turned into a form in place, as in Kat's Figma "Edit Community Guidelines" and "Add Community Guidelines". #}
+<li class="guideline-row is-editing">
+  <form method="post" action="{{ action }}" class="guideline-form" data-guideline-form novalidate>
+    {% csrf_token %}
+    <div class="guideline-form-top">
+      <span class="guideline-number" aria-hidden="true">{{ number }}</span>
+      <label class="visually-hidden" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+      <input type="text" name="{{ form.title.html_name }}" id="{{ form.title.id_for_label }}" value="{{ form.title.value|default:'' }}" placeholder="Rule title" maxlength="{{ form.fields.title.max_length }}" autocomplete="off" autofocus{% if form.title.errors %} aria-invalid="true" aria-describedby="rule-title-error"{% endif %}>
+    </div>
+    {% for error in form.title.errors %}<p class="field-error" id="rule-title-error">{{ error }}</p>{% endfor %}
+    <label class="visually-hidden" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+    <textarea name="{{ form.text.html_name }}" id="{{ form.text.id_for_label }}" rows="2" placeholder="What should users do or avoid?" maxlength="{{ form.fields.text.max_length }}"{% if form.text.errors %} aria-invalid="true" aria-describedby="rule-text-error"{% endif %}>{{ form.text.value|default:'' }}</textarea>
+    {% for error in form.text.errors %}<p class="field-error" id="rule-text-error">{{ error }}</p>{% endfor %}
+    <div class="guideline-form-actions">
+      <a class="btn btn-outline btn-small" href="{% url 'forum:guidelines' %}">Cancel</a>
+      <button type="submit" class="btn btn-dark btn-small" data-guideline-save>Save</button>
+    </div>
+  </form>
+</li>
