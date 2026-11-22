@@ -57,18 +57,6 @@
 
   </div>
 
-  <!-- Feedback messages -->
-  {% if messages %}
-    {% for message in messages %}
-      <div
-        class="staff-types-alert {% if message.tags == 'error' %}is-error{% endif %}"
-        role="status"
-      >
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-
   <!-- Main two-column layout -->
   <div class="staff-types-grid">
 
