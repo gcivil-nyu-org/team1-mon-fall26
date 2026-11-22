@@ -86,3 +86,43 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author} on {self.post}"
+
+
+RULE_TITLE_LENGTH = 80
+RULE_TEXT_LENGTH = 300
+
+
+class GuidelineQuerySet(models.QuerySet):
+    def shown(self):
+        """The rules everyone sees, in order. Removed ones stay in the
+        database so "Last updated" still knows when one was removed."""
+        return self.filter(removed_at__isnull=True).order_by("position", "pk")
+
+
+class GuidelineRule(models.Model):
+    """#105 Manage Community Guidelines: one numbered rule of the forum's
+    community guidelines (Kat's Figma "Manage Community Guidelines"). Admins
+    add, edit and remove rules; everyone reads them from the Forum."""
+
+    title = models.CharField(max_length=RULE_TITLE_LENGTH)
+    text = models.CharField(max_length=RULE_TEXT_LENGTH)
+    position = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = GuidelineQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self):
+        return self.title
+
+
+def guidelines_updated_at():
+    """When the guidelines last changed: a rule saved, added or removed."""
+    latest = GuidelineRule.objects.aggregate(
+        saved=models.Max("updated_at"), removed=models.Max("removed_at")
+    )
+    times = [t for t in latest.values() if t is not None]
+    return max(times) if times else None

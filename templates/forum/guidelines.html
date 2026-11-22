@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Community guidelines · PawPal admin{% endblock %}
+
+{% block main_class %}page page-forum page-guidelines{% endblock %}
+
+{% block content %}
+  {# #105: Kat's Figma "Manage Community Guidelines". #}
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=19">
+
+  <a class="back-link" href="{% url 'forum:list' %}">{% include "partials/chevron_left_icon.html" %} Forum</a>
+  <h1 class="guidelines-title">Community guidelines</h1>
+
+  {% if done %}
+    {# Figma "Edit Community Guidelines Confirmation" and "Remove Community Guidelines Confirmation". #}
+    <div class="alert alert-success guidelines-done" role="status">
+      <span class="alert-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
+      <span>{{ done }}</span>
+    </div>
+  {% endif %}
+
+  <section class="guidelines-card" aria-labelledby="guidelines-note">
+    <div class="guidelines-head">
+      <p id="guidelines-note">Everyone sees these in the Forum. Only admins can change them.</p>
+      {% if updated_at %}<p>Last updated {{ updated_at|date:"M j, Y" }}</p>{% endif %}
+    </div>
+
+    {% if rules or adding %}
+      <ol class="guidelines-list">
+        {% for rule in rules %}
+          {% if editing and rule.pk == editing.pk %}
+            {% url 'forum:edit_rule' rule.pk as action %}
+            {% include "forum/partials/guideline_form.html" with number=forloop.counter %}
+          {% else %}
+            <li class="guideline-row">
+              <span class="guideline-number" aria-hidden="true">{{ forloop.counter }}</span>
+              <div class="guideline-text">
+                <strong>{{ rule.title }}</strong>
+                <p>{{ rule.text }}</p>
+              </div>
+              <a class="guideline-icon" href="?edit={{ rule.pk }}" aria-label="Edit “{{ rule.title }}”" title="Edit">{% include "partials/pencil_icon.html" %}</a>
+              <a class="guideline-icon is-danger" href="?remove={{ rule.pk }}" aria-label="Remove “{{ rule.title }}”" title="Remove">{% include "forum/partials/trash_icon.html" %}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        {% if adding %}
+          {% url 'forum:add_rule' as action %}
+          {% include "forum/partials/guideline_form.html" with number=rules|length|add:1 %}
+        {% endif %}
+      </ol>
+    {% else %}
+      <p class="guidelines-empty">No rules yet. Add the first one so everyone knows what’s OK in the forum.</p>
+    {% endif %}
+
+    {% if not editing and not adding %}
+      {# Figma: "+ Add rule" under the last rule. #}
+      <a class="guidelines-add" href="?add=1">{% include "forum/partials/plus_icon.html" %} Add rule</a>
+    {% endif %}
+  </section>
+
+  {% if confirm %}
+    {# Figma "Remove Community Guidelines": confirm first. #}
+    <div class="modal-backdrop">
+      <form method="post" action="{% url 'forum:remove_rule' confirm.pk %}" class="modal-card guidelines-confirm" role="dialog" aria-modal="true" aria-labelledby="remove-rule-title" aria-describedby="remove-rule-text">
+        {% csrf_token %}
+        <span class="modal-icon" aria-hidden="true">!</span>
+        <h2 id="remove-rule-title">Remove this rule?</h2>
+        <p id="remove-rule-text" class="muted">Users won’t see “{{ confirm.title }}” in the guidelines anymore.</p>
+        <div class="modal-actions">
+          <a class="btn btn-outline" href="{% url 'forum:guidelines' %}">Cancel</a>
+          <button type="submit" class="btn btn-danger">Remove</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  <script src="{% static 'js/guidelines.js' %}?v=1"></script>
+{% endblock %}

@@ -1,6 +1,15 @@
 from django import forms
 
-from .models import BODY_LENGTH, COMMENT_LENGTH, TITLE_LENGTH, Comment, Post
+from .models import (
+    BODY_LENGTH,
+    COMMENT_LENGTH,
+    RULE_TEXT_LENGTH,
+    RULE_TITLE_LENGTH,
+    TITLE_LENGTH,
+    Comment,
+    GuidelineRule,
+    Post,
+)
 
 
 class PostForm(forms.ModelForm):
@@ -72,3 +81,37 @@ class CommentForm(forms.ModelForm):
 
     def clean_body(self):
         return self.cleaned_data["body"].strip()
+
+
+class GuidelineRuleForm(forms.ModelForm):
+    """#105: one community guideline, edited in place on the admin page
+    (Kat's Figma "Edit Community Guidelines" and "Add Community Guidelines")."""
+
+    class Meta:
+        model = GuidelineRule
+        fields = ["title", "text"]
+        labels = {"title": "Rule title", "text": "What should users do or avoid?"}
+        widgets = {
+            "title": forms.TextInput(
+                attrs={"placeholder": "Rule title", "autocomplete": "off"}
+            ),
+            "text": forms.Textarea(
+                attrs={"rows": 2, "placeholder": "What should users do or avoid?"}
+            ),
+        }
+        error_messages = {
+            "title": {
+                "required": "Add a title.",
+                "max_length": f"Keep the title under {RULE_TITLE_LENGTH} characters.",
+            },
+            "text": {
+                "required": "Say what users should do or avoid.",
+                "max_length": f"Keep it under {RULE_TEXT_LENGTH} characters.",
+            },
+        }
+
+    def clean_title(self):
+        return self.cleaned_data["title"].strip()
+
+    def clean_text(self):
+        return self.cleaned_data["text"].strip()
