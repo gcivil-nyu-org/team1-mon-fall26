@@ -66,9 +66,11 @@ class AccessTests(StaffTestData):
             self.assertEqual(self.client.get(LIST_URL).status_code, 403)
             self.assertEqual(self.client.get(detail_url(self.owner)).status_code, 403)
 
-    def test_admins_start_on_users_and_see_it_in_the_menu(self):
+    def test_admins_start_on_reports_and_see_users_in_the_menu(self):
         response = self.client.get(reverse("home"), follow=True)
-        self.assertRedirects(response, LIST_URL)
+        self.assertRedirects(response, reverse("reports:admin_list"))
+        self.assertContains(response, f'href="{LIST_URL}" class="">Users</a>')
+        response = self.client.get(LIST_URL)
         self.assertContains(response, f'href="{LIST_URL}" class="active">Users</a>')
         self.assertContains(response, '<span class="account-role">Admin</span>')
         self.assertNotContains(response, "Your neighborhood")
