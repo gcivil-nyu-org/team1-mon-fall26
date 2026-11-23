@@ -103,7 +103,7 @@ class ManageTypesTests(TestCase):
 
         self.assertRedirects(
             response,
-            self.manage_url + "?tab=pets&selected=" + str(new_type.pk),
+            self.manage_url + f"?tab=pets&selected={new_type.pk}&done=added",
         )
 
         self.assertTrue(PetType.objects.filter(name=unique_name).exists())
@@ -375,3 +375,94 @@ class ManageTypesTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PetType.objects.count(), original_count)
+
+
+class TypesFigmaTests(TestCase):
+    """#106: the page follows Kat's Figma "Admin (Pet & Service Types)"."""
+
+    def setUp(self):
+        self.admin = User.objects.create_user("ada", is_staff=True)
+        self.client.force_login(self.admin)
+        self.url = reverse("staff:manage_types")
+        for name in ("Dog", "Cat", "Rabbit", "Bird", "Hamster"):
+            PetType.objects.get_or_create(name=name)
+        for name in (
+            "Dog walking",
+            "Drop-in visits",
+            "Overnight sitting",
+            "Feeding & medication",
+            "Grooming",
+        ):
+            ServiceType.objects.get_or_create(name=name)
+
+    def test_pet_types_have_their_figma_colors(self):
+        from staff.types_display import COLORS, pet_color
+
+        colors = {t.name: pet_color(t) for t in PetType.objects.all()}
+        self.assertEqual(colors["Dog"], "peach")
+        self.assertEqual(colors["Cat"], "green")
+        self.assertEqual(colors["Rabbit"], "pink")
+        self.assertEqual(colors["Bird"], "yellow")
+        # Every other type gets a Figma color too, the same one every time.
+        self.assertIn(colors["Hamster"], COLORS)
+        self.assertEqual(colors["Hamster"], pet_color(PetType(name=" hamster ")))
+        response = self.client.get(self.url)
+        self.assertContains(response, "types-avatar color-peach")
+        self.assertNotContains(response, "color-None")
+
+    def test_service_types_have_their_figma_icons(self):
+        from staff.types_display import COLORS, service_color, service_kind
+
+        kinds = {t.name: service_kind(t) for t in ServiceType.objects.all()}
+        self.assertEqual(kinds["Dog walking"], "walk")
+        self.assertEqual(kinds["Drop-in visits"], "home")
+        self.assertEqual(kinds["Overnight sitting"], "night")
+        self.assertEqual(kinds["Feeding & medication"], "feeding")
+        self.assertEqual(kinds["Grooming"], "other")
+        colors = {
+            t.name: service_color(t, kinds[t.name]) for t in ServiceType.objects.all()
+        }
+        self.assertEqual(colors["Dog walking"], "peach")
+        self.assertEqual(colors["Drop-in visits"], "blue")
+        self.assertEqual(colors["Overnight sitting"], "purple")
+        self.assertEqual(colors["Feeding & medication"], "mint")
+        self.assertIn(colors["Grooming"], COLORS)
+        response = self.client.get(self.url, {"tab": "services"})
+        self.assertContains(response, "types-avatar color-purple")
+        self.assertNotContains(response, "🐾")
+
+    def test_adding_shows_a_banner_and_a_new_pill(self):
+        response = self.client.post(
+            reverse("staff:add_type"),
+            {"tab": "pets", "name": "Test Newt 106"},
+            follow=True,
+        )
+        self.assertContains(
+            response, "Test Newt 106 added. It now shows everywhere pet types are used."
+        )
+        self.assertContains(response, 'class="types-new"', count=1)
+        self.assertEqual(response.context["selected"].name, "Test Newt 106")
+
+    def test_saving_shows_a_banner(self):
+        item = ServiceType.objects.get(name="Overnight sitting")
+        response = self.client.post(
+            reverse("staff:rename_type"),
+            {"tab": "services", "type_id": item.pk, "name": "Overnight pet sitting"},
+            follow=True,
+        )
+        self.assertContains(
+            response,
+            "Changes saved. It now shows everywhere this service type is used.",
+        )
+        self.assertNotContains(response, 'class="types-new"')
+
+    def test_no_banner_without_a_change(self):
+        response = self.client.get(self.url, {"done": "nope"})
+        self.assertEqual(response.context["done"], "")
+        self.assertNotContains(response, "types-banner")
+
+    def test_add_popup_matches_figma(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Shows up everywhere pet types are used.")
+        self.assertContains(response, 'id="staff-submit-add" disabled>Add</button>')
+        self.assertNotContains(response, "staff-close-add-modal")

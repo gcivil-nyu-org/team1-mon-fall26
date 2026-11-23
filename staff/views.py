@@ -34,6 +34,7 @@ from .accounts import (
     search,
 )
 from .forms import RestrictForm
+from .types_display import pet_color, service_color, service_kind
 
 
 def staff_required(view):
@@ -237,6 +238,10 @@ def delete_user(request, pk):
     return redirect(f"{reverse('staff:user_list')}?deleted={account.pk}")
 
 
+# The banners after adding or renaming a type (#106, Kat's Figma).
+TYPES_DONE = ("added", "saved")
+
+
 @staff_required
 def manage_types(request):
     """Display pet and service types with their usage counts."""
@@ -270,13 +275,28 @@ def manage_types(request):
     if selected is None and items:
         selected = items[0]
 
+    # Each type's round avatar: a color for every type, and an icon for
+    # services.
+    for item in items:
+        if active_tab == "pets":
+            item.color = pet_color(item)
+        else:
+            item.kind = service_kind(item)
+            item.color = service_color(item, item.kind)
+
+    # After adding or saving, Figma shows a green banner, and a "New" pill on
+    # the type that was just added (?done=added or ?done=saved).
+    done = request.GET.get("done")
+    if selected is None or done not in TYPES_DONE:
+        done = ""
+
     context = {
         "active_tab": active_tab,
-        "pet_types": pet_types,
-        "service_types": service_types,
+        "items": items,
         "pet_type_count": pet_types.count(),
         "service_type_count": service_types.count(),
         "selected": selected,
+        "done": done,
     }
 
     return render(request, "staff/manage_types.html", context)
@@ -328,8 +348,8 @@ def rename_type(request):
         messages.error(request, "That name already exists.")
         return redirect(redirect_url)
 
-    messages.success(request, "Changes saved successfully.")
-    return redirect(redirect_url)
+    # Figma "Edit Service Type Confirmation": a green banner on the page.
+    return redirect(f"{redirect_url}&done=saved")
 
 
 @require_POST
@@ -385,12 +405,9 @@ def add_type(request):
         messages.error(request, "That name already exists.")
         return redirect(redirect_url)
 
-    messages.success(
-        request,
-        f'"{item.name}" added successfully!',
-    )
-
-    return redirect(f"{redirect_url}&selected={item.pk}")
+    # Figma "Add Pet Type Confirmation": a green banner, and the new type is
+    # selected with a "New" pill.
+    return redirect(f"{redirect_url}&selected={item.pk}&done=added")
 
 
 @require_POST

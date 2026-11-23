@@ -1,0 +1,112 @@
+/* #106 Pet & service types, laid out like Kat's Figma "Admin (Pet & Service
+   Types)": 1176px of content, the type list (464px) next to the selected
+   type, a popup to add one. */
+
+/* max-width and padding reset the old rules, in case a browser still has the
+   previous staff.css cached. */
+.staff-types-page { display: flex; flex-direction: column; gap: 20px; max-width: none; margin: 8px 0 0; padding: 0; }
+
+/* ---------- Heading ---------- */
+.types-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.types-heading { display: flex; flex-direction: column; gap: 8px; }
+.types-back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 24px; color: #5c3d2e; font-size: 15px; font-weight: 700; line-height: 23.25px; text-decoration: none; }
+.types-back:hover { color: var(--ink); }
+.types-title { min-height: 49px; margin: 0; font-size: 46px; line-height: 48.3px; letter-spacing: -0.23px; }
+
+/* ---------- Buttons (Figma: 50px pills, 16px bold) ---------- */
+.types-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 26px; border: 0; border-radius: 999px; font: inherit; font-size: 16px; font-weight: 700; line-height: 24.8px; white-space: nowrap; cursor: pointer; }
+.types-btn[hidden] { display: none; }
+.types-btn:focus:not(:focus-visible) { outline: none; }
+.types-btn-dark { background: #1c1a1a; box-shadow: 0 4px 0 #f4a27a; color: #fff; }
+.types-btn-dark:hover { background: #3a302d; }
+.types-btn-dark:disabled { background: #efe9e6; box-shadow: none; color: #8a6f64; cursor: default; }
+.types-btn-outline { background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); }
+.types-btn-outline:hover { background: #faf5f2; }
+
+/* ---------- Pet types / Service types ---------- */
+.types-tabs { display: flex; gap: 4px; align-self: flex-start; padding: 5px; border-radius: 999px; background: #f3e7e1; }
+.types-tab { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 18px; border-radius: 999px; color: #6a5a54; font-size: 15px; font-weight: 700; line-height: 23.25px; text-decoration: none; }
+.types-tab:hover { color: var(--ink); }
+.types-tab.is-active { background: #fff; box-shadow: 0 2px 0 #ead3c9; color: var(--ink); }
+.types-tab-count { display: inline-grid; place-items: center; min-width: 22px; height: 20px; box-sizing: border-box; padding: 0 6px; border-radius: 999px; background: #fff; color: #5a4038; font-size: 12px; font-weight: 800; line-height: 1; }
+.types-tab.is-active .types-tab-count { background: #f8e6df; }
+
+/* ---------- Green banner after adding or saving ---------- */
+.types-banner { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 14px; border-radius: 16px; background: #cdefdc; color: #14532d; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.types-banner-check { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: #fff; }
+
+/* ---------- Cards ---------- */
+.types-layout { display: grid; grid-template-columns: 464px minmax(0, 1fr); gap: 22px; align-items: start; }
+.types-card { box-sizing: border-box; border-radius: 28px; background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+
+/* The list: 70px rows; the selected one is white with a 2px dark border. */
+.types-list { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
+.types-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 20px; background: #faf5f2; color: var(--ink); text-decoration: none; }
+.types-row:hover { box-shadow: inset 0 0 0 2px #ead3c9; }
+.types-row.is-selected { border: 2px solid #1c1a1a; background: #fff; box-shadow: none; }
+.types-row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.types-row-text strong { min-height: 25px; overflow: hidden; font-size: 16px; line-height: 24.8px; text-overflow: ellipsis; white-space: nowrap; }
+.types-row-text span { min-height: 22px; color: #6a5a54; font-size: 14px; line-height: 21.7px; }
+.types-empty { margin: 0; color: #6a5a54; }
+
+/* "• New" on the type that was just added. */
+.types-new { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 29px; box-sizing: border-box; padding: 4px 12px; border-radius: 999px; background: #cdefdc; color: #14532d; font-size: 13px; font-weight: 700; line-height: 20.15px; }
+.types-new-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* Avatars: 46px in the list, 64px in the heading. Every type gets one of
+   Figma's six colors: Dog peach, Cat green, Rabbit pink, Bird yellow, and the
+   service icons their own; other types get one picked from their name. */
+.types-avatar { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 50%; font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1; }
+.types-avatar svg { width: 22px; height: 22px; }
+.color-peach { background: #ffd3b0; color: #7a3410; }
+.color-green { background: #bdebd3; color: #14532d; }
+.color-pink { background: #ffc8d9; color: #7a1f45; }
+.color-yellow { background: #ffe58a; color: #6b4e00; }
+.color-blue { background: #dcebfa; color: #1f4e79; }
+.color-purple { background: #efe8fa; color: #4c3480; }
+.color-mint { background: #cdefdc; color: #14532d; }
+
+/* The selected type. */
+.types-detail { display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: 30px; }
+.types-detail-heading { display: flex; align-items: center; gap: 16px; }
+.types-detail-heading .types-avatar { width: 64px; height: 64px; font-size: 24px; }
+.types-detail-heading .types-avatar svg { width: 26px; height: 26px; }
+.types-detail h2 { margin: 0; font-size: 30px; line-height: 33px; letter-spacing: -0.15px; overflow-wrap: anywhere; }
+.types-detail-heading p { margin: 0; color: #6a5a54; font-size: 14px; line-height: 21.7px; }
+.types-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
+.types-stats div { padding: 12px 14px; border-radius: 18px; background: #faf5f2; }
+.types-stats dt { color: #8a6f64; font-size: 12px; font-weight: 700; line-height: 18.6px; letter-spacing: 0.72px; text-transform: uppercase; }
+.types-stats dd { margin: 0; padding-top: 2px; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.types-divider { width: 100%; height: 1.5px; margin: 0; border: 0; background: #f0ddd5; }
+
+/* ---------- Name field (detail and popup) ---------- */
+.types-form { display: flex; flex-direction: column; gap: 18px; }
+.types-field { display: flex; flex-direction: column; gap: 8px; }
+.types-field label { min-height: 25px; font-size: 16px; font-weight: 700; line-height: 24.8px; }
+.types-required { color: #c2281b; }
+.types-field input { width: 100%; min-height: 52px; box-sizing: border-box; padding: 12px 16px; border: 2px solid #ead3c9; border-radius: 16px; background: #fffcfa; color: var(--ink); font: inherit; font-size: 16px; line-height: 24.8px; }
+.types-field input::placeholder { color: #8a7b75; }
+.types-field input:focus { border-color: #d9b9ab; outline: none; }
+/* Figma pulls the help text 6px up under the field. */
+.types-help { margin: -6px 0 0; color: #6a5a54; font-size: 14px; line-height: 21.7px; }
+.types-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Add popup (Figma "Add Pet Type") ---------- */
+.types-modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: start center; padding: 150px 16px 16px; background: rgb(28 26 26 / 0.45); overflow-y: auto; }
+.types-modal-backdrop[hidden] { display: none; }
+.types-modal { display: flex; flex-direction: column; gap: 16px; width: min(100%, 500px); box-sizing: border-box; padding: 30px; border-radius: 28px; background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.types-modal h2 { min-height: 44px; margin: 0; font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+.types-modal .types-form { gap: 16px; }
+.types-actions-equal { gap: 10px; }
+.types-actions-equal .types-btn { flex: 1; }
+
+@media (max-width: 900px) {
+  .types-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .types-title { font-size: 34px; line-height: 1.1; }
+  .types-modal-backdrop { padding-top: 16px; }
+  .types-modal { padding: 22px; }
+  .types-stats { grid-template-columns: 1fr; }
+}
