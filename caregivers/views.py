@@ -99,6 +99,16 @@ def save_selected_services(caregiver, selected):
     ).update(is_active=False)
 
 
+def use_profile_name(user, form):
+    """The account takes the name on the caregiver profile, so avatar
+    initials in the menu, forum and messages match it (#321)."""
+    first = form.cleaned_data["first_name"].strip()
+    last = form.cleaned_data["last_name"].strip()
+    if (user.first_name, user.last_name) != (first, last):
+        user.first_name, user.last_name = first, last
+        user.save(update_fields=["first_name", "last_name"])
+
+
 @login_required
 def create_caregiver_profile(request):
     # Each account has at most one caregiver profile.
@@ -114,6 +124,7 @@ def create_caregiver_profile(request):
             caregiver.user = request.user
             caregiver.save()
             form.save_m2m()
+            use_profile_name(request.user, form)
             if form.geocoding_unavailable:
                 messages.warning(
                     request,
@@ -147,6 +158,7 @@ def edit_caregiver_profile(request, pk):
 
         if form.is_valid():
             caregiver = form.save()
+            use_profile_name(request.user, form)
             if form.geocoding_unavailable:
                 messages.warning(
                     request,

@@ -4143,3 +4143,32 @@ img.pet-initial-large {
   background: #fff;
   color: var(--muted);
 }
+
+
+/* Long text with no spaces (a pasted link, a typo) wraps inside its card
+   instead of widening the page or being cut off (#336). */
+.care-notes,
+.care-facts dd,
+.co-notes,
+.co-note p,
+.co-fact strong,
+.co-item-copy strong,
+.service-page-description,
+.service-management-description,
+.caregiver-intro,
+.caregiver-header-info h1,
+.caregiver-booking-card h2,
+.caregiver-booking-card p,
+.caregiver-booking-card a,
+.result-title h3 {
+  overflow-wrap: anywhere;
+}
+
+.caregiver-public-main,
+.caregiver-booking-card,
+.caregiver-header-info,
+.care-cards > *,
+.co-layout > *,
+.co-panel {
+  min-width: 0;
+}

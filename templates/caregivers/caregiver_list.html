@@ -159,10 +159,13 @@
                 {% endif %}
                 <div class="result-title">
                   <h3>{{ caregiver.name }}</h3>
-                  <p class="result-place">
-                    {% include "partials/pin_icon.html" %}
-                    {{ caregiver.neighborhood|default:caregiver.service_area }}{% if origin and caregiver.distance is not None %} · {{ caregiver.distance|floatformat:1 }} mi away{% endif %}
-                  </p>
+                  {# No pin when there's no place to show (#305). #}
+                  {% if caregiver.neighborhood or caregiver.service_area or origin and caregiver.distance is not None %}
+                    <p class="result-place">
+                      {% include "partials/pin_icon.html" %}
+                      {{ caregiver.neighborhood|default:caregiver.service_area }}{% if origin and caregiver.distance is not None %}{% if caregiver.neighborhood or caregiver.service_area %} · {% endif %}{{ caregiver.distance|floatformat:1 }} mi away{% endif %}
+                    </p>
+                  {% endif %}
                   {% if not caregiver.accepting_new_bookings %}<span class="availability-badge">Not taking new bookings</span>{% endif %}
                 </div>
               </div>

@@ -73,6 +73,9 @@ def _show(request, conversations, selected):
                 and selected.caregiver.accepting_new_bookings
             ),
             "placeholder": f"Message {other['first_name']}…",
+            # Only an owner who wrote first is "asking questions" (#337).
+            "owner_started": bool(history)
+            and history[0].sender_id == selected.owner_id,
         },
     )
 
