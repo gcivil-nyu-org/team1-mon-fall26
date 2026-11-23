@@ -4,10 +4,10 @@
 
 /* Category colors, from the Figma pins, list icons and badges. */
 .cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; --badge-bg: #cdefdc; --badge-ink: #14532d; }
-.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #6b4e00; }
 .cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
 .cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
-.cat-outdoor_dining { --cat-bg: #cfe2fb; --cat-ink: #1f4e79; }
+.cat-outdoor_dining { --cat-bg: #d8f0c8; --cat-ink: #2f5a12; }
 .cat-dog_fountain { --cat-bg: #cfe6fa; --cat-ink: #1f4e79; --badge-bg: #cfe6fa; --badge-ink: #1f4e79; }
 .cat-off_leash { --cat-bg: #e6defa; --cat-ink: #4c3480; --badge-bg: #e6defa; --badge-ink: #4c3480; }
 

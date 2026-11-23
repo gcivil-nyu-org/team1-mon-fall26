@@ -4,10 +4,11 @@
   {# A two-tier pine tree with a trunk, as in the Figma list and pins. #}
   <path d="M12 3L7.5 9.5H10L5.5 16h13L14 9.5h2.5z"/><path d="M12 16v5"/>
 {% elif category == "cafe" %}
-  <path d="M4 9h12v4.5A5.5 5.5 0 0 1 10.5 19h-1A5.5 5.5 0 0 1 4 13.5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c0 1 1 1.5 1 2.5M12 3.5c0 1 1 1.5 1 2.5"/>
+  {# A cup with two straight steam lines, as in the Figma "Bark & Brew Café" pin. #}
+  <g transform="scale(0.923)" stroke-width="2.275"><path d="M5.42 9.75h11.91v5.42a5.42 5.42 0 0 1-5.41 5.41h-1.09a5.42 5.42 0 0 1-5.41-5.41z"/><path d="M17.33 10.83h1.63a2.71 2.71 0 0 1 0 5.42h-1.63"/><path d="M8.67 3.79V6.5M12.46 3.79V6.5"/></g>
 {% elif category == "outdoor_dining" %}
-  {# A table under a patio umbrella. #}
-  <path d="M3.5 10.5a8.5 6 0 0 1 17 0z"/><path d="M12 10.5V20"/><path d="M7.5 20h9"/><path d="M8 15.5h8"/>
+  {# A picnic table, from Kat's "outdoor-dining-pin.svg". #}
+  <path d="M16 7l2 9m-10-9l-2 9m-1-9h14m2 5h-18" stroke-width="2.1"/>
 {% elif category == "off_leash" %}
   {# A filled paw print, as in the Figma "Places - Off-leash" design. #}
   <g fill="currentColor" stroke="none"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.5" cy="5.8" r="2.1"/><circle cx="14.5" cy="5.8" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.5c-3 0-5.5 3-5.5 5.4 0 1.6 1.2 2.4 2.6 2.4 1.1 0 1.9-.5 2.9-.5s1.8.5 2.9.5c1.4 0 2.6-.8 2.6-2.4 0-2.4-2.5-5.4-5.5-5.4z"/></g>
@@ -15,8 +16,10 @@
   {# A water drop with a shine, as in the Figma "Places - Fountains" design. #}
   <g stroke-width="2.1"><path d="M12 3.5c-3 3.6-5.5 6.8-5.5 9.8a5.5 5.5 0 0 0 11 0c0-3-2.5-6.2-5.5-9.8z"/><path d="M9.6 14.2a2.6 2.6 0 0 0 2.4 2.4"/></g>
 {% elif category == "pet_store" %}
-  <path d="M5.5 7.5h13l-1 12.5h-11z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/>
+  {# A shopping bag, as in the Figma "Slope Pet Supply" row. #}
+  <g transform="scale(1.091)" stroke-width="1.925"><path d="M4.58 7.33h12.84l-.92 11H5.5z"/><path d="M8.25 7.33V5.96a2.75 2.75 0 0 1 5.5 0v1.37"/></g>
 {% else %}
-  <path d="M5 2.5v6.5a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V2.5"/><path d="M7.5 2.5v19"/><path d="M19 15V2.5a4.5 4.5 0 0 0-4 4.5v6a2 2 0 0 0 2 2zm0 0v6.5"/>
+  {# Restaurants: a fork and knife, as in the Figma "Paws Patio" row. #}
+  <g transform="scale(1.091)" stroke-width="1.925"><path d="M6.42 2.75v16.5M4.58 2.75v4.58a1.83 1.83 0 0 0 3.67 0V2.75"/><path d="M14.67 19.25V2.75c-1.84 1.38-2.75 3.67-2.75 6.42h2.75"/></g>
 {% endif %}
 </svg>
