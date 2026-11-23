@@ -84,17 +84,23 @@ class AccessTests(StaffTestData):
 class ListTests(StaffTestData):
     def test_lists_every_account_with_type_and_status(self):
         response = self.client.get(LIST_URL)
-        self.assertEqual(response.context["page"].paginator.count, 4)
+        self.assertEqual(response.context["page"].paginator.count, 3)
         for text in (
             "Kat W",
             "Chloe Shih",
             "Caregiver",
             "Pet owner",
             "Email not confirmed",
-            "Deleted",
             "Active",
         ):
             self.assertContains(response, text)
+
+    def test_deleted_accounts_are_not_listed(self):
+        # Kat's "Delete account" design: a deleted account leaves the list.
+        response = self.client.get(LIST_URL)
+        self.assertNotIn(self.gone, list(response.context["page"]))
+        self.assertNotContains(response, f'href="{detail_url(self.gone)}"')
+        self.assertEqual(self.client.get(detail_url(self.gone)).status_code, 404)
 
     def test_names_and_avatars_match_messages(self):
         # Figma "Users": pet owners as "Sam L.", caregivers by full name, and
@@ -117,20 +123,20 @@ class ListTests(StaffTestData):
 
     def test_first_account_is_shown_next_to_the_list(self):
         response = self.client.get(LIST_URL)
-        self.assertEqual(response.context["selected"], self.gone)
+        self.assertEqual(response.context["selected"], self.new)
         self.assertContains(response, 'class="staff-row is-selected"')
-        self.assertContains(response, 'id="account-name">gone</h2>')
+        self.assertContains(response, 'id="account-name">Sam L.</h2>')
 
     def test_opening_an_account_keeps_the_list(self):
         response = self.client.get(detail_url(self.owner))
         self.assertEqual(response.context["selected"], self.owner)
-        self.assertEqual(len(response.context["page"]), 4)
+        self.assertEqual(len(response.context["page"]), 3)
         self.assertContains(response, 'aria-current="true"', count=1)
 
     def test_newest_first_and_each_row_opens_the_account(self):
         response = self.client.get(LIST_URL)
         accounts = list(response.context["page"])
-        self.assertEqual(accounts[0], self.gone)
+        self.assertEqual(accounts[0], self.new)
         self.assertEqual(accounts[-1], self.owner)
         for user in accounts:
             self.assertContains(response, f'href="{detail_url(user)}"')
@@ -143,7 +149,7 @@ class ListTests(StaffTestData):
         self.assertContains(first, "Page 1 of 2")
         self.assertContains(first, f'href="{LIST_URL}?page=2"')
         second = self.client.get(LIST_URL, {"page": 2})
-        self.assertEqual(len(second.context["page"]), 4)
+        self.assertEqual(len(second.context["page"]), 3)
         self.assertContains(second, f'href="{LIST_URL}?page=1"')
 
     def test_type_and_status_rules(self):
@@ -173,10 +179,10 @@ class DetailTests(StaffTestData):
             self.assertContains(response, text)
         self.assertNotContains(response, "@kat")
 
-    def test_deleted_account_has_no_email(self):
-        response = self.client.get(detail_url(self.gone))
-        self.assertContains(response, 'id="account-name">gone</h2>')
-        self.assertContains(response, "Deleted")
+    def test_account_without_email(self):
+        self.new.email = ""
+        self.new.save()
+        response = self.client.get(detail_url(self.new))
         self.assertContains(response, "<dd>—</dd>", html=True)
 
     def test_unknown_account_is_404(self):

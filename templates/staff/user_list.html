@@ -6,7 +6,7 @@
 {% block main_class %}page page-staff{% endblock %}
 
 {% block content %}
-  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=14">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=24">
 
   <div class="staff-users-heading">
     <h1 class="admin-title">Users</h1>
@@ -35,6 +35,14 @@
       </a>
     {% endfor %}
   </nav>
+
+  {% if deleted_account %}
+    {# #93: Kat's "Account deleted" design: the page moves on to the next account. #}
+    <p class="staff-banner staff-banner-restricted staff-banner-page" role="status">
+      <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      {{ deleted_account|display_name }}’s account was deleted.
+    </p>
+  {% endif %}
 
   <div class="staff-layout">
     {# Left: the accounts (#89). #}
@@ -102,10 +110,10 @@
 
           {% if done %}
             {# After restricting or reinstating, as in the Figma. #}
-            <p class="staff-banner staff-banner-{% if done == 'deleted' %}restricted{% else %}{{ done }}{% endif %}" role="status">
+            <p class="staff-banner staff-banner-{{ done }}" role="status">
               <span class="staff-banner-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
               {% with first=account.first_name|default:account.username %}
-                {% if done == "restricted" %}Account restricted. {{ first }} can’t use PawPal until you reinstate it.{% elif done == "deleted" %}Account deleted. {{ first }} can’t log in anymore.{% else %}Account reinstated. {{ first }} has full access again.{% endif %}
+                {% if done == "restricted" %}Account restricted. {{ first }} can’t use PawPal until you reinstate it.{% else %}Account reinstated. {{ first }} has full access again.{% endif %}
               {% endwith %}
             </p>
           {% endif %}
@@ -146,7 +154,7 @@
               {% if can_restrict %}
                 <form method="post" action="{% url 'staff:restore_forum' account.pk %}">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-danger btn-small">Restore posting</button>
+                  <button type="submit" class="btn btn-outline-danger">Restore posting</button>
                 </form>
               {% endif %}
             </div>
@@ -227,10 +235,21 @@
                   <button type="submit" class="btn btn-dark">Reinstate account</button>
                 </form>
               {% else %}
-                <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=restrict">Restrict account</a>
+                <a class="btn btn-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=restrict">Restrict account</a>
               {% endif %}
-              {# #93: delete the account, after a confirm popup. #}
-              <a class="btn btn-outline-danger" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=delete">Delete account</a>
+              {# #93: Kat's "More menu" design: Delete account sits under "…", then a confirm popup. #}
+              <details class="staff-actions-more">
+                <summary class="staff-more-button" title="More actions">
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                  <span class="visually-hidden">More actions</span>
+                </summary>
+                <div class="staff-more-menu">
+                  <a class="staff-more-delete" href="{% url 'staff:user_detail' account.pk %}?{% if keep %}{{ keep }}&amp;{% endif %}confirm=delete">
+                    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg>
+                    Delete account
+                  </a>
+                </div>
+              </details>
             {% endif %}
           </div>
         </article>
@@ -253,7 +272,7 @@
         </div>
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
-          <button type="submit" class="btn btn-danger" autofocus>Restrict</button>
+          <button type="submit" class="btn btn-danger">Restrict</button>
         </div>
       </form>
     </div>
@@ -262,11 +281,11 @@
   {% if confirm_delete %}
     {# #93: confirm before deleting an account. #}
     <div class="modal-backdrop">
-      <form method="post" action="{% url 'staff:delete_user' selected.pk %}" class="modal-card staff-confirm" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <form method="post" action="{% url 'staff:delete_user' selected.pk %}" class="modal-card staff-confirm staff-confirm-delete" role="alertdialog" aria-modal="true" aria-labelledby="delete-title">
         {% csrf_token %}
         <span class="modal-icon" aria-hidden="true">!</span>
         <h2 id="delete-title">Delete {{ selected.first_name|default:selected.username }}’s account?</h2>
-        <p class="muted">They’ll be logged out and can’t log in again. Their open bookings are cancelled, and their address and photo are removed. Past bookings and reviews stay. This can’t be undone.</p>
+        <p class="muted">This can’t be undone. Their profile, pets, bookings and posts will be removed.</p>
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
           <button type="submit" class="btn btn-danger">Delete account</button>
@@ -287,7 +306,7 @@
         {% endwith %}
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
-          <button type="submit" class="btn btn-danger" autofocus>Restrict</button>
+          <button type="submit" class="btn btn-danger">Restrict</button>
         </div>
       </form>
     </div>
@@ -306,7 +325,7 @@
         </div>
         <div class="modal-actions">
           <a class="btn btn-outline" href="{% url 'staff:user_detail' selected.pk %}{% if keep %}?{{ keep }}{% endif %}">Cancel</a>
-          <button type="submit" class="btn btn-danger" autofocus>Remove</button>
+          <button type="submit" class="btn btn-danger">Remove</button>
         </div>
       </form>
     </div>
@@ -314,4 +333,5 @@
 
   {# #90: search as you type. #}
   <script src="{% static 'js/staff_search.js' %}?v=1"></script>
+  <script src="{% static 'js/staff_more.js' %}?v=1"></script>
 {% endblock %}

@@ -140,13 +140,9 @@ class RestrictTests(StaffTestData):
         other_admin.save()
         for account in (self.admin, other_admin, self.gone):
             response = self.client.get(detail_url(account))
-            # Admin accounts aren't on the Users page at all.
-            self.assertNotContains(
-                response,
-                "Restrict account",
-                status_code=404 if account.is_staff else 200,
-            )
-            refused = 404 if account.is_staff else 403
+            # Admin and deleted accounts aren't on the Users page at all.
+            self.assertNotContains(response, "Restrict account", status_code=404)
+            refused = 404 if account.is_staff or not account.is_active else 403
             self.assertEqual(
                 self.client.post(restrict_url(account)).status_code, refused
             )
@@ -168,7 +164,8 @@ class RestrictedTabTests(StaffTestData):
         restrict(self.gone)  # deleted accounts don't count as restricted
         response = self.client.get(LIST_URL)
         tabs = {t["key"]: t["count"] for t in response.context["tabs"]}
-        self.assertEqual(tabs, {"all": 4, "restricted": 1})
+        # Deleted accounts aren't listed, so "all" doesn't count them either.
+        self.assertEqual(tabs, {"all": 3, "restricted": 1})
         self.assertContains(response, f'href="{LIST_URL}?tab=restricted"')
 
     def test_restricted_tab_lists_only_restricted_accounts(self):
@@ -194,10 +191,12 @@ class RestrictedTabTests(StaffTestData):
 
     def test_no_popup_for_accounts_that_cant_be_restricted(self):
         restrict(self.owner)
-        for account in (self.owner, self.gone):
-            response = self.client.get(detail_url(account), {"confirm": "restrict"})
-            self.assertFalse(response.context["confirm"])
-            self.assertNotContains(response, "modal-backdrop")
+        response = self.client.get(detail_url(self.owner), {"confirm": "restrict"})
+        self.assertFalse(response.context["confirm"])
+        self.assertNotContains(response, "modal-backdrop")
+        # Deleted accounts have no page.
+        response = self.client.get(detail_url(self.gone), {"confirm": "restrict"})
+        self.assertEqual(response.status_code, 404)
 
 
 class RestrictReasonTests(StaffTestData):

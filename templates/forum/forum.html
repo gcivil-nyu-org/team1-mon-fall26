@@ -3,11 +3,11 @@
 
 {% block title %}{% if selected %}{{ selected.title }} · {% endif %}Forum · PawPal{% endblock %}
 
-{% block main_class %}page page-forum{% endblock %}
+{% block main_class %}page page-forum{% if admin %} is-admin{% endif %}{% endblock %}
 
 {% block content %}
   {# Kat's 11/12 Figma "Browse Forum Posts": recent posts on the left, the selected post on the right. #}
-  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=19">
+  <link rel="stylesheet" href="{% static 'css/forum.css' %}?v=20">
 
   {% if admin %}
     {# Kat's Figma "Monitor Forum Activity": admins open the forum from Explore (#102). #}

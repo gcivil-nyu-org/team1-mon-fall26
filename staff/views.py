@@ -5,6 +5,7 @@ Forum Posting)."""
 from functools import wraps
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
@@ -53,7 +54,6 @@ def staff_required(view):
 DONE_STATUS = {
     "restricted": ("restricted",),
     "reinstated": ("active", "forum_restricted"),  # #103: forum only
-    "deleted": ("deleted",),  # #93
 }
 # After removing a review from the history (#99).
 REVIEW_REMOVED = "review_removed"
@@ -105,6 +105,9 @@ def user_list(request, pk=None, restrict_form=None):
         "selected": selected,
         "pet_type_count": PetType.objects.count(),
         "service_type_count": ServiceType.objects.count(),
+        # #93: after deleting an account, the page shows the next one with a
+        # banner (?deleted=<pk>) while that account is still deleted.
+        "deleted_account": _deleted_account(request),
     }
     if selected is not None:
         done = request.GET.get("done")
@@ -165,6 +168,18 @@ def _review_to_confirm(request, account):
     )
 
 
+def _deleted_account(request):
+    pk = request.GET.get("deleted", "")
+    if not pk.isdigit():
+        return None
+    return (
+        get_user_model()
+        .objects.filter(pk=pk, is_staff=False, is_active=False)
+        .select_related("caregiver_profile")
+        .first()
+    )
+
+
 def _done(account, action):
     url = reverse("staff:user_detail", args=[account.pk])
     return redirect(f"{url}?done={action}")
@@ -214,12 +229,13 @@ def delete_user(request, pk):
 
     It's the same as users deleting their own account (#48): they can't log
     in anymore, their open bookings close, and their address and photo are
-    removed. Bookings and reviews other people can see stay. The account
-    stays in the list, marked Deleted.
+    removed. Bookings and reviews other people can see stay. As in Kat's
+    "Delete account" design, the account leaves the list and the page moves
+    on to the first account, with a banner.
     """
     account = _restrictable(request, pk)
     delete_account(account)
-    return _done(account, "deleted")
+    return redirect(f"{reverse('staff:user_list')}?deleted={account.pk}")
 
 
 @staff_required
