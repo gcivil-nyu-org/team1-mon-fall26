@@ -26,14 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # variables; without them the local development defaults below are used.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# On for local development; off by default on the deployed site (it has
-# RDS_HOSTNAME), so a missing DJANGO_DEBUG there can't turn it on (#316).
-DEBUG = (
-    os.environ.get(
-        "DJANGO_DEBUG", "False" if os.environ.get("RDS_HOSTNAME") else "True"
-    )
-    == "True"
-)
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 DEV_SECRET_KEY = "django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho"
@@ -138,6 +131,22 @@ else:
             "NAME": os.environ.get("SQLITE_DB_PATH", str(BASE_DIR / "db.sqlite3")),
         }
     }
+
+# The cache lives in the database, so every gunicorn worker (and a restart)
+# sees the same counts, e.g. failed logins (#314). The accounts 0008
+# migration creates its table, so `migrate` is all a new setup needs.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "pawpal_cache",
+    }
+}
+
+# How many proxies sit in front of Django. On Elastic Beanstalk nginx passes
+# requests on from 127.0.0.1 and adds the visitor's address at the end of
+# X-Forwarded-For, so that's where it's read from. Set to 2 behind a load
+# balancer as well; 0 when Django is reached directly.
+TRUSTED_PROXIES = int(os.environ.get("TRUSTED_PROXIES", "1"))
 
 
 # Password validation

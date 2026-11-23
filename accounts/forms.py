@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (
@@ -112,8 +113,25 @@ MAX_FAILED_LOGINS = 5
 LOCKOUT_MINUTES = 15
 
 
+def client_address(request):
+    """The visitor's IP address. Behind nginx REMOTE_ADDR is always
+    127.0.0.1, so it's the entry the trusted proxies added to
+    X-Forwarded-For (earlier entries can be made up by the visitor)."""
+    if request is None:
+        return ""
+    proxies = settings.TRUSTED_PROXIES
+    forwarded = [
+        part.strip()
+        for part in request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")
+        if part.strip()
+    ]
+    if proxies and len(forwarded) >= proxies:
+        return forwarded[-proxies]
+    return request.META.get("REMOTE_ADDR", "")
+
+
 def _failed_logins_key(request, username):
-    address = request.META.get("REMOTE_ADDR", "") if request else ""
+    address = client_address(request)
     return f"failed-logins:{address}:{(username or '').strip().lower()}"
 
 
