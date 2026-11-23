@@ -295,6 +295,26 @@ class RefreshTests(TestCase):
         refresh_near(*PARK_SLOPE, 1, Place.Category.CAFE)
         self.assertEqual(search.call_count, 2)
 
+    @mock.patch("places.google_places.search", side_effect=GooglePlacesUnavailable("x"))
+    def test_after_a_failure_the_second_category_is_skipped(self, search):
+        with self.assertLogs("places.google_places", "WARNING"):
+            refresh_near(*PARK_SLOPE, 1)
+        self.assertEqual(search.call_count, 1)
+
+    @override_settings(GOOGLE_PLACES_DAILY_LIMIT=3)
+    @mock.patch("places.google_places.search")
+    def test_daily_limit(self, search):
+        search.return_value = answer()
+        refresh_near(*PARK_SLOPE, 1)
+        refresh_near(40.75, -73.99, 1)
+        self.assertEqual(search.call_count, 3)
+        with self.assertLogs("places.google_places", "WARNING"):
+            refresh_near(40.80, -73.95, 1)
+        self.assertEqual(search.call_count, 3)
+
+    def test_short_timeout(self):
+        self.assertLessEqual(google_places.TIMEOUT_SECONDS, 3)
+
     @override_settings(GOOGLE_PLACES_API_KEY="")
     @mock.patch("places.google_places.search")
     def test_without_a_key_nothing_is_asked(self, search):

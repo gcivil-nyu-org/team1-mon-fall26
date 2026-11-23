@@ -13,8 +13,10 @@ they haven't been checked for CACHE_DAYS days. Without GOOGLE_PLACES_API_KEY
 
 Pricing: asking for allowsDogs puts each search in the "Text Search
 Enterprise + Atmosphere" SKU, which has 1,000 free calls a month. A search
-costs one call per category, and the same area isn't asked again for
-SEARCH_AGAIN_AFTER seconds.
+costs one call per category, the same area isn't asked again for
+SEARCH_AGAIN_AFTER seconds, and at most GOOGLE_PLACES_DAILY_LIMIT searches
+are made a day. Explore waits at most TIMEOUT_SECONDS for Google, and skips
+the second category if the first call fails.
 """
 
 import json
@@ -37,7 +39,8 @@ from .nyc_open_data import NYC_BOUNDS
 logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
-TIMEOUT_SECONDS = 10
+# Explore waits for Google, so a slow answer is given up on quickly.
+TIMEOUT_SECONDS = 3
 # Text Search returns at most 20 places per call; we only ask for one page.
 PAGE_SIZE = 20
 FIELD_MASK = ",".join(
@@ -55,6 +58,9 @@ FIELD_MASK = ",".join(
 )
 # The same area and category is asked again after a day at the earliest.
 SEARCH_AGAIN_AFTER = 60 * 60 * 24
+# At most this many searches a day (about 900 a month), so the 1,000 free
+# calls a month aren't used up. Set GOOGLE_PLACES_DAILY_LIMIT to change it.
+DAILY_LIMIT_DEFAULT = 30
 # Places not refreshed by a search for this long are deleted.
 CACHE_DAYS = 30
 MILES_TO_DEGREES_LAT = 1 / 69.0
@@ -288,6 +294,17 @@ def _cache_key(category, latitude, longitude, miles):
     )
 
 
+def _use_daily_call():
+    """Count one search against today's limit; False once it's used up."""
+    limit = getattr(settings, "GOOGLE_PLACES_DAILY_LIMIT", DAILY_LIMIT_DEFAULT)
+    key = f"google-places-calls:{timezone.localdate().isoformat()}"
+    used = cache.get(key, 0)
+    if used >= limit:
+        return False
+    cache.set(key, used + 1, 60 * 60 * 25)
+    return True
+
+
 def refresh_near(latitude, longitude, miles, category=""):
     """Before Explore lists places near a point, ask Google for dog-friendly
     cafés and/or restaurants there (only the category asked for, or both
@@ -304,12 +321,16 @@ def refresh_near(latitude, longitude, miles, category=""):
         key = _cache_key(wanted, latitude, longitude, miles)
         if cache.get(key):
             continue
+        if not _use_daily_call():
+            logger.warning("Google Places daily limit reached; not searching.")
+            return
         text, place_type = SEARCHES[wanted]
         try:
             data = search(text, place_type, latitude, longitude, miles)
         except GooglePlacesUnavailable as error:
+            # Don't make the page wait for a second slow call.
             logger.warning("Google Places search failed: %s", error)
-            continue
+            return
         rows, no_dogs = google_places(data)
         update_google_places(rows, no_dogs, timezone.localdate())
         cache.set(key, True, SEARCH_AGAIN_AFTER)
