@@ -1,0 +1,16 @@
+{# #106: a type's round avatar on the Pet & service types page, from Kat's Figma. Every type has a color; pet types show their first letter, services an icon. #}
+{% if tab == "pets" %}
+  <span class="types-avatar color-{{ item.color }}" aria-hidden="true">{{ item.name|slice:":1"|upper }}</span>
+{% else %}
+  <span class="types-avatar color-{{ item.color }}" aria-hidden="true">
+    {% if item.kind == "home" %}
+      <svg viewBox="0 0 22 22" focusable="false" fill="none" stroke="currentColor" stroke-width="1.925" stroke-linecap="round" stroke-linejoin="round"><path d="M3.67 10.08L11 4.13l7.33 5.95"/><path d="M5.5 8.71v8.71h11V8.71"/><path d="M9.17 17.42v-4.59h3.66v4.59"/></svg>
+    {% elif item.kind == "night" %}
+      <svg viewBox="0 0 22 22" focusable="false" fill="none" stroke="currentColor" stroke-width="1.925" stroke-linecap="round" stroke-linejoin="round"><path d="M17.42 13.29a6.42 6.42 0 0 1-8.71-8.71 6.88 6.88 0 1 0 8.71 8.71z"/></svg>
+    {% elif item.kind == "feeding" %}
+      <svg viewBox="0 0 22 22" focusable="false" fill="none" stroke="currentColor" stroke-width="1.925" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 11.92h16.5"/><path d="M4.13 11.92l1.46 4.76a1.4 1.4 0 0 0 1.29.92h8.25a1.4 1.4 0 0 0 1.28-.92l1.47-4.76"/><g fill="currentColor" stroke="none"><circle cx="8.25" cy="9.17" r="1.19"/><circle cx="11.18" cy="7.52" r="1.19"/><circle cx="13.93" cy="9.17" r="1.19"/></g></svg>
+    {% else %}
+      <svg viewBox="0 0 22 22" focusable="false" fill="currentColor"><circle cx="5.04" cy="9.17" r="1.93"/><circle cx="8.71" cy="5.32" r="1.93"/><circle cx="13.29" cy="5.32" r="1.93"/><circle cx="16.96" cy="9.17" r="1.93"/><path d="M11 10.54c-2.75 0-5.04 2.75-5.04 4.95 0 1.47 1.1 2.2 2.38 2.2 1.01 0 1.74-.46 2.66-.46s1.65.46 2.66.46c1.28 0 2.38-.73 2.38-2.2 0-2.2-2.29-4.95-5.04-4.95z"/></svg>
+    {% endif %}
+  </span>
+{% endif %}

@@ -8,408 +8,176 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/staff.css' %}?v=18">
 
+{# #106: laid out like Kat's Figma "Admin (Pet & Service Types)". #}
+<link rel="stylesheet" href="{% static 'css/staff_types.css' %}?v=3">
 <div class="staff-types-page">
 
-  <!-- Back navigation -->
-  <a
-    class="staff-types-back"
-    href="{% url 'staff:user_list' %}"
-  >
-    ‹ Users
-  </a>
+  <div class="types-header">
+    <div class="types-heading">
+      <a class="types-back" href="{% url 'staff:user_list' %}">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.73" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4L6 8l4 4"/></svg>
+        Users
+      </a>
+      <h1 class="types-title">Pet &amp; service types</h1>
+    </div>
 
-  <!-- Page heading and Add button -->
-  <div class="staff-types-header">
-    <h1 class="admin-title">Pet &amp; service types</h1>
-
-    <button
-      type="button"
-      class="staff-types-add-button"
-      id="staff-open-add-modal"
-    >
-      + Add
-      {% if active_tab == 'pets' %}
-        pet type
-      {% else %}
-        service type
-      {% endif %}
+    <button type="button" class="types-btn types-btn-dark" id="staff-open-add-modal">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.95" stroke-linecap="round"><path d="M9 3.75v10.5M3.75 9h10.5"/></svg>
+      Add {% if active_tab == 'pets' %}pet type{% else %}service type{% endif %}
     </button>
   </div>
 
-  <!-- Pet / service tabs -->
-  <div class="staff-types-tabs">
-
-    <a
-      href="{% url 'staff:manage_types' %}?tab=pets"
-      class="{% if active_tab == 'pets' %}active{% endif %}"
-    >
-      Pet types
-      <span>{{ pet_type_count }}</span>
+  <nav class="types-tabs" aria-label="Type">
+    <a href="{% url 'staff:manage_types' %}?tab=pets" class="types-tab{% if active_tab == 'pets' %} is-active{% endif %}"{% if active_tab == 'pets' %} aria-current="page"{% endif %}>
+      Pet types <span class="types-tab-count">{{ pet_type_count }}</span>
     </a>
-
-    <a
-      href="{% url 'staff:manage_types' %}?tab=services"
-      class="{% if active_tab == 'services' %}active{% endif %}"
-    >
-      Service types
-      <span>{{ service_type_count }}</span>
+    <a href="{% url 'staff:manage_types' %}?tab=services" class="types-tab{% if active_tab == 'services' %} is-active{% endif %}"{% if active_tab == 'services' %} aria-current="page"{% endif %}>
+      Service types <span class="types-tab-count">{{ service_type_count }}</span>
     </a>
+  </nav>
 
-  </div>
-
-  <!-- Main two-column layout -->
-  <div class="staff-types-grid">
-
-    <!-- LEFT: Type list -->
-    <div class="staff-types-list">
-
-      {% if active_tab == 'pets' %}
-
-        {% for item in pet_types %}
-
-          <a
-            href="?tab=pets&amp;selected={{ item.pk }}"
-            class="staff-types-list-item {% if selected.pk == item.pk %}selected{% endif %}"
-          >
-            <div class="staff-types-avatar">
-              {{ item.name|slice:":1"|upper }}
-            </div>
-
-            <div>
-              <strong>{{ item.name }}</strong>
-              <small>
-                {{ item.pet_count }} pets ·
-                {{ item.caregiver_count }} caregivers
-              </small>
-            </div>
-          </a>
-
-        {% empty %}
-
-          <p>No pet types available.</p>
-
-        {% endfor %}
-
+  {% if done %}
+    {# Figma "Add Pet Type Confirmation" and "Edit Service Type Confirmation". #}
+    <p class="types-banner" role="status">
+      <span class="types-banner-check" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.33 8.33l3 3 6.34-6.33"/></svg></span>
+      {% if done == "added" %}
+        {{ selected.name }} added. It now shows everywhere {% if active_tab == 'pets' %}pet{% else %}service{% endif %} types are used.
       {% else %}
-
-        {% for item in service_types %}
-
-          <a
-            href="?tab=services&amp;selected={{ item.pk }}"
-            class="staff-types-list-item {% if selected.pk == item.pk %}selected{% endif %}"
-          >
-            <div class="staff-types-avatar">🐾</div>
-
-            <div>
-              <strong>{{ item.name }}</strong>
-              <small>
-                {{ item.caregiver_count }} caregivers ·
-                {{ item.booking_count }} bookings
-              </small>
-            </div>
-          </a>
-
-        {% empty %}
-
-          <p>No service types available.</p>
-
-        {% endfor %}
-
-      {% endif %}
-
-    </div>
-
-    <!-- RIGHT: Selected type details -->
-    <div class="staff-types-detail">
-
-      {% if selected %}
-
-        <div class="staff-types-detail-heading">
-
-          <div class="staff-types-avatar">
-            {% if active_tab == 'pets' %}
-              {{ selected.name|slice:":1"|upper }}
-            {% else %}
-              🐾
-            {% endif %}
-          </div>
-
-          <div>
-            <h2>{{ selected.name }}</h2>
-
-            <small>
-              {% if active_tab == 'pets' %}
-                Pet type
-              {% else %}
-                Service type
-              {% endif %}
-            </small>
-          </div>
-
-        </div>
-
-        <!-- Usage statistics -->
-        <div class="staff-types-stats">
-
-          {% if active_tab == 'pets' %}
-
-            <div class="staff-types-stat">
-              <small>PETS</small>
-              <strong>{{ selected.pet_count }}</strong>
-            </div>
-
-            <div class="staff-types-stat">
-              <small>CAREGIVERS WHO CARE FOR IT</small>
-              <strong>{{ selected.caregiver_count }}</strong>
-            </div>
-
-          {% else %}
-
-            <div class="staff-types-stat">
-              <small>CAREGIVERS OFFERING</small>
-              <strong>{{ selected.caregiver_count }}</strong>
-            </div>
-
-            <div class="staff-types-stat">
-              <small>BOOKINGS</small>
-              <strong>{{ selected.booking_count }}</strong>
-            </div>
-
-          {% endif %}
-
-        </div>
-
-        <!-- Rename type form -->
-        <div class="staff-types-edit">
-
-          <form
-            method="post"
-            action="{% url 'staff:rename_type' %}"
-            id="staff-rename-form"
-          >
-            {% csrf_token %}
-
-            <input
-              type="hidden"
-              name="tab"
-              value="{{ active_tab }}"
-            >
-
-            <input
-              type="hidden"
-              name="type_id"
-              value="{{ selected.pk }}"
-            >
-
-            <label for="type-name">
-              Name <span>*</span>
-            </label>
-
-            <input
-              id="type-name"
-              type="text"
-              name="name"
-              value="{{ selected.name }}"
-              maxlength="100"
-              required
-              data-original-name="{{ selected.name }}"
-            >
-
-            <p>
-              Changes update everywhere this type is used.
-            </p>
-
-            <div class="staff-types-edit-actions">
-
-              <button
-                type="button"
-                class="staff-types-cancel"
-                id="staff-rename-cancel"
-                hidden
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                class="staff-types-save"
-                id="staff-rename-save"
-                disabled
-              >
-                Save changes
-              </button>
-
-            </div>
-
-          </form>
-
-        </div>
-
-      {% else %}
-
-        <h2>No types available</h2>
-        <p>Add a type to get started.</p>
-
-      {% endif %}
-
-    </div>
-
-  </div>
-
-</div>
-
-<!-- ADD TYPE MODAL -->
-<div
-  class="staff-types-modal-overlay"
-  id="staff-add-modal"
-  hidden
->
-  <div
-    class="staff-types-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="staff-add-modal-title"
-  >
-
-    <div class="staff-types-modal-heading">
-      <h2 id="staff-add-modal-title">
-        {% if active_tab == 'pets' %}
-          Add pet type
-        {% else %}
-          Add service type
-        {% endif %}
-      </h2>
-
-      <button
-        type="button"
-        class="staff-types-modal-close"
-        id="staff-close-add-modal"
-        aria-label="Close"
-      >
-        &times;
-      </button>
-    </div>
-
-    <p class="staff-types-modal-description">
-      {% if active_tab == 'pets' %}
-        Add a new pet type for pets and caregivers to use.
-      {% else %}
-        Add a new service type for caregivers to offer.
+        Changes saved. It now shows everywhere this {% if active_tab == 'pets' %}pet{% else %}service{% endif %} type is used.
       {% endif %}
     </p>
+  {% endif %}
 
-    <form
-      method="post"
-      action="{% url 'staff:add_type' %}"
-      id="staff-add-form"
-    >
-      {% csrf_token %}
+  <div class="types-layout">
 
-      <input
-        type="hidden"
-        name="tab"
-        value="{{ active_tab }}"
-      >
-
-      <label for="staff-new-type-name">
-        Name <span>*</span>
-      </label>
-
-      <input
-        id="staff-new-type-name"
-        type="text"
-        name="name"
-        maxlength="100"
-        placeholder="{% if active_tab == 'pets' %}e.g. Hamster{% else %}e.g. Dog walking{% endif %}"
-        required
-      >
-
-      <div class="staff-types-modal-actions">
-
-        <button
-          type="button"
-          class="staff-types-cancel"
-          id="staff-cancel-add-modal"
-        >
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          class="staff-types-save"
-          id="staff-submit-add"
-          disabled
-        >
-          Add
-          {% if active_tab == 'pets' %}
-            pet type
-          {% else %}
-            service type
+    <section class="types-card types-list" aria-label="{% if active_tab == 'pets' %}Pet types{% else %}Service types{% endif %}">
+      {% for item in items %}
+        <a href="?tab={{ active_tab }}&amp;selected={{ item.pk }}" class="types-row{% if selected.pk == item.pk %} is-selected{% endif %}"{% if selected.pk == item.pk %} aria-current="true"{% endif %}>
+          {% include "staff/partials/type_avatar.html" with tab=active_tab %}
+          <span class="types-row-text">
+            <strong>{{ item.name }}</strong>
+            <span>
+              {% if active_tab == 'pets' %}
+                {{ item.pet_count }} pet{{ item.pet_count|pluralize }} · {{ item.caregiver_count }} caregiver{{ item.caregiver_count|pluralize }}
+              {% else %}
+                {{ item.caregiver_count }} caregiver{{ item.caregiver_count|pluralize }} · {{ item.booking_count }} booking{{ item.booking_count|pluralize }}
+              {% endif %}
+            </span>
+          </span>
+          {% if done == "added" and selected.pk == item.pk %}
+            <span class="types-new"><span class="types-new-dot" aria-hidden="true"></span>New</span>
           {% endif %}
-        </button>
+        </a>
+      {% empty %}
+        <p class="types-empty">No {% if active_tab == 'pets' %}pet{% else %}service{% endif %} types yet.</p>
+      {% endfor %}
+    </section>
 
+    <section class="types-card types-detail" aria-labelledby="types-detail-title">
+      {% if selected %}
+        <div class="types-detail-heading">
+          {% include "staff/partials/type_avatar.html" with item=selected tab=active_tab %}
+          <div>
+            <h2 id="types-detail-title">{{ selected.name }}</h2>
+            <p>{% if active_tab == 'pets' %}Pet type{% else %}Service type{% endif %}</p>
+          </div>
+        </div>
+
+        <dl class="types-stats">
+          {% if active_tab == 'pets' %}
+            <div><dt>Pets</dt><dd>{{ selected.pet_count }}</dd></div>
+            <div><dt>Caregivers who care for it</dt><dd>{{ selected.caregiver_count }}</dd></div>
+          {% else %}
+            <div><dt>Caregivers offering</dt><dd>{{ selected.caregiver_count }}</dd></div>
+            <div><dt>Bookings</dt><dd>{{ selected.booking_count }}</dd></div>
+          {% endif %}
+        </dl>
+
+        <hr class="types-divider">
+
+        <form method="post" action="{% url 'staff:rename_type' %}" id="staff-rename-form" class="types-form">
+          {% csrf_token %}
+          <input type="hidden" name="tab" value="{{ active_tab }}">
+          <input type="hidden" name="type_id" value="{{ selected.pk }}">
+          <div class="types-field">
+            <label for="type-name">Name <span class="types-required" aria-hidden="true">*</span></label>
+            <input id="type-name" type="text" name="name" value="{{ selected.name }}" maxlength="100" required autocomplete="off" data-original-name="{{ selected.name }}">
+          </div>
+          <p class="types-help">Changes update everywhere this type is used.</p>
+          <div class="types-actions">
+            <button type="button" class="types-btn types-btn-outline" id="staff-rename-cancel" hidden>Cancel</button>
+            <button type="submit" class="types-btn types-btn-dark" id="staff-rename-save" disabled>Save changes</button>
+          </div>
+        </form>
+      {% else %}
+        <h2 id="types-detail-title">No types yet</h2>
+        <p class="types-help">Add a type to get started.</p>
+      {% endif %}
+    </section>
+
+  </div>
+
+</div>
+
+{# Figma "Add Pet Type": 150px from the top, no close button. #}
+<div class="types-modal-backdrop" id="staff-add-modal" hidden>
+  <div class="types-modal" role="dialog" aria-modal="true" aria-labelledby="staff-add-modal-title">
+    <h2 id="staff-add-modal-title">Add {% if active_tab == 'pets' %}pet type{% else %}service type{% endif %}</h2>
+    <form method="post" action="{% url 'staff:add_type' %}" id="staff-add-form" class="types-form">
+      {% csrf_token %}
+      <input type="hidden" name="tab" value="{{ active_tab }}">
+      <div class="types-field">
+        <label for="staff-new-type-name">Name <span class="types-required" aria-hidden="true">*</span></label>
+        <input id="staff-new-type-name" type="text" name="name" maxlength="100" placeholder="{% if active_tab == 'pets' %}e.g. Hamster{% else %}e.g. Grooming{% endif %}" required autocomplete="off">
       </div>
-
+      <p class="types-help">Shows up everywhere {% if active_tab == 'pets' %}pet{% else %}service{% endif %} types are used.</p>
+      <div class="types-actions types-actions-equal">
+        <button type="button" class="types-btn types-btn-outline" id="staff-cancel-add-modal">Cancel</button>
+        <button type="submit" class="types-btn types-btn-dark" id="staff-submit-add" disabled>Add</button>
+      </div>
     </form>
-
   </div>
 </div>
 
-<!-- Page interactions -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
-    // ----------------------------------
-    // Rename existing type
-    // ----------------------------------
-
+    // Rename: Save turns on (and Cancel shows) once the name changes.
     const renameForm = document.getElementById("staff-rename-form");
 
     if (renameForm) {
         const nameInput = document.getElementById("type-name");
         const saveButton = document.getElementById("staff-rename-save");
         const cancelButton = document.getElementById("staff-rename-cancel");
-
         const originalName = nameInput.dataset.originalName;
 
         function updateRenameButtons() {
             const currentName = nameInput.value.trim();
             const changed = currentName !== originalName;
-
             saveButton.disabled = !changed || !currentName;
             cancelButton.hidden = !changed;
         }
 
         nameInput.addEventListener("input", updateRenameButtons);
-
         cancelButton.addEventListener("click", function () {
             nameInput.value = originalName;
             updateRenameButtons();
         });
-
         renameForm.addEventListener("submit", function (event) {
             if (!nameInput.value.trim()) {
                 event.preventDefault();
                 nameInput.focus();
             }
         });
-
         updateRenameButtons();
     }
 
-    // ----------------------------------
-    // Add type modal
-    // ----------------------------------
-
+    // Add popup.
     const modal = document.getElementById("staff-add-modal");
     const openButton = document.getElementById("staff-open-add-modal");
-    const closeButton = document.getElementById("staff-close-add-modal");
     const cancelButton = document.getElementById("staff-cancel-add-modal");
-
     const addForm = document.getElementById("staff-add-form");
     const addInput = document.getElementById("staff-new-type-name");
     const addButton = document.getElementById("staff-submit-add");
-
     let previousFocus = null;
 
     function updateAddButton() {
@@ -428,45 +196,36 @@ document.addEventListener("DOMContentLoaded", function () {
         modal.hidden = true;
         addForm.reset();
         updateAddButton();
-
         if (previousFocus) {
             previousFocus.focus();
         }
     }
 
     openButton.addEventListener("click", openModal);
-    closeButton.addEventListener("click", closeModal);
     cancelButton.addEventListener("click", closeModal);
-
     addInput.addEventListener("input", updateAddButton);
 
-    // Clicking outside the dialog closes it.
+    // Clicking outside the popup closes it.
     modal.addEventListener("click", function (event) {
         if (event.target === modal) {
             closeModal();
         }
     });
 
-    // Escape closes the modal.
-    // Tab stays within the modal while it is open.
+    // Escape closes it; Tab stays inside it.
     modal.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
             closeModal();
             return;
         }
-
         if (event.key === "Tab") {
             const focusable = Array.from(
-                modal.querySelectorAll(
-                    'button:not([disabled]), input:not([disabled])'
-                )
+                modal.querySelectorAll("button:not([disabled]), input:not([disabled]):not([type=hidden])")
             ).filter(function (element) {
                 return !element.hidden;
             });
-
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
-
             if (event.shiftKey && document.activeElement === first) {
                 event.preventDefault();
                 last.focus();
@@ -485,7 +244,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     updateAddButton();
-
 });
 </script>
 
