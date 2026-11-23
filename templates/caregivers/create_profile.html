@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Create Caregiver Profile | PawPal{% endblock %}
+{% block title %}{% if caregiver %}Edit Caregiver Profile{% else %}Create Caregiver Profile{% endif %} | PawPal{% endblock %}
 {% block main_class %}page page-wide page-caregiver-form{% endblock %}
 
 {% block content %}

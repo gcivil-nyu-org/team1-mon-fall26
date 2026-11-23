@@ -84,7 +84,7 @@
               </span>
               <div class="chat-context-text">
                 <strong>No request yet</strong>
-                <span class="chat-context-sub">{% if selected.viewer_is_owner %}Ask {{ other.first_name }} anything, then request care when you’re ready.{% else %}{{ other.first_name }} is asking questions before sending a request.{% endif %}</span>
+                <span class="chat-context-sub">{% if selected.viewer_is_owner %}Ask {{ other.first_name }} anything, then request care when you’re ready.{% else %}{% if owner_started %}{{ other.first_name }} is asking questions before sending a request.{% else %}No booking request from {{ other.first_name }} yet.{% endif %}{% endif %}</span>
               </div>
               {% if can_request_care %}<a class="chat-pill-button" href="{% url 'bookings:booking_create' %}?caregiver={{ selected.caregiver.pk }}">Request care</a>{% endif %}
             </div>
