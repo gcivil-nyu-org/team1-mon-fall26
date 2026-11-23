@@ -256,68 +256,83 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
   .staff-account-header { flex-wrap: wrap; }
   .staff-account-header .account-status { margin-left: 0; }
 }
-/* Sprint 9 — Pet & service types shortcut */
+/* Sprint 9 — Pet & service types shortcut, as in Kat's Figma "Users"
+   (Admin (Pet & Service Types)): a 70px row with the title and a 271px card. */
 
 .staff-users-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 18px;
+    min-height: 70px;
+    margin: 8px 0 20px;
 }
 
 .staff-users-heading .admin-title {
     margin: 0;
+    font-size: 46px;
+    line-height: 49px;
+    letter-spacing: -0.23px;
 }
 
 .staff-types-shortcut {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 12px 16px;
+    border-radius: 28px;
     background: #fff;
-    border: 1px solid #efd9cf;
-    border-radius: 18px;
-    color: #241e1c;
+    box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+    color: var(--ink);
     text-decoration: none;
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: transform 0.15s ease;
 }
 
 .staff-types-shortcut:hover {
-    box-shadow: 0 4px 14px rgba(80, 45, 35, 0.1);
     transform: translateY(-1px);
 }
 
 .staff-types-icon {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
+    flex: none;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: #f7f0ed;
-    font-size: 18px;
+    background: #f3eeea;
+    color: #5a4038;
 }
 
 .staff-types-text {
     display: flex;
     flex-direction: column;
-    gap: 3px;
 }
 
 .staff-types-text strong {
-    font-size: 13px;
+    min-height: 25px;
+    font-size: 16px;
     font-weight: 700;
+    line-height: 24.8px;
 }
 
 .staff-types-text small {
-    font-size: 11px;
-    color: #8b7770;
+    min-height: 21px;
+    color: #6a5a54;
+    font-size: 13px;
+    line-height: 20.15px;
 }
 
 .staff-types-arrow {
-    margin-left: 8px;
-    font-size: 24px;
+    display: grid;
+    flex: none;
+    padding-left: 8px;
+}
+
+@media (max-width: 760px) {
+    .staff-users-heading .admin-title {
+        font-size: 34px;
+        line-height: 1.1;
+    }
 }
 
 @media (max-width: 650px) {
