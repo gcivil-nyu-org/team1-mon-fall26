@@ -132,6 +132,22 @@ else:
         }
     }
 
+# The cache lives in the database, so every gunicorn worker (and a restart)
+# sees the same counts, e.g. failed logins (#314). The accounts 0008
+# migration creates its table, so `migrate` is all a new setup needs.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "pawpal_cache",
+    }
+}
+
+# How many proxies sit in front of Django. On Elastic Beanstalk nginx passes
+# requests on from 127.0.0.1 and adds the visitor's address at the end of
+# X-Forwarded-For, so that's where it's read from. Set to 2 behind a load
+# balancer as well; 0 when Django is reached directly.
+TRUSTED_PROXIES = int(os.environ.get("TRUSTED_PROXIES", "1"))
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
