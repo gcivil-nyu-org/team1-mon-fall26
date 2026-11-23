@@ -9,6 +9,7 @@ from caregivers.search import find_neighborhood, neighborhoods
 from messaging.models import Conversation
 from reviews.models import Review, rating_summary
 
+from accounts.roles import owners_only
 from .forms import CareOpportunityForm
 from .models import CareOpportunity, CareOpportunityInterest
 from django.urls import reverse
@@ -89,6 +90,11 @@ def _render_opportunity_list(
 @login_required
 def opportunity_list(request):
     """Owner dashboard with optional inline edit state."""
+    elsewhere = owners_only(
+        request, "Use a pet owner account to post care opportunities."
+    )
+    if elsewhere is not None:
+        return elsewhere
     return _render_opportunity_list(request, editing=request.GET.get("edit") == "1")
 
 
@@ -108,12 +114,11 @@ def _owner_location(user):
 def opportunity_create(request):
     """Create a public care post without selecting a caregiver."""
 
-    if getattr(request.user, "caregiver_profile", None):
-        messages.info(
-            request,
-            "Use a pet owner account to post care opportunities.",
-        )
-        return redirect("bookings:caregiver_requests")
+    elsewhere = owners_only(
+        request, "Use a pet owner account to post care opportunities."
+    )
+    if elsewhere is not None:
+        return elsewhere
 
     if request.method == "POST":
         form = CareOpportunityForm(

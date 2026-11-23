@@ -305,7 +305,9 @@ class WhatUsersSeeTests(AnnouncementData):
 
     def banner(self, user):
         self.client.force_login(user)
-        return self.client.get(reverse("pets:list")).context.get("current_announcement")
+        return self.client.get(reverse("forum:list")).context.get(
+            "current_announcement"
+        )
 
     def test_everyone_sees_announcements_for_everyone(self):
         a = self.make()

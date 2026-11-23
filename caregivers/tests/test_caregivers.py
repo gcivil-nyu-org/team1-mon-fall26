@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
+from accounts.models import AccountProfile
 from pets.models import PetType
 
 from ..forms import CaregiverProfileForm, CaregiverServicesForm
@@ -31,6 +32,8 @@ class CaregiverTestData(TestCase):
         cls.user = get_user_model().objects.create_user(
             username="caregiver_test", password="TestPassword123!"
         )
+        AccountProfile.objects.create(user=cls.user, role=AccountProfile.Role.CAREGIVER)
+        cls.viewer = get_user_model().objects.create_user("owner_viewer")
 
     def setUp(self):
         # Never call the real GeoSearch service from tests.
@@ -202,6 +205,17 @@ class CreateCaregiverProfileViewTests(CaregiverTestData):
 
 
 class CaregiverProfileDetailViewTests(CaregiverTestData):
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.viewer)
+
+    def test_signed_out_visitors_are_sent_to_log_in(self):
+        caregiver = self.make_caregiver()
+        self.client.logout()
+        response = self.client.get(reverse("caregiver", args=[caregiver.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
     def test_public_profile_shows_profile_information(self):
         caregiver = self.make_caregiver(
             bio="Lifelong dog person.", years_of_experience=4

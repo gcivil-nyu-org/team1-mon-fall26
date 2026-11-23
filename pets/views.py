@@ -12,13 +12,25 @@ from django.views.generic import (
     UpdateView,
 )
 
+from accounts.roles import owners_only
 from bookings.models import Booking
 
 from .forms import PetForm
 from .models import Pet
 
 
-class OwnerPetsMixin(LoginRequiredMixin):
+class OwnersOnlyMixin(LoginRequiredMixin):
+    """Pet profiles are for pet owners: send caregivers to their requests."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            elsewhere = owners_only(request, "Pet profiles are for pet owner accounts.")
+            if elsewhere is not None:
+                return elsewhere
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OwnerPetsMixin(OwnersOnlyMixin):
     """Limit every pet query to the logged-in owner's own pets."""
 
     def get_queryset(self):
@@ -51,7 +63,7 @@ class PetDetailView(OwnerPetsMixin, DetailView):
     context_object_name = "pet"
 
 
-class PetCreateView(LoginRequiredMixin, CreateView):
+class PetCreateView(OwnersOnlyMixin, CreateView):
     model = Pet
     form_class = PetForm
     template_name = "pets/pet_form.html"
