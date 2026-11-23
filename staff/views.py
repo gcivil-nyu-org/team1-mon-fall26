@@ -148,10 +148,9 @@ def user_detail(request, pk):
 
 
 def _restrictable(request, pk):
-    account = get_object_or_404(all_accounts(), pk=pk)
-    if not can_restrict(request.user, account):
-        raise PermissionDenied
-    return account
+    """An account admins can restrict or delete. Admins (including yourself)
+    and deleted accounts aren't on the Users page, so they're not found."""
+    return get_object_or_404(all_accounts(), pk=pk)
 
 
 def _review_to_confirm(request, account):
