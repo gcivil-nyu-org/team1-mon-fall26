@@ -24,7 +24,7 @@
   {% if form.errors %}
     <div class="alert alert-error" role="alert">
       <span class="alert-icon" aria-hidden="true">!</span>
-      {% if form.name.errors or form.pet_type.errors or form.age.errors %}
+      {% if form.missing_required %}
         <span><strong>Almost there.</strong> Required fields can't be left blank.</span>
       {% else %}
         <span><strong>Almost there.</strong> Check the highlighted fields.</span>

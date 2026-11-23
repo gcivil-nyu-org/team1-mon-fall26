@@ -175,11 +175,21 @@ class PetForm(forms.ModelForm):
         # When editing, show the saved birth date as an age again.
         pet = self.instance
         if pet.pk and pet.date_of_birth and not self.is_bound:
-            years = pet.age_years
-            if years >= 1:
-                self.initial.update(age=years, age_unit="years")
+            months = pet.age_months
+            # Under 2 years, keep months unless it's a whole year, so 18 months
+            # doesn't come back as 1 year (#308).
+            if months >= 24 or (months >= 12 and months % 12 == 0):
+                self.initial.update(age=pet.age_years, age_unit="years")
             else:
-                self.initial.update(age=pet.age_months, age_unit="months")
+                self.initial.update(age=months, age_unit="months")
+
+    def missing_required(self):
+        """Whether a required field was left empty (not just filled in wrong),
+        for the banner at the top of the form (#302)."""
+        return any(
+            not (self.data.get(name) or "").strip()
+            for name in ("name", "pet_type", "age")
+        )
 
     def clean_photo(self):
         photo = self.cleaned_data.get("photo")
