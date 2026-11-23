@@ -3,7 +3,9 @@ View Nearby Pet-Friendly Locations, View Dog Parks).
 
 Dog parks come from NYC Parks' official "Dog Runs" dataset on NYC Open Data
 (see the import_dog_runs command). NYC Open Data has no list of pet-friendly
-cafés, stores or restaurants, so the PawPal team adds those in the admin.
+cafés, stores or restaurants: those come from OpenStreetMap, from Google Maps
+(dog-friendly cafés and restaurants near a search, see google_places.py) and
+from the PawPal team in the admin.
 
 Outdoor dining comes from NYC DOT's "Dining Out NYC" licenses (see the
 import_outdoor_dining command). NYC lets each restaurant decide whether dogs may
@@ -13,6 +15,7 @@ it was last checked.
 """
 
 from datetime import datetime
+from urllib.parse import quote
 
 from django.conf import settings
 from django.db import models
@@ -82,6 +85,9 @@ class Place(models.Model):
         )
         # Pet stores and dog-friendly cafés and restaurants (places/osm.py).
         OPENSTREETMAP = "osm", "OpenStreetMap contributors"
+        # Cafés and restaurants Google Maps says allow dogs, found when someone
+        # searches near a place (places/google_places.py).
+        GOOGLE = "google", "Google Maps"
 
     # The NYC Open Data page each source's information comes from.
     SOURCE_URLS = {
@@ -211,6 +217,11 @@ class Place(models.Model):
         Data dataset, or the place itself on OpenStreetMap."""
         if self.source == self.Source.OPENSTREETMAP and self.source_id:
             return f"https://www.openstreetmap.org/{self.source_id}"
+        if self.source == self.Source.GOOGLE and self.source_id:
+            return (
+                "https://www.google.com/maps/search/?api=1"
+                f"&query={quote(self.name)}&query_place_id={quote(self.source_id)}"
+            )
         return self.SOURCE_URLS.get(self.source, "")
 
     def source_name(self):
@@ -218,6 +229,8 @@ class Place(models.Model):
         OpenStreetMap by name)."""
         if self.source == self.Source.OPENSTREETMAP:
             return "OpenStreetMap"
+        if self.source == self.Source.GOOGLE:
+            return "Google Maps"
         return "NYC Open Data" if self.source_url() else "PawPal team"
 
     def directions_url(self):

@@ -194,6 +194,13 @@ LOGOUT_REDIRECT_URL = "home"
 # light gray Esri map. The key is sent to browsers in tile URLs, as CARTO intends.
 CARTO_BASEMAPS_KEY = os.environ.get("CARTO_BASEMAPS_KEY", "")
 
+# Google Places API (New) key for dog-friendly cafés and restaurants on Explore
+# (places/google_places.py). Kept on the server, never sent to browsers.
+# Without one, Explore only shows the places already in the database.
+GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY", "")
+# Most Google searches a day, so the free 1,000 a month last (about 900).
+GOOGLE_PLACES_DAILY_LIMIT = int(os.environ.get("GOOGLE_PLACES_DAILY_LIMIT", "30"))
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
