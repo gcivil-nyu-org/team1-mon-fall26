@@ -9,6 +9,7 @@ from unittest import mock
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlparse
 
+from accounts.models import AccountProfile
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
@@ -226,6 +227,9 @@ class LocationViewTests(TestCase):
         self.geocode = patcher.start()
         self.addCleanup(patcher.stop)
         self.user = get_user_model().objects.create_user("cg", password="pw-12345!")
+        AccountProfile.objects.create(
+            user=self.user, role=AccountProfile.Role.CAREGIVER
+        )
         self.client.force_login(self.user)
 
     def post_profile(self, **overrides):
@@ -384,6 +388,7 @@ class LocationConfirmationTests(TestCase):
             label="70 WASHINGTON SQUARE SOUTH, New York, NY, USA",
         )
         user = get_user_model().objects.create_user("cg2", password="pw-12345!")
+        AccountProfile.objects.create(user=user, role=AccountProfile.Role.CAREGIVER)
         self.client.force_login(user)
         response = self.client.post(
             reverse("create_caregiver_profile"),

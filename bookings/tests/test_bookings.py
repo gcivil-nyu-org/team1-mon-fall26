@@ -3,6 +3,7 @@ from caregivers.tests.profile_choices import required_choices
 from decimal import Decimal
 from unittest import mock
 
+from accounts.models import AccountProfile
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -626,6 +627,7 @@ class CaregiverProfileOwnershipTests(TestCase):
             borough="Bronx",
         )
         user = get_user_model().objects.create_user("new", password="pw-12345!")
+        AccountProfile.objects.create(user=user, role=AccountProfile.Role.CAREGIVER)
         self.client.force_login(user)
         response = self.client.post(
             reverse("create_caregiver_profile"),

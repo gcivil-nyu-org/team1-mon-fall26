@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from caregivers.models import CaregiverProfile
 from reviews.models import Review
 
+from accounts.roles import owners_only
 from .forms import BookingRequestForm
 from .models import Booking
 
@@ -40,13 +41,13 @@ def caregiver_bookings(user):
 @login_required
 def booking_create(request):
     # Requesting care is the pet owner's side; caregivers answer requests instead.
-    if getattr(request.user, "caregiver_profile", None):
-        messages.info(
-            request,
-            "Caregiver accounts answer care requests. "
-            "Use a pet owner account to request care.",
-        )
-        return redirect("bookings:caregiver_requests")
+    elsewhere = owners_only(
+        request,
+        "Caregiver accounts answer care requests. "
+        "Use a pet owner account to request care.",
+    )
+    if elsewhere is not None:
+        return elsewhere
 
     if request.method == "POST":
         form = BookingRequestForm(request.POST, owner=request.user)
@@ -99,6 +100,9 @@ def split_owner_bookings(user):
 @login_required
 def booking_list(request):
     """Story #41: the owner's requests with their status, split into active and history."""
+    elsewhere = owners_only(request, "Caregiver accounts see their requests here.")
+    if elsewhere is not None:
+        return elsewhere
     active, history = split_owner_bookings(request.user)
     # Completed visits the owner hasn't reviewed get a "Rate this visit" button.
     reviewed = set(

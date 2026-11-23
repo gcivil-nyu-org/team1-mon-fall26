@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
+from accounts.roles import is_caregiver
 from bookings.models import Booking
 
 from .forms import (
@@ -105,6 +106,11 @@ def create_caregiver_profile(request):
     existing = getattr(request.user, "caregiver_profile", None)
     if existing:
         return redirect("caregiver", pk=existing.pk)
+    # Only caregiver accounts get one: a pet owner with a caregiver profile
+    # would be treated as a caregiver everywhere and couldn't request care.
+    if not is_caregiver(request.user):
+        messages.info(request, "Caregiver profiles are for caregiver accounts.")
+        return redirect("home")
 
     if request.method == "POST":
         form = CaregiverProfileForm(request.POST, request.FILES)
@@ -209,6 +215,7 @@ def set_accepting_requests(request, pk):
     return redirect("caregiver", pk=caregiver.pk)
 
 
+@login_required
 def caregiver_profile_detail(request, pk):
     caregiver = get_object_or_404(CaregiverProfile, pk=pk)
 
