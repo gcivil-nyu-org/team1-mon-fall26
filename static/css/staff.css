@@ -109,6 +109,8 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .account-status-unverified { background: #ffe9b8; color: #6b4500; }
 .account-status-deleted { background: #efe9e6; color: #5a4038; }
 .account-status-restricted { background: #fdecea; color: var(--error); }
+/* #103 */
+.account-status-forum_restricted { background: #efe9e6; color: #5a4038; }
 
 /* ---------- Selected account ---------- */
 
@@ -126,16 +128,30 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-account h3 { margin: 18px 0 8px; font-size: 18px; }
 
 /* After restricting or reinstating (Figma). */
-.staff-banner { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; padding: 10px 14px; border-radius: 14px; font-size: 15px; font-weight: 700; }
-.staff-banner-restricted { background: var(--error-bg); color: var(--error); }
-.staff-banner-reinstated { background: var(--success-bg); color: var(--success-ink); }
-.staff-banner-check { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; }
-.staff-banner-check svg { width: 13px; height: 13px; }
+.staff-banner { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 10px 14px; border-radius: 16px; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.staff-banner-restricted { background: #ffe4e0; color: #8c1d13; }
+.staff-banner-reinstated { background: #cdefdc; color: #14532d; }
+.staff-banner-check { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: #fff; }
+.staff-banner-check svg { width: 16px; height: 16px; }
 
 /* "Restricted since Today" with the reason. */
 .staff-restricted { margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: #fff3f1; font-size: 15px; }
 .staff-restricted strong { color: var(--error); font-size: 16px; }
 .staff-restricted p { margin: 4px 0 0; }
+/* #103: Kat's Figma "Restrict Forum Posting Confirmation" */
+.staff-forum-restricted { display: flex; align-items: center; gap: 14px; margin: 0 0 18px; padding: 14px 16px; border-radius: 18px; background: #fff6f5; color: #3d322e; font-size: 15px; line-height: 23.25px; }
+.staff-forum-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: #ffe4e0; color: #8c1d13; }
+.staff-forum-icon .forum-icon { width: 20px; height: 20px; }
+.staff-forum-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.staff-forum-text strong { color: #8c1d13; font-size: 16px; line-height: 24.8px; }
+.staff-forum-restricted form { flex: none; }
+/* Figma "Restore posting": 44px white pill with a pink ring. */
+.staff-forum-restricted .btn { min-height: 44px; padding: 0 18px; border: 0; background: #fff; box-shadow: 0 0 0 2px #f3c9c2, 0 3px 0 #f3c9c2; color: #8c1d13; font-size: 16px; font-weight: 700; }
+.staff-forum-restricted .btn:hover { background: #fff6f5; }
+.page-staff .modal-icon .forum-icon { width: 28px; height: 28px; }
+@media (max-width: 560px) {
+  .staff-forum-restricted { flex-wrap: wrap; }
+}
 
 .staff-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
 .staff-facts > div { padding: 12px 14px; border-radius: 14px; background: var(--bg); }
@@ -167,17 +183,43 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
 .staff-report strong { font-size: 16px; font-weight: 600; color: #6b4a08; }
 .staff-report .text-link { color: #6b4a08; font-size: 14px; font-weight: 700; }
 
-.staff-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin-top: 18px; }
+.staff-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .staff-actions .btn { min-height: 50px; padding: 12px 26px; font-size: 16px; font-weight: 700; }
+/* Figma "Users": Restrict forum posting is a white pill with a pink ring,
+   Restrict account is solid red. */
+.staff-actions .btn-outline-danger { padding: 0 26px; border: 0; background: #fff; box-shadow: 0 0 0 2px #f3c9c2, 0 4px 0 #f3c9c2; color: #b42318; }
+.staff-actions .btn-outline-danger:hover { background: #fff6f5; }
+.staff-actions .btn-danger { padding: 0 26px; border: 0; background: #b42318; box-shadow: 0 4px 0 #7e180f; color: #fff; }
+.staff-actions .btn-danger:hover { background: #9c1e14; }
+
+/* #93: Kat's "More menu" design: a 50px "…" button with Delete account
+   in a menu below it. */
+.staff-actions-more { position: relative; margin: 0; }
+.staff-more-button { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); cursor: pointer; list-style: none; }
+.staff-more-button::-webkit-details-marker { display: none; }
+.staff-more-button:hover { transform: translateY(-1px); }
+.staff-more-button:focus:not(:focus-visible) { outline: none; }
+/* The menu and its item look like the "…" menu on users' own profile (#47). */
+.staff-more-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 5; min-width: 190px; padding: 6px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 10px 24px rgba(60, 30, 20, 0.12); }
+.staff-more-delete { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; border-radius: 12px; color: #b42318; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.staff-more-delete:hover, .staff-more-delete:focus-visible { background: #fdecea; }
+/* The "account was deleted" banner sits above both columns. */
+.staff-banner-page { margin: 0 0 20px; }
 
 /* #92: the restrict popup, sized like the Figma (and the Reports popups). */
-.page-staff .modal-backdrop { place-items: start center; padding-top: 148px; }
-.page-staff .modal-card { width: min(100%, 460px); gap: 12px; padding: 30px; border-radius: 28px; }
-.page-staff .modal-card h2 { font-size: 26px; }
-.page-staff .modal-card > p { font-size: 15px; line-height: 1.6; }
-.page-staff .modal-icon { width: 56px; height: 56px; font-size: 26px; }
-.page-staff .modal-actions .btn { min-height: 50px; font-size: 16px; }
-.staff-confirm .btn-danger { background: var(--error); border-color: var(--error); box-shadow: 0 3px 0 #7d1810; }
+.page-staff .modal-backdrop { place-items: start center; padding-top: 150px; }
+.page-staff .modal-card { width: min(100%, 460px); gap: 10px; padding: 30px; border-radius: 28px; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.page-staff .modal-card h2 { font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+.page-staff .modal-card > p { color: #6a5a54; font-size: 16px; line-height: 24.8px; }
+.page-staff .modal-icon { width: 60px; height: 60px; background: #ffe4e0; color: #b42318; font-size: 28px; }
+/* "Delete Dan's account?" (Kat's "Confirm delete"): 12px apart, a Fredoka "!". */
+.page-staff .staff-confirm-delete { gap: 12px; }
+.staff-confirm-delete .modal-icon { font-family: var(--font-display); font-size: 30px; font-weight: 600; }
+.page-staff .staff-confirm-delete .modal-actions { margin-top: 4px; }
+.page-staff .modal-actions .btn { min-height: 50px; padding: 0 26px; border: 0; font-size: 16px; font-weight: 700; }
+.page-staff .modal-actions .btn-outline { background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); }
+.page-staff .modal-actions .btn:focus:not(:focus-visible) { outline: none; }
+.staff-confirm .btn-danger { background: #b42318; box-shadow: 0 4px 0 #7e180f; color: #fff; }
 .staff-confirm-field { display: grid; gap: 8px; width: 100%; margin-top: 4px; text-align: left; }
 .staff-confirm-label { font-size: 15px; font-weight: 700; }
 .staff-required { color: var(--error); }
@@ -213,4 +255,89 @@ main.page-staff { max-width: 1224px; width: 100%; box-sizing: border-box; paddin
   .staff-layout { grid-template-columns: 1fr; }
   .staff-account-header { flex-wrap: wrap; }
   .staff-account-header .account-status { margin-left: 0; }
+}
+/* Sprint 9 — Pet & service types shortcut, as in Kat's Figma "Users"
+   (Admin (Pet & Service Types)): a 70px row with the title and a 271px card. */
+
+.staff-users-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 70px;
+    margin: 8px 0 20px;
+}
+
+.staff-users-heading .admin-title {
+    margin: 0;
+    font-size: 46px;
+    line-height: 49px;
+    letter-spacing: -0.23px;
+}
+
+.staff-types-shortcut {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5;
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform 0.15s ease;
+}
+
+.staff-types-shortcut:hover {
+    transform: translateY(-1px);
+}
+
+.staff-types-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f3eeea;
+    color: #5a4038;
+}
+
+.staff-types-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-types-text strong {
+    min-height: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24.8px;
+}
+
+.staff-types-text small {
+    min-height: 21px;
+    color: #6a5a54;
+    font-size: 13px;
+    line-height: 20.15px;
+}
+
+.staff-types-arrow {
+    display: grid;
+    flex: none;
+    padding-left: 8px;
+}
+
+@media (max-width: 760px) {
+    .staff-users-heading .admin-title {
+        font-size: 34px;
+        line-height: 1.1;
+    }
+}
+
+@media (max-width: 650px) {
+    .staff-users-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }

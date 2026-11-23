@@ -5,7 +5,7 @@
 from datetime import timedelta
 
 from django import template
-from django.db.models import Count
+from django.db.models import Count, F, Q
 from django.utils import timezone
 from django.utils.dateformat import format as date_format
 
@@ -39,12 +39,17 @@ def ago(value, now=None):
 @register.inclusion_tag("forum/partials/explore_strip.html")
 def forum_strip(count=3):
     """'From the forum' on the Explore page (Figma "Explore (Pet owner)"):
-    the newest posts, or a nudge to write the first one."""
+    the newest posts, or a nudge to write the first one. Pinned posts (#104)
+    come first."""
+    # Removed posts and comments (#102) aren't shown or counted.
     posts = (
-        Post.objects.select_related(
+        Post.objects.visible()
+        .select_related(
             "author", "author__account_profile", "author__caregiver_profile"
         )
-        .annotate(comment_count=Count("comments"))
-        .order_by("-created_at", "-pk")[:count]
+        .annotate(
+            comment_count=Count("comments", filter=Q(comments__removed_at__isnull=True))
+        )
+        .order_by(F("pinned_at").desc(nulls_last=True), "-created_at", "-pk")[:count]
     )
     return {"posts": [describe(post) for post in posts]}

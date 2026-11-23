@@ -1,0 +1,15 @@
+{# #102: confirm before removing, as in Kat's Figma "Remove Inappropriate Forum Content" and "... Comments". #}
+{% with item=confirm_post|default:confirm_comment %}
+  {% if confirm_post %}{% url 'forum:remove_post' item.pk as action %}{% else %}{% url 'forum:remove_comment' item.pk as action %}{% endif %}
+  <div class="modal-backdrop">
+    <form method="post" action="{{ action }}" class="forum-confirm" role="dialog" aria-modal="true" aria-labelledby="remove-title" aria-describedby="remove-text">
+      {% csrf_token %}
+      <h2 id="remove-title">Remove this {% if confirm_post %}post{% else %}comment{% endif %}?</h2>
+      <p id="remove-text" class="muted">It will be hidden from everyone. This can’t be undone.</p>
+      <div class="forum-confirm-actions">
+        <a class="btn btn-outline" href="?post={{ selected.pk }}">Cancel</a>
+        <button type="submit" class="btn btn-danger">Remove {% if confirm_post %}post{% else %}comment{% endif %}</button>
+      </div>
+    </form>
+  </div>
+{% endwith %}

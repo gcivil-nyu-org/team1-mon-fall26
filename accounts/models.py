@@ -41,5 +41,9 @@ class AccountProfile(models.Model):
     restricted_at = models.DateTimeField(null=True, blank=True)
     restriction_reason = models.CharField(max_length=300, blank=True)
 
+    # #103: an admin can stop an account posting in the forum, without
+    # restricting the whole account. Everything else keeps working.
+    forum_restricted_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
