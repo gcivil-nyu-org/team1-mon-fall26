@@ -52,6 +52,12 @@
                     <span aria-hidden="true">!</span>
                     <p>Confirm your email before you log in. We sent a link to {{ form.unverified_user.email }}. <a href="{% url 'verify_email_sent' %}">Send a new link</a></p>
                 </div>
+            {% elif form.too_many_attempts %}
+                {# #314: several wrong passwords in a row. #}
+                <div class="auth-error-summary" role="alert">
+                    <span aria-hidden="true">!</span>
+                    <p>{{ form.non_field_errors|join:" " }}</p>
+                </div>
             {% elif form.non_field_errors %}
                 <div class="auth-error-summary" role="alert">
                     <span aria-hidden="true">!</span>

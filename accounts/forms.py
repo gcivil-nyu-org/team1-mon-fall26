@@ -1,4 +1,5 @@
 from django import forms
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -105,17 +106,49 @@ class DeleteAccountForm(forms.Form):
         return password
 
 
+# After this many wrong passwords for one username from one address, logging
+# in to it from there waits LOCKOUT_MINUTES (#314).
+MAX_FAILED_LOGINS = 5
+LOCKOUT_MINUTES = 15
+
+
+def _failed_logins_key(request, username):
+    address = request.META.get("REMOTE_ADDR", "") if request else ""
+    return f"failed-logins:{address}:{(username or '').strip().lower()}"
+
+
 class LoginForm(AuthenticationForm):
     error_messages = {
         **AuthenticationForm.error_messages,
         "unverified": "Confirm your email before you log in.",
         "restricted": RESTRICTED_MESSAGE,
+        "too_many": (
+            "Too many failed attempts. Try again in "
+            f"{LOCKOUT_MINUTES} minutes, or reset your password."
+        ),
     }
+
+    def clean(self):
+        key = _failed_logins_key(self.request, self.data.get("username"))
+        if cache.get(key, 0) >= MAX_FAILED_LOGINS:
+            self.too_many_attempts = True
+            raise forms.ValidationError(
+                self.error_messages["too_many"], code="too_many"
+            )
+        try:
+            cleaned = super().clean()
+        except forms.ValidationError as error:
+            if any(e.code == "invalid_login" for e in error.error_list):
+                cache.set(key, cache.get(key, 0) + 1, LOCKOUT_MINUTES * 60)
+            raise
+        cache.delete(key)
+        return cleaned
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unverified_user = None
         self.restricted = False
+        self.too_many_attempts = False
         self.fields["username"].widget.attrs["placeholder"] = "Your username"
         self.fields["password"].widget.attrs["placeholder"] = "Your password"
 

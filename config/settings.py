@@ -26,7 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # variables; without them the local development defaults below are used.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
+# On for local development; off by default on the deployed site (it has
+# RDS_HOSTNAME), so a missing DJANGO_DEBUG there can't turn it on (#316).
+DEBUG = (
+    os.environ.get(
+        "DJANGO_DEBUG", "False" if os.environ.get("RDS_HOSTNAME") else "True"
+    )
+    == "True"
+)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 DEV_SECRET_KEY = "django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho"
