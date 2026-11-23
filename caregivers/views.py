@@ -21,7 +21,12 @@ from .forms import (
     CaregiverServicesForm,
 )
 from .geocoding import GeocodingUnavailable, autocomplete, geocode
-from .models import CaregiverAvailability, CaregiverProfile, CaregiverService
+from .models import (
+    CaregiverAvailability,
+    CaregiverProfile,
+    CaregiverService,
+    past_time_error,
+)
 from .search import (
     available_during,
     DEFAULT_DISTANCE,
@@ -224,12 +229,19 @@ def caregiver_profile_detail(request, pk):
     from collections import defaultdict
     from datetime import datetime, timedelta
 
+    # Only time still ahead: no past days, and today's slots from now on (#343).
+    now = timezone.localtime()
+    now_min = now.hour * 60 + now.minute
     open_by_day = defaultdict(list)
-    for slot in CaregiverAvailability.objects.filter(caregiver=caregiver).order_by(
-        "date", "start_time"
-    ):
+    for slot in CaregiverAvailability.objects.filter(
+        caregiver=caregiver, date__gte=now.date()
+    ).order_by("date", "start_time"):
         start_min = slot.start_time.hour * 60 + slot.start_time.minute
         end_min = slot.end_time.hour * 60 + slot.end_time.minute
+        if slot.date == now.date():
+            start_min = max(start_min, now_min)
+            if start_min >= end_min:
+                continue
         open_by_day[slot.date].append((start_min, end_min))
 
     blocked_by_day = defaultdict(list)
@@ -355,8 +367,23 @@ def edit_caregiver_service(request, pk, service_id):
         form = CaregiverServicesForm(request.POST, instance=service)
 
         if form.is_valid():
-            form.save()
-            return redirect("services", pk=caregiver.pk)
+            # Same check as Add: one listing per service type (#323, #344).
+            duplicate = (
+                CaregiverService.objects.filter(
+                    caregiver=caregiver,
+                    service_type=form.cleaned_data["service_type"],
+                )
+                .exclude(pk=service.pk)
+                .exists()
+            )
+            if duplicate:
+                form.add_error(
+                    "service_type",
+                    "You already have this service! Please edit your existing listing instead.",
+                )
+            else:
+                form.save()
+                return redirect("services", pk=caregiver.pk)
     else:
         form = CaregiverServicesForm(instance=service)
 
@@ -859,6 +886,9 @@ def save_availability_changes(request):
                     raise ValueError("Choose a valid date and start/end time.")
                 if start >= end:
                     raise ValueError("End time must be after start time.")
+                past = past_time_error(day, end)
+                if past:
+                    raise ValueError(past)
 
                 if action == "create":
                     new_slots.append(

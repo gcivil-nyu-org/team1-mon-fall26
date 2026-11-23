@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 # "Years caring for pets" is picked from ranges (Figma). The stored number is
@@ -139,6 +140,20 @@ class CaregiverService(models.Model):
         ]
 
 
+def past_time_error(day, end):
+    """Why availability on `day` ending at `end` can't be saved, or "".
+
+    Owners can't book time that has already passed, so it can't be offered
+    (#324, #348). Deleting old slots is still allowed.
+    """
+    now = timezone.localtime()
+    if day < now.date():
+        return "You can't add availability on a day that has passed."
+    if day == now.date() and end <= now.time():
+        return "That time has already passed. Choose a later time today."
+    return ""
+
+
 class CaregiverAvailability(models.Model):
     caregiver = models.ForeignKey(
         "CaregiverProfile", on_delete=models.CASCADE, related_name="availability_slots"
@@ -155,6 +170,11 @@ class CaregiverAvailability(models.Model):
 
         if self.end_time <= self.start_time:
             raise ValidationError("End time must be after start time.")
+
+        if self.date is not None:
+            past = past_time_error(self.date, self.end_time)
+            if past:
+                raise ValidationError(past)
 
         if self.caregiver_id is None or self.date is None:
             return
