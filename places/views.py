@@ -11,6 +11,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from caregivers.search import DISTANCE_CHOICES, neighborhoods
 from caregivers.views import _choice, _with, _without
 
+from . import google_places
 from .forms import PlaceReportForm
 from .models import Place, PlaceReport
 from .search import (
@@ -58,6 +59,11 @@ def explore_places(request):
     distance = _choice(params.get("distance"), DISTANCE_CHOICES, DEFAULT_DISTANCE)
     origin, notice = find_origin(params)
     current = params.get("here") == "1" and origin is not None
+    if origin is not None:
+        # Dog-friendly cafés and restaurants from Google Maps near the search.
+        google_places.refresh_near(
+            origin["latitude"], origin["longitude"], distance, category
+        )
 
     places = Place.objects.shown()
     outdoor = category == Place.Category.OUTDOOR_DINING
