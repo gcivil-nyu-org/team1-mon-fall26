@@ -1114,6 +1114,11 @@ function renderCalendar() {
       statusText.textContent = "Choose a date and an end time after the start time.";
       return;
     }
+    const now = new Date();
+    if (date < dateKey(now) || (date === dateKey(now) && end <= `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`)) {
+      statusText.textContent = "That time has already passed. Choose a later day or time.";
+      return;
+    }
     const others = editingPiece ? withoutPiece(editingPiece) : slots;
     if (others.some(s => s.date === date && start < normalizeTime(s.end) && end > normalizeTime(s.start))) {
       statusText.textContent = "That time overlaps an existing availability slot.";
