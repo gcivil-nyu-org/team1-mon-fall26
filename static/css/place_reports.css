@@ -9,10 +9,10 @@
 .place-report-quotes p { margin: 4px 0 0; font-size: 15px; line-height: 22px; overflow-wrap: anywhere; }
 
 .cat-dog_park { --cat-bg: #bdebd3; --cat-ink: #14532d; }
-.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #5c4300; }
+.cat-cafe { --cat-bg: #ffe58a; --cat-ink: #6b4e00; }
 .cat-pet_store { --cat-bg: #ffd3b0; --cat-ink: #7a3410; }
 .cat-restaurant { --cat-bg: #ffc8d9; --cat-ink: #7a1f45; }
-.cat-outdoor_dining { --cat-bg: #cfe2fb; --cat-ink: #1f4e79; }
+.cat-outdoor_dining { --cat-bg: #d8f0c8; --cat-ink: #2f5a12; }
 
 .place-report-card {
   display: flex;
