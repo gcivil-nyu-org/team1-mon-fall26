@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load booking_tags %}
 
 {% block title %}Cancel booking · PawPal{% endblock %}
 
@@ -12,7 +13,7 @@
       <h1>Cancel this booking?</h1>
       <p>
         <strong>{{ booking.pet_names }} · {{ booking.service_type.name }}</strong> with {{ booking.caregiver.name }},
-        {{ booking.start_time|date:"D, M j, g:i A" }} to {{ booking.end_time|date:"D, M j, g:i A" }}.
+        {{ booking.start_time|care_date:"D, M j, g:i A" }} to {{ booking.end_time|care_date:"D, M j, g:i A" }}.
       </p>
       <p class="muted">
         {{ booking.caregiver.first_name }} will see this booking as Canceled. You can't undo this, but the booking stays in your history.

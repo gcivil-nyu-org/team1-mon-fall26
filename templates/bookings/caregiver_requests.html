@@ -40,7 +40,7 @@
                 {% include "bookings/partials/pet_avatar.html" with pet=booking.pet classes="request-avatar" %}
                 <span class="request-row-text">
                   <span><strong>{{ booking.pet_names }}</strong> <span class="muted">· {% if booking.all_pets|length > 1 %}{{ booking.all_pets|length }} pets{% else %}{{ booking.pet.pet_type }}{% endif %}</span></span>
-                  <span class="request-row-meta">{{ booking.service_type.name }} · {{ booking.start_time|date:"D, M j · g:i A" }}</span>
+                  <span class="request-row-meta">{{ booking.service_type.name }} · {{ booking.start_time|care_date:"D, M j · g:i A" }}</span>
                 </span>
                 <span class="request-row-tags">
                   {% if booking.ready_to_complete %}<span class="ready-tag">Ready to complete</span>{% endif %}
@@ -64,7 +64,7 @@
 
           <dl class="info-tiles request-tiles">
             <div class="tile tile-name"><dt>Service</dt><dd>{{ b.service_type.name }}</dd></div>
-            <div class="tile tile-type"><dt>When</dt><dd>{{ b.start_time|date:"D, M j" }} ·<br>{{ b.start_time|date:"g:i A" }}</dd></div>
+            <div class="tile tile-type"><dt>When</dt><dd>{{ b|care_span }}</dd></div>
           </dl>
 
           {% for pet in b.all_pets %}

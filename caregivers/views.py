@@ -708,16 +708,22 @@ def manage_availability(request):
         }
         for slot in slots
     ]
+    # Care that runs past midnight shows on every day it covers (#318).
+    from bookings.availability import day_pieces
+
     calendar_bookings = [
         {
             "id": booking.id,
-            "date": timezone.localtime(booking.start_time).date().isoformat(),
-            "start": timezone.localtime(booking.start_time).strftime("%H:%M"),
-            "end": timezone.localtime(booking.end_time).strftime("%H:%M"),
+            "date": day.isoformat(),
+            "start": piece_start.strftime("%H:%M"),
+            "end": piece_end.strftime("%H:%M") if piece_end else "23:59",
             "status": booking.status,
             "pet": booking.pet_names if booking.pet else "Pet",
         }
         for booking in bookings
+        for day, piece_start, piece_end in day_pieces(
+            booking.start_time, booking.end_time
+        )
     ]
 
     return render(

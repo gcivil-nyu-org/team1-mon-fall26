@@ -1,10 +1,18 @@
+from datetime import timedelta
+
 from django import forms
 from django.utils import timezone
 
 from caregivers.models import CaregiverProfile, CaregiverService, ServiceType
 from pets.models import Pet
 
+from .availability import covered_by_availability
 from .models import Booking
+
+# How far ahead care can be requested, and the longest one request can run
+# (#331, #332): a typo can't make a request for the year 2140 or 9999.
+MAX_DAYS_AHEAD = 365
+MAX_LENGTH = timedelta(days=30)
 
 DATE_FORMAT = "%Y-%m-%d"
 TIME_FORMAT = "%H:%M"
@@ -92,6 +100,7 @@ class BookingRequestForm(forms.ModelForm):
 
     def __init__(self, *args, owner, **kwargs):
         super().__init__(*args, **kwargs)
+        self.owner = owner
         self.fields["pets"].queryset = (
             Pet.objects.active()
             .filter(owner=owner)
@@ -146,6 +155,8 @@ class BookingRequestForm(forms.ModelForm):
         start = self.cleaned_data["start_time"]
         if start <= timezone.now():
             raise forms.ValidationError("Start time must be in the future.")
+        if start > timezone.now() + timedelta(days=MAX_DAYS_AHEAD):
+            raise forms.ValidationError("Choose a start date within the next year.")
         return start
 
     def clean(self):
@@ -154,14 +165,47 @@ class BookingRequestForm(forms.ModelForm):
         end = cleaned.get("end_time")
         if start and end and end <= start:
             self.add_error("end_time", "End time must be after the start time.")
+            end = None
+        elif start and end and end - start > MAX_LENGTH:
+            self.add_error("end_time", "One request can cover up to 30 days of care.")
+            end = None
 
         caregiver = cleaned.get("caregiver")
         service_type = cleaned.get("service_type")
         if caregiver and service_type:
             offered = offered_service_type_ids(caregiver)
-            # Only enforce once the caregiver has listed their services.
-            if offered and service_type.pk not in offered:
+            # Owners can only request services the caregiver lists (#297).
+            if not offered:
+                self.add_error(
+                    "service_type", "This caregiver hasn't listed any services yet."
+                )
+            elif service_type.pk not in offered:
                 self.add_error(
                     "service_type", "This caregiver doesn't offer that service."
                 )
+
+        if caregiver and start and end and "start_time" not in self.errors:
+            # Only time the caregiver opened on their calendar (#297, #307).
+            if not covered_by_availability(caregiver, start, end):
+                self.add_error(
+                    "start_time",
+                    f"{caregiver.name} isn't available then. "
+                    "Pick one of their open times on their profile.",
+                )
+            elif self._duplicate(caregiver, start, end):
+                # The same request again (#312): point to the one already sent.
+                self.add_error(
+                    None,
+                    "You already have a request with this caregiver at this time. "
+                    "Check My requests.",
+                )
         return cleaned
+
+    def _duplicate(self, caregiver, start, end):
+        return Booking.objects.filter(
+            owner=self.owner,
+            caregiver=caregiver,
+            status__in=[Booking.Status.PENDING, Booking.Status.ACCEPTED],
+            start_time__lt=end,
+            end_time__gt=start,
+        ).exists()

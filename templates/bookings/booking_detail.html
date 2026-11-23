@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load review_tags %}
+{% load booking_tags review_tags %}
 
 {% block title %}{{ booking.pet_names }} · {{ booking.service_type.name }} · PawPal{% endblock %}
 
@@ -29,8 +29,8 @@
         {% else %}
           <div class="tile tile-name"><dt>Caregiver</dt><dd>{{ booking.caregiver.name }}</dd></div>
         {% endif %}
-        <div class="tile tile-type"><dt>Starts</dt><dd>{{ booking.start_time|date:"D, M j, g:i A" }}</dd></div>
-        <div class="tile tile-age"><dt>Ends</dt><dd>{{ booking.end_time|date:"D, M j, g:i A" }}</dd></div>
+        <div class="tile tile-type"><dt>Starts</dt><dd>{{ booking.start_time|care_date:"D, M j, g:i A" }}</dd></div>
+        <div class="tile tile-age"><dt>Ends</dt><dd>{{ booking.end_time|care_date:"D, M j, g:i A" }}</dd></div>
       </dl>
 
       {# Messages and care updates about this booking. #}
