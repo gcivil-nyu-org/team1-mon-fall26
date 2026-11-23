@@ -45,6 +45,25 @@ class Location:
 HOUSE_NUMBER = re.compile(r"^\s*(\d+(?:-\d+)?)\b")
 
 
+ZIP_CODE = re.compile(r"^\d{5}$")
+
+
+def _zip_code_location(code):
+    """The center of an NYC ZIP code as a Location, or None if it isn't one."""
+    from .search import find_zip_code, zip_codes
+
+    if find_zip_code(code) is None:
+        return None
+    place = zip_codes()[code]
+    return Location(
+        latitude=_round(place["latitude"]),
+        longitude=_round(place["longitude"]),
+        neighborhood=place["neighborhood"],
+        borough=place["borough"],
+        label=code,
+    )
+
+
 def _round(value):
     return Decimal(str(value)).quantize(COORDINATE_PLACES)
 
@@ -108,6 +127,11 @@ def geocode(address):
     address = (address or "").strip()
     if not address:
         return None
+
+    # A bare ZIP code: GeoSearch reads "10012" as a house number and answers
+    # "10012 4 Avenue, Brooklyn" (#334), so use the ZIP code's own area.
+    if ZIP_CODE.match(address):
+        return _zip_code_location(address)
 
     data = _fetch(GEOSEARCH_URL, {"text": address, "size": 1})
 

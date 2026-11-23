@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from caregivers.geocoding import distance_miles
-from caregivers.search import find_neighborhood, neighborhoods
+from caregivers.search import find_neighborhood, find_zip_code, neighborhoods
 from messaging.models import Conversation
 from reviews.models import Review, rating_summary
 
@@ -227,7 +227,7 @@ def _place_and_distance(location, origin):
     """Short place name ("Gowanus") and miles from where the caregiver is
     searching (or their own area), if both are known."""
     place_name = (location or "").split(",")[0].strip()
-    place = find_neighborhood(location or "")
+    place = find_neighborhood(location or "") or find_zip_code(location or "")
     if place is None or origin is None:
         return place_name, None
     miles = distance_miles(
@@ -279,7 +279,8 @@ def opportunity_browse(request):
         return redirect("opportunities:list")
 
     opportunities = (
-        CareOpportunity.objects.filter(
+        CareOpportunity.objects.upcoming()
+        .filter(
             status=CareOpportunity.Status.OPEN,
             pet__deleted_at__isnull=True,
         )
@@ -297,6 +298,8 @@ def opportunity_browse(request):
     distance = _choice(params.get("distance"), DISTANCE_CHOICES, DEFAULT_DISTANCE)
     origin, notice = find_origin(params)
     searched = origin is not None
+    # A place we couldn't find lists nothing, not every post "near you" (#311).
+    unknown_place = origin is None and bool(notice)
     if origin is None and caregiver.latitude is not None:
         # No search yet: distances from the caregiver's own area.
         origin = {
@@ -307,9 +310,16 @@ def opportunity_browse(request):
 
     posts = []
     for post in opportunities:
+        if unknown_place:
+            break
         post.place_name, post.distance = _place_and_distance(post.location, origin)
-        # A search only shows posts within the distance picked.
-        if searched and (post.distance is None or post.distance > distance):
+        # Only posts within the distance in the search bar, which starts at the
+        # caregiver's own area before a search (#299). Posts whose place we
+        # can't map stay listed until a search.
+        if post.distance is None:
+            if searched:
+                continue
+        elif post.distance > distance:
             continue
         posts.append(post)
     selected_id = request.GET.get("post", "")
@@ -428,6 +438,17 @@ def opportunity_interest(request, pk):
     if opportunity.owner_id == request.user.pk:
         messages.error(request, "You cannot express interest in your own care post.")
         return redirect("opportunities:browse")
+    if opportunity.has_started:
+        # Too late to help with care that has already started (#325, #346).
+        messages.error(request, "This care post's time has already passed.")
+        return redirect("opportunities:browse")
+    if not caregiver.accepting_new_bookings:
+        # The owner couldn't book them anyway (#340).
+        messages.error(
+            request,
+            "Turn on Accepting new bookings on your profile to show interest.",
+        )
+        return redirect(f"{reverse('opportunities:browse')}?post={pk}")
 
     interest, created = CareOpportunityInterest.objects.get_or_create(
         opportunity=opportunity,

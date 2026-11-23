@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -6,6 +8,11 @@ from caregivers.models import ServiceType
 from pets.models import Pet
 
 from .models import CareOpportunity
+
+# How far ahead a post can start and how long it can run (#331, #332), so a
+# typo can't post care for the year 2140 or 9999.
+MAX_DAYS_AHEAD = 365
+MAX_LENGTH = timedelta(days=30)
 
 
 class CareOpportunityForm(forms.ModelForm):
@@ -112,6 +119,12 @@ class CareOpportunityForm(forms.ModelForm):
 
         if start <= timezone.now():
             raise ValidationError("The start date and time must be in the future.")
+
+        if start > timezone.now() + timedelta(days=MAX_DAYS_AHEAD):
+            raise ValidationError("Choose a start date within the next year.")
+
+        if end - start > MAX_LENGTH:
+            raise ValidationError("One care post can cover up to 30 days of care.")
 
         cleaned["start_time"] = start
         cleaned["end_time"] = end

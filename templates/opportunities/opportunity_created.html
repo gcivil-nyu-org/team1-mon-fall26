@@ -22,7 +22,7 @@
       <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
       <span class="co-item-copy">
         <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
-        <small>{{ opportunity.start_time|date:"D, M j · g:i A" }} · {{ opportunity.location }}</small>
+        <small>{{ opportunity.time_range }} · {{ opportunity.location }}</small>
       </span>
       <span class="co-badge {{ opportunity.status }}">{{ opportunity.get_status_display }}</span>
     </div>

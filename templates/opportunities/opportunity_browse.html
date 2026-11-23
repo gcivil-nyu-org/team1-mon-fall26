@@ -111,7 +111,7 @@
           <span class="co-avatar theme-{{ post.pet.theme }}">{{ post.pet.name|first|upper }}</span>
           <span class="co-item-copy">
             <strong>{{ post.pet.name }} · {{ post.service_type.name }}</strong>
-            <small>{{ post.start_time|date:'D, M j · g:i A' }}</small>
+            <small>{{ post.time_range }}</small>
             <small>{% if post.distance is not None %}{{ post.place_name }} · {{ post.distance }} mi{% else %}{{ post.location }}{% endif %}</small>
           </span>
           {% if post.caregiver_interested %}<span class="co-badge interested">Interested</span>{% endif %}
@@ -131,7 +131,7 @@
 
         <div class="co-facts co-facts-color">
           <div class="co-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
-          <div class="co-fact"><small>When</small><strong>{{ selected.start_time|date:'D, M j · g:i A' }}</strong></div>
+          <div class="co-fact"><small>When</small><strong>{{ selected.time_range }}</strong></div>
           <div class="co-fact"><small>Where</small><strong>{{ selected.location }}</strong></div>
         </div>
 

@@ -1,5 +1,21 @@
 from django.conf import settings
 from django.db import models
+from django.utils import dateformat, timezone
+
+
+def _when(value, fmt):
+    """`value` in local time; the year is added when it isn't this year (#331)."""
+    local = timezone.localtime(value)
+    if local.year != timezone.localdate().year:
+        fmt = fmt.replace("M j", "M j, Y", 1)
+    return dateformat.format(local, fmt)
+
+
+class CareOpportunityQuerySet(models.QuerySet):
+    def upcoming(self):
+        """Posts whose care hasn't started yet: caregivers can still offer
+        to help (#298, #325, #346)."""
+        return self.filter(start_time__gt=timezone.now())
 
 
 class CareOpportunity(models.Model):
@@ -42,6 +58,8 @@ class CareOpportunity(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = CareOpportunityQuerySet.as_manager()
+
     class Meta:
         ordering = ["-created_at"]
         constraints = [
@@ -53,6 +71,20 @@ class CareOpportunity(models.Model):
 
     def __str__(self):
         return f"Care Opportunity #{self.pk} ({self.get_status_display()})"
+
+    @property
+    def has_started(self):
+        return self.start_time <= timezone.now()
+
+    def time_range(self):
+        """ "Wed, Nov 25 · 2:00 PM – 3:00 PM", with the end date when the care
+        runs into another day (#301)."""
+        start = timezone.localtime(self.start_time)
+        end = timezone.localtime(self.end_time)
+        first = _when(start, "D, M j · g:i A")
+        if start.date() == end.date():
+            return f"{first} – {dateformat.format(end, 'g:i A')}"
+        return f"{first} – {_when(end, 'D, M j · g:i A')}"
 
 
 class CareOpportunityInterest(models.Model):

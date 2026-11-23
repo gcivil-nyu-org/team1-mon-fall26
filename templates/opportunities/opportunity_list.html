@@ -31,14 +31,14 @@
           <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
           <span class="co-item-copy">
             <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
-            <small>{{ opportunity.start_time|date:"D, M j · g:i A" }}</small>
+            <small>{{ opportunity.time_range }}</small>
             {% if opportunity.interest_count %}
               <span class="co-interest-pill">{{ opportunity.interest_count }} interested</span>
             {% else %}
               <small>No one interested yet</small>
             {% endif %}
           </span>
-          <span class="co-badge open">Open</span>
+          {% if opportunity.has_started %}<span class="co-badge closed">Past</span>{% else %}<span class="co-badge open">Open</span>{% endif %}
         </a>
       {% empty %}
         <p class="co-empty">No open care posts yet.</p>
@@ -50,7 +50,7 @@
           <span class="co-avatar theme-{{ opportunity.pet.theme }}">{{ opportunity.pet.name|slice:":1" }}</span>
           <span class="co-item-copy">
             <strong>{{ opportunity.pet.name }} · {{ opportunity.service_type.name }}</strong>
-            <small>{{ opportunity.start_time|date:"D, M j · g:i A" }}</small>
+            <small>{{ opportunity.time_range }}</small>
           </span>
           <span class="co-badge closed">Closed</span>
         </a>
@@ -152,7 +152,7 @@
 
           <div class="co-facts">
             <div class="co-fact"><small>Service</small><strong>{{ selected.service_type.name }}</strong></div>
-            <div class="co-fact"><small>Date &amp; time</small><strong>{{ selected.start_time|date:"D, M j · g:i A" }}</strong></div>
+            <div class="co-fact"><small>Date &amp; time</small><strong>{{ selected.time_range }}</strong></div>
             <div class="co-fact"><small>Location</small><strong>{{ selected.location }}</strong></div>
           </div>
 
@@ -171,7 +171,8 @@
                 <div class="co-caregiver-actions">
                   <a class="btn btn-outline co-btn-sm" href="{% url 'messaging:message_caregiver' caregiver.pk %}">{% include "opportunities/partials/message_icon.html" %} Message</a>
                   <a class="btn btn-outline co-btn-sm" href="{% url 'caregiver' caregiver.pk %}">View profile</a>
-                  {% if selected.status == "open" %}
+                  {# Only caregivers taking new bookings can be booked (#340). #}
+                  {% if selected.status == "open" and caregiver.accepting_new_bookings %}
                     <a class="btn btn-dark co-btn-sm" href="{% url 'bookings:booking_create' %}?caregiver={{ caregiver.pk }}&amp;pet={{ selected.pet_id }}&amp;service_type={{ selected.service_type_id }}">Book</a>
                   {% endif %}
                 </div>
