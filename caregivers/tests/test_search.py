@@ -146,10 +146,13 @@ class FindCaregiversPageTests(SearchTestData):
         self.assertNotIn("NoAccount", self.names(response))
         self.assertNotIn("Busy", self.names(response))
 
-    def test_caregiver_does_not_see_their_own_profile(self):
+    def test_caregivers_are_sent_to_pets_needing_care(self):
+        # Their Explore lists pets, not other caregivers (#310).
         self.client.force_login(self.village.user)
         response = self.client.get(URL)
-        self.assertNotIn("Chloe", self.names(response))
+        self.assertRedirects(
+            response, reverse("opportunities:browse"), fetch_redirect_response=False
+        )
 
     def test_search_by_picked_address(self):
         response = self.client.get(

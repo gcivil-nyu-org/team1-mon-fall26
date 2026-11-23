@@ -95,10 +95,18 @@ def _name_parts(name):
     return [part.strip() for part in _simplify(name).split("-")]
 
 
+# MODZCTA's code for areas without a ZIP code, not a real one (#319).
+NOT_A_ZIP_CODE = "99999"
+
+
 def find_zip_code(text):
     """The place for an NYC ZIP code like "11215", or None."""
     code = text.strip()
-    place = zip_codes().get(code) if code.isdigit() and len(code) == 5 else None
+    place = (
+        zip_codes().get(code)
+        if code.isdigit() and len(code) == 5 and code != NOT_A_ZIP_CODE
+        else None
+    )
     if place is None:
         return None
     return {

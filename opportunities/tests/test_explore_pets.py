@@ -119,10 +119,11 @@ class CaregiverExploreTests(ExploreTestData):
         response = self.client.get(CAREGIVERS_URL, {"looking_for": "pets"})
         self.assertRedirects(response, BROWSE_URL)
 
-    def test_before_a_search_every_post_from_the_caregivers_area(self):
+    def test_before_a_search_posts_within_the_distance_of_the_caregivers_area(self):
+        # The list matches the distance shown in the search bar (#299).
         response = self.client.get(BROWSE_URL)
-        self.assertEqual(response.context["posts"], [self.nearby, self.far])
-        self.assertContains(response, "2 open near you")
+        self.assertEqual(response.context["posts"], [self.nearby])
+        self.assertContains(response, "1 open near you")
         self.assertContains(response, 'value="Park Slope"')
         self.assertContains(response, "Enter a neighborhood or ZIP code to see pets")
         self.assertEqual(response.context["posts"][0].distance, 0.0)

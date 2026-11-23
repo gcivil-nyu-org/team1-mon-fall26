@@ -393,6 +393,13 @@ def caregiver_list(request):
         return redirect(explore_url("places:explore", params))
     if params.get("looking_for") == "pets":
         return redirect(explore_url("opportunities:browse", params))
+    # Caregivers' Explore is Pets needing care; an old bookmark to this page
+    # would list caregivers under that heading (#310).
+    account = getattr(request.user, "account_profile", None)
+    if getattr(request.user, "caregiver_profile", None) or (
+        account is not None and account.role == "caregiver"
+    ):
+        return redirect(explore_url("opportunities:browse", params))
     notice = ""
 
     availability = params.get("availability", "available")
