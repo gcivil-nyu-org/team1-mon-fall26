@@ -11,7 +11,7 @@ from bookings.models import Booking
 from caregivers.models import ServiceType
 from pets.models import Pet, PetType
 
-from .test_user_list import StaffTestData, detail_url
+from .test_user_list import LIST_URL, StaffTestData, detail_url
 
 User = get_user_model()
 
@@ -21,26 +21,36 @@ def delete_url(user):
 
 
 class DeleteUserTests(StaffTestData):
-    def test_active_accounts_have_a_delete_button(self):
+    def test_delete_account_is_in_the_more_menu(self):
+        # Kat's "More menu" design: Delete account sits under "…".
         response = self.client.get(detail_url(self.owner))
+        self.assertContains(response, '<details class="staff-actions-more">')
+        self.assertContains(response, "More actions")
         self.assertContains(response, "confirm=delete")
         self.assertContains(response, "Delete account")
 
-    def test_no_delete_button_for_deleted_accounts(self):
+    def test_deleted_accounts_have_no_page(self):
         response = self.client.get(detail_url(self.gone))
-        self.assertNotContains(response, "confirm=delete")
+        self.assertEqual(response.status_code, 404)
 
     def test_delete_asks_for_confirmation_first(self):
         response = self.client.get(detail_url(self.owner) + "?confirm=delete")
         self.assertContains(response, "Delete Kat’s account?")
-        self.assertContains(response, "This can’t be undone.")
+        self.assertContains(
+            response,
+            "This can’t be undone. Their profile, pets, bookings and posts "
+            "will be removed.",
+        )
         self.assertContains(response, f'action="{delete_url(self.owner)}"')
         self.owner.refresh_from_db()
         self.assertTrue(self.owner.is_active)
 
     def test_no_popup_for_an_account_that_cant_be_deleted(self):
-        response = self.client.get(detail_url(self.gone) + "?confirm=delete")
-        self.assertNotContains(response, "account?</h2>")
+        # Admins and deleted accounts aren't on the Users page.
+        other_admin = User.objects.create_user("bo", is_staff=True)
+        for account in (self.admin, other_admin, self.gone):
+            response = self.client.get(detail_url(account) + "?confirm=delete")
+            self.assertNotContains(response, "account?</h2>", status_code=404)
 
     def test_deleting_an_owner(self):
         dog = PetType.objects.get_or_create(name="Dog")[0]
@@ -56,16 +66,19 @@ class DeleteUserTests(StaffTestData):
             status=Booking.Status.ACCEPTED,
         )
         response = self.client.post(delete_url(self.owner), follow=True)
-        self.assertRedirects(response, detail_url(self.owner) + "?done=deleted")
-        self.assertContains(response, "Account deleted. Kat can’t log in anymore.")
+        # Kat's "Account deleted" design: the page moves on to the first
+        # account, with a banner.
+        self.assertRedirects(response, f"{LIST_URL}?deleted={self.owner.pk}")
+        self.assertContains(response, "Kat W.’s account was deleted.")
         self.owner.refresh_from_db()
         self.assertFalse(self.owner.is_active)
         self.assertEqual(self.owner.email, "")
         self.assertFalse(self.owner.has_usable_password())
         booking.refresh_from_db()
         self.assertEqual(booking.status, Booking.Status.CANCELLED)
-        # It stays in the list, marked Deleted.
-        self.assertContains(response, "Deleted")
+        # It leaves the list.
+        self.assertNotIn(self.owner, response.context["page"])
+        self.assertNotEqual(response.context["selected"], self.owner)
 
     def test_deleting_a_caregiver_stops_new_requests(self):
         self.client.post(delete_url(self.sitter))
@@ -99,6 +112,10 @@ class DeleteUserTests(StaffTestData):
     def test_delete_needs_a_post(self):
         self.assertEqual(self.client.get(delete_url(self.owner)).status_code, 405)
 
-    def test_deleted_banner_only_while_deleted(self):
-        response = self.client.get(detail_url(self.owner) + "?done=deleted")
-        self.assertNotContains(response, "Account deleted.")
+    def test_deleted_banner_only_for_deleted_accounts(self):
+        for value in (self.owner.pk, self.admin.pk, "999", "x"):
+            response = self.client.get(LIST_URL, {"deleted": value})
+            self.assertIsNone(response.context["deleted_account"])
+            self.assertNotContains(response, "account was deleted.")
+        response = self.client.get(LIST_URL, {"deleted": self.gone.pk})
+        self.assertEqual(response.context["deleted_account"], self.gone)
