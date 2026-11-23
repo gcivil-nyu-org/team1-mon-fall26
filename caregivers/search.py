@@ -3,10 +3,14 @@ them by service (#34) and availability (#35)."""
 
 import json
 import re
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 
 from django.db.models import Exists, OuterRef, Prefetch, Q
+from django.utils import timezone
+
+from bookings.models import Booking
 
 from .geocoding import distance_miles
 from .models import (
@@ -261,4 +265,14 @@ def available_during(caregivers, date, start_time, end_time):
         end_time__gte=end_time,
     )
 
-    return caregivers.filter(Exists(matching_slots))
+    # Time already taken by accepted care isn't free, as on the profile's
+    # calendar (#335, #345).
+    window_start = timezone.make_aware(datetime.combine(date, start_time))
+    window_end = timezone.make_aware(datetime.combine(date, end_time))
+    booked = Booking.objects.filter(
+        caregiver=OuterRef("pk"),
+        status__in=[Booking.Status.ACCEPTED, Booking.Status.COMPLETED],
+        start_time__lt=window_end,
+        end_time__gt=window_start,
+    )
+    return caregivers.filter(Exists(matching_slots)).exclude(Exists(booked))

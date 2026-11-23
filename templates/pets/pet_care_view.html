@@ -41,7 +41,7 @@
                 </span>
                 <span class="visit-text">
                   <strong>{{ booking.service_type.name }}</strong>
-                  <span class="muted">{{ booking.start_time|date:"D, M j, g:i A" }} – {{ booking.end_time|date:"g:i A" }}</span>
+                  <span class="muted">{{ booking|care_span }}</span>
                 </span>
                 <span class="text-link" aria-hidden="true">&rarr;</span>
               </a>

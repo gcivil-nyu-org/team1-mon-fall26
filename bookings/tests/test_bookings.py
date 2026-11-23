@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import time, timedelta
 from caregivers.tests.profile_choices import required_choices
 from decimal import Decimal
 from unittest import mock
@@ -9,7 +9,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from caregivers.geocoding import Location
-from caregivers.models import CaregiverProfile, CaregiverService, ServiceType
+from caregivers.models import (
+    CaregiverAvailability,
+    CaregiverProfile,
+    CaregiverService,
+    ServiceType,
+)
 from pets.models import Pet, PetType
 
 from ..forms import BookingRequestForm
@@ -24,6 +29,23 @@ def times(start, end):
         "end_time_0": end.strftime("%Y-%m-%d"),
         "end_time_1": end.strftime("%H:%M"),
     }
+
+
+def open_for_requests(caregiver, *service_types, days=8):
+    """List these services and open every day from today for `days` days."""
+    for service_type in service_types:
+        CaregiverService.objects.get_or_create(
+            caregiver=caregiver,
+            service_type=service_type,
+            defaults={"price": Decimal("25"), "is_active": True},
+        )
+    today = timezone.localdate()
+    for offset in range(days):
+        CaregiverAvailability.objects.get_or_create(
+            caregiver=caregiver,
+            date=today + timedelta(days=offset),
+            defaults={"start_time": time(0, 0), "end_time": time(23, 59)},
+        )
 
 
 class BookingTestData(TestCase):
@@ -43,6 +65,8 @@ class BookingTestData(TestCase):
         # Created by the 0002 data migration.
         cls.walk = ServiceType.objects.get(name="Dog walking")
         cls.sitting = ServiceType.objects.get(name="Pet sitting")
+        # Requests need a listed service and open time (#297, #307).
+        open_for_requests(cls.caregiver, cls.walk, cls.sitting)
 
     def form_data(self, **overrides):
         start = timezone.localtime() + timedelta(days=2)
@@ -158,12 +182,9 @@ class BookingCreateViewTests(BookingTestData):
         self.assertIn("/accounts/login/", response["Location"])
 
     def test_form_only_offers_the_caregivers_services(self):
-        CaregiverService.objects.create(
-            caregiver=self.caregiver,
-            service_type=self.walk,
-            price=Decimal("25"),
-            is_active=True,
-        )
+        CaregiverService.objects.filter(
+            caregiver=self.caregiver, service_type=self.sitting
+        ).update(is_active=False)
         self.client.force_login(self.owner)
         response = self.client.get(self.url, {"caregiver": self.caregiver.pk})
         self.assertEqual(
