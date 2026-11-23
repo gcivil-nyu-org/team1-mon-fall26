@@ -92,6 +92,11 @@ def upcoming_bookings(pet):
     )
 
 
+def open_care_posts(pet):
+    """The pet's care posts caregivers can still answer."""
+    return pet.care_opportunities.filter(status="open", start_time__gt=timezone.now())
+
+
 class PetDeleteView(OwnerPetsMixin, DeleteView):
     """
     Story #24: delete a pet after the owner confirms.
@@ -118,7 +123,17 @@ class PetDeleteView(OwnerPetsMixin, DeleteView):
             )
             return redirect("pets:delete", pk=pet.pk)
 
-        if Booking.for_pet(pet).exists():
+        if open_care_posts(pet).exists():
+            # Caregivers may be answering it (#322).
+            messages.error(
+                self.request,
+                f"{pet.name} has an open care post. Close it first, then delete the profile.",
+            )
+            return redirect("pets:delete", pk=pet.pk)
+
+        # Past bookings and care posts keep pointing at the pet, so it's hidden
+        # instead of removed (removing it was a server error, #322).
+        if Booking.for_pet(pet).exists() or pet.care_opportunities.exists():
             pet.deleted_at = timezone.now()
             pet.save(update_fields=["deleted_at"])
         else:
