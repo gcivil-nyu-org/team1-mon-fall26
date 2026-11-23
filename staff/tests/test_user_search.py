@@ -18,6 +18,8 @@ class SearchTests(StaffTestData):
         self.assertEqual(len(self.found("alex")[1]), 1)
 
     def test_by_name_or_email(self):
+        # An account with no name is shown (and found) by its username.
+        nameless = self.make("nameless", "", "", "")
         cases = {
             "Chloe": [self.sitter],
             "shih": [self.sitter],
@@ -25,7 +27,8 @@ class SearchTests(StaffTestData):
             "chloe shih": [self.sitter],
             "@example.com": [self.new, self.sitter, self.owner],
             "SAM": [self.new],
-            "gone": [self.gone],
+            "nameless": [nameless],
+            "gone": [],  # deleted accounts aren't listed
         }
         for query, accounts in cases.items():
             self.assertEqual(self.found(query)[1], accounts, query)
@@ -48,7 +51,7 @@ class SearchTests(StaffTestData):
 
     def test_blank_search_lists_everyone(self):
         response, accounts = self.found("   ")
-        self.assertEqual(len(accounts), 4)
+        self.assertEqual(len(accounts), 3)
         self.assertNotContains(response, "accounts found")
         self.assertNotContains(response, ">Clear</a>")
 

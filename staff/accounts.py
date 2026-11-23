@@ -63,10 +63,12 @@ def describe(user):
 
 def all_accounts():
     """Every pet owner and caregiver account, newest first, with what the
-    list needs in one query. Admin accounts aren't listed, as in the Figma."""
+    list needs in one query. Admin accounts aren't listed, as in the Figma,
+    and neither are deleted (deactivated) ones: Kat's "Delete account" design
+    drops the account from the list once it's deleted."""
     return (
         get_user_model()
-        .objects.filter(is_staff=False)
+        .objects.filter(is_staff=False, is_active=True)
         .select_related("account_profile", "caregiver_profile")
         .order_by("-date_joined", "-pk")
     )

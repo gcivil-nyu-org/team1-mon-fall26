@@ -4,6 +4,8 @@
 
 /* 1200px page, 1136px of content: the same width as Home and Explore. */
 main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
+/* Admins see the forum inside Explore: 1176px of content, like the other admin pages. */
+main.page-forum.is-admin { max-width: 1240px; }
 
 .page-forum .back-link { gap: 6px; min-height: 32px; margin: 0 0 10px; font-size: 15px; }
 .page-forum .back-link svg { width: 16px; height: 16px; }
@@ -201,7 +203,10 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
 
 /* ---------- After posting ---------- */
 
-.forum-posted { margin-bottom: 20px; padding: 11px 14px; border-radius: 14px; font-size: 15px; font-weight: 700; }
+/* Green banner (Figma "... Confirmation"): 46px, 26px white check circle. */
+.forum-posted { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px 14px; border-radius: 16px; background: #cdefdc; color: #14532d; font-size: 15px; font-weight: 700; line-height: 23.25px; }
+.forum-posted .alert-icon { width: 26px; height: 26px; color: #14532d; }
+.forum-posted .alert-icon svg { width: 16px; height: 16px; }
 .forum-new-badge { padding: 2px 9px; border-radius: 999px; background: var(--purple); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
 
 /* ---------- Admins look after the forum (#102, Figma "Monitor Forum Activity") ---------- */
@@ -209,49 +214,56 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
 .admin-explore-tabs { margin: 2px 0 18px; padding: 5px; }
 .admin-explore-tabs .admin-tab { padding: 8px 18px; font-size: 16px; line-height: 24px; }
 .forum-body.has-actions { border-bottom: 0; padding-bottom: 14px; }
-.forum-post-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 18px; border-bottom: 1.5px solid var(--line); }
+.forum-post-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-bottom: 18px; border-bottom: 1.5px solid var(--line); }
+/* Figma "Monitor Forum Activity": 40px pills with a beige ring and a 3px shadow. */
 .forum-action {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 7px 14px;
-  border: 1.5px solid var(--line-strong);
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 2px 0 var(--line);
+  box-shadow: 0 0 0 1.5px #ead3c9, 0 3px 0 #ead3c9;
   color: var(--ink);
   font: inherit;
   font-size: 14px;
   font-weight: 700;
+  line-height: 21.7px;
   text-decoration: none;
   cursor: pointer;
 }
-.forum-action:hover { border-color: var(--ink); }
-.forum-action.is-danger { border-color: #f0c9c4; color: var(--error); }
-.forum-action.is-danger:hover { border-color: var(--error); }
+.forum-action svg { width: 16px; height: 16px; }
+.forum-action:hover { box-shadow: 0 0 0 1.5px var(--ink), 0 3px 0 #ead3c9; }
+.forum-action.is-danger { color: #b42318; }
+.forum-action.is-danger:hover { box-shadow: 0 0 0 1.5px #b42318, 0 3px 0 #ead3c9; }
 .forum-icon { flex: none; }
 .forum-comment-remove {
   display: inline-grid;
   place-items: center;
   flex: none;
   align-self: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   margin-left: auto;
-  border: 1.5px solid #f0c9c4;
   border-radius: 50%;
   background: #fff;
-  color: var(--error);
+  box-shadow: 0 0 0 1.5px #ead3c9;
+  color: #b42318;
 }
-.forum-comment-remove:hover { border-color: var(--error); }
+.forum-comment-remove svg { width: 16px; height: 16px; }
+.forum-comment-remove:hover { box-shadow: 0 0 0 1.5px #b42318; }
 
-/* Figma "Remove this post?" popup */
-.forum-confirm { display: grid; gap: 10px; width: min(100%, 440px); padding: 26px 24px 24px; border-radius: 24px; background: #fff; box-shadow: 0 6px 0 var(--line); }
-.forum-confirm h2 { margin: 0; font-size: 24px; line-height: 1.2; }
-.forum-confirm p { margin: 0 0 8px; font-size: 15px; }
-.forum-confirm-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
-.forum-confirm-actions .btn { justify-content: center; min-height: 50px; font-size: 16px; }
+/* Figma "Remove Inappropriate Forum Content": 560px, 150px from the top. */
+.forum-confirm { display: grid; gap: 16px; align-self: start; width: min(100%, 560px); margin-top: clamp(0px, calc((100vh - 240px) / 2 - 16px), 134px); box-sizing: border-box; padding: 30px; border-radius: 28px; background: #fff; box-shadow: 0 0 0 1.5px #f0ddd5, 0 6px 0 #f0ddd5; }
+.forum-confirm h2 { margin: 0; font-size: 28px; line-height: 43.4px; letter-spacing: -0.14px; }
+.forum-confirm p { margin: 0; color: #3d322e; font-size: 16px; line-height: 24.8px; }
+.forum-confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.forum-confirm-actions .btn { justify-content: center; min-height: 50px; padding: 0 26px; border: 0; font-size: 16px; font-weight: 700; }
+.forum-confirm-actions .btn-outline { background: #fff; box-shadow: 0 0 0 2px #ead3c9, 0 4px 0 #ead3c9; color: var(--ink); }
+.forum-confirm-actions .btn-danger { background: #b42318; box-shadow: 0 4px 0 #7a1a12; color: #fff; }
+.forum-confirm-actions .btn:focus:not(:focus-visible) { outline: none; }
 
 /* ---------- Restricted from the forum (#103, Figma "Restricted User") ---------- */
 
@@ -333,8 +345,8 @@ main.page-forum { max-width: 1200px; padding: 16px 32px 64px; }
   right: 14px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--ink);
   color: #fff;

@@ -33,9 +33,9 @@ class RestrictForumTests(StaffTestData):
         self.assertContains(response, "Restrict forum posting")
         self.assertNotContains(response, "Restore posting")
 
-    def test_no_button_for_deleted_accounts(self):
+    def test_no_page_for_deleted_accounts(self):
         response = self.client.get(detail_url(self.gone))
-        self.assertNotContains(response, "confirm=forum")
+        self.assertNotContains(response, "confirm=forum", status_code=404)
 
     def test_restrict_asks_for_confirmation_first(self):
         response = self.client.get(detail_url(self.owner) + "?confirm=forum")
@@ -50,9 +50,9 @@ class RestrictForumTests(StaffTestData):
 
     def test_no_popup_when_already_restricted_or_not_allowed(self):
         restrict_forum(self.owner)
-        for account in (self.owner, self.gone):
+        for account, status in ((self.owner, 200), (self.gone, 404)):
             response = self.client.get(detail_url(account) + "?confirm=forum")
-            self.assertNotContains(response, "from the forum?</h2>")
+            self.assertNotContains(response, "from the forum?</h2>", status_code=status)
 
     def test_restricting(self):
         response = self.client.post(restrict_url(self.owner), follow=True)
