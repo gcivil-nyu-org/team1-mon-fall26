@@ -52,3 +52,6 @@ staticfiles/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# This machine's own secret key (config/settings.py)
+.secret_key
