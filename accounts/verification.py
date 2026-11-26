@@ -106,3 +106,16 @@ def send_email_changed_notice(user, old_email):
     subject = render_to_string("accounts/emails/email_changed_subject.txt", context)
     body = render_to_string("accounts/emails/email_changed.txt", context)
     send_mail(subject.strip(), body, None, [old_email])
+
+
+def send_signup_existing_email(request, user):
+    """Someone signed up with an email that already has an account (#317):
+    tell its owner, with links to log in or reset the password."""
+    context = {
+        "user": user,
+        "login_link": request.build_absolute_uri(reverse("login")),
+        "reset_link": request.build_absolute_uri(reverse("password_reset")),
+    }
+    subject = render_to_string("accounts/emails/signup_existing_subject.txt", context)
+    body = render_to_string("accounts/emails/signup_existing.txt", context)
+    send_mail(subject.strip(), body, None, [user.email])

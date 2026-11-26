@@ -1,0 +1,14 @@
+{% autoescape off %}Hi {{ user.first_name|default:user.username }},
+
+Someone just tried to make a new PawPal account with this email, but it already has an account ({{ user.username }}).
+
+If it was you, log in here instead:
+{{ login_link }}
+
+Forgot your password? Reset it here:
+{{ reset_link }}
+
+If it wasn't you, you can ignore this email. Nothing has changed on your account.
+
+The PawPal team
+{% endautoescape %}
