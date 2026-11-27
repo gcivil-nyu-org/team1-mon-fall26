@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from django.test import SimpleTestCase
@@ -15,12 +16,18 @@ from django.test import SimpleTestCase
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 SCRIPT = (
-    "import json, warnings\n"
+    "import json, os, sys, warnings\n"
+    "sys.argv = os.environ.get('TEST_ARGV', 'manage.py').split()\n"
     "with warnings.catch_warnings(record=True) as caught:\n"
     "    warnings.simplefilter('always')\n"
     "    from config import settings as s\n"
     "print(json.dumps({'debug': s.DEBUG, 'secret': s.SECRET_KEY,\n"
-    "    'dev_secret': s.SECRET_KEY == s.DEV_SECRET_KEY,\n"
+    "    'https': s.HTTPS,\n"
+    "    'secure_cookies': getattr(s, 'SESSION_COOKIE_SECURE', False),\n"
+    "    'csrf_secure': getattr(s, 'CSRF_COOKIE_SECURE', False),\n"
+    "    'ssl_redirect': getattr(s, 'SECURE_SSL_REDIRECT', False),\n"
+    "    'hsts': getattr(s, 'SECURE_HSTS_SECONDS', 0),\n"
+    "    'trusted': getattr(s, 'CSRF_TRUSTED_ORIGINS', []),\n"
     "    'hosts': s.ALLOWED_HOSTS, 'db': s.DATABASES['default'],\n"
     "    'mail': s.MAILERS['default'],\n"
     "    'warnings': [str(w.message) for w in caught]}, default=str))\n"
@@ -29,6 +36,10 @@ SCRIPT = (
 DEPLOY_VARS = (
     "DJANGO_DEBUG",
     "DJANGO_SECRET_KEY",
+    "DJANGO_SECRET_KEY_FILE",
+    "DJANGO_HTTPS",
+    "DJANGO_HSTS_SECONDS",
+    "TEST_ARGV",
     "DJANGO_ALLOWED_HOSTS",
     "RDS_HOSTNAME",
     "RDS_PORT",
@@ -59,12 +70,51 @@ def load_settings(**env):
 
 
 class SettingsFromEnvironmentTests(SimpleTestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.key_file = Path(tmp.name) / "secret_key"
+
+    def load(self, **env):
+        return load_settings(DJANGO_SECRET_KEY_FILE=str(self.key_file), **env)
+
     def test_local_defaults(self):
-        s = load_settings()
+        s = self.load(TEST_ARGV="manage.py runserver")
         self.assertTrue(s["debug"])
-        self.assertTrue(s["dev_secret"])
+        self.assertFalse(s["https"])
         self.assertEqual(s["db"]["ENGINE"], "django.db.backends.sqlite3")
         self.assertEqual(s["warnings"], [])
+
+    def test_debug_is_off_unless_running_the_dev_server(self):
+        # #316: gunicorn or any other command without DJANGO_DEBUG.
+        self.assertFalse(self.load(TEST_ARGV="gunicorn config.wsgi")["debug"])
+        self.assertFalse(self.load()["debug"])
+        self.assertTrue(self.load(DJANGO_DEBUG="True")["debug"])
+
+    def test_without_a_secret_key_a_random_one_is_kept_on_the_machine(self):
+        # #316: no committed key; the same key every time on this machine.
+        first = self.load()["secret"]
+        self.assertGreaterEqual(len(first), 40)
+        self.assertNotIn("django-insecure", first)
+        self.assertEqual(self.key_file.read_text(), first)
+        self.assertEqual(self.key_file.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.load()["secret"], first)
+        other = Path(self.key_file.parent) / "other_key"
+        self.assertNotEqual(
+            load_settings(DJANGO_SECRET_KEY_FILE=str(other))["secret"], first
+        )
+
+    def test_https_settings(self):
+        # #315: off while the site is on plain HTTP, all on with DJANGO_HTTPS.
+        s = self.load()
+        self.assertFalse(s["secure_cookies"] or s["ssl_redirect"] or s["hsts"])
+        s = self.load(DJANGO_HTTPS="True")
+        self.assertTrue(s["secure_cookies"] and s["csrf_secure"] and s["ssl_redirect"])
+        self.assertEqual(s["hsts"], 3600)
+        self.assertIn(
+            "https://pawpal-env.eba-x2trrt2m.us-east-2.elasticbeanstalk.com",
+            s["trusted"],
+        )
 
     def test_production_values(self):
         s = load_settings(
@@ -80,11 +130,6 @@ class SettingsFromEnvironmentTests(SimpleTestCase):
             "pawpal-env.eba-x2trrt2m.us-east-2.elasticbeanstalk.com", s["hosts"]
         )
         self.assertEqual(s["warnings"], [])
-
-    def test_warns_when_production_has_no_secret_key(self):
-        s = load_settings(DJANGO_DEBUG="False", DJANGO_SECRET_KEY="")
-        self.assertTrue(s["dev_secret"])
-        self.assertTrue(any("DJANGO_SECRET_KEY" in w for w in s["warnings"]))
 
     def test_rds_variables_switch_to_postgresql(self):
         s = load_settings(
@@ -115,6 +160,16 @@ class ElasticBeanstalkDatabaseTests(SimpleTestCase):
         database = (BASE_DIR / ".ebextensions" / "02_database.config").read_text()
         self.assertIn("SQLITE_DB_PATH: /var/app/data/db.sqlite3", static)
         self.assertIn("touch /var/app/data/db.sqlite3", database)
+
+
+class ElasticBeanstalkSecretKeyTests(SimpleTestCase):
+    """#316: the server's own key is made, owned by the web app's user, before
+    collectstatic or migrate load the settings as root."""
+
+    def test_deploy_makes_the_key_before_any_manage_command(self):
+        static = (BASE_DIR / ".ebextensions" / "01_static.config").read_text()
+        self.assertLess(static.index("00_secret_key"), static.index("collectstatic"))
+        self.assertIn("chown webapp:webapp /var/app/data/secret_key", static)
 
 
 class ElasticBeanstalkStaticFilesTests(SimpleTestCase):

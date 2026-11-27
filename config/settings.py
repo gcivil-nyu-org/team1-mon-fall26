@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import secrets
 import sys
-import warnings
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,15 +26,44 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # variables; without them the local development defaults below are used.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
+# Off unless DJANGO_DEBUG says otherwise, except for `manage.py runserver`
+# (local development), so a server missing the setting never shows debug
+# pages (#316).
+RUNSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
+DEBUG = os.environ.get("DJANGO_DEBUG", "True" if RUNSERVER else "False") == "True"
+
+
+def _secret_key_file():
+    """Where this machine keeps its own secret key: DJANGO_SECRET_KEY_FILE,
+    else next to the database on Elastic Beanstalk (/var/app/data, kept
+    between deploys), else .secret_key in the project (git ignores it)."""
+    if os.environ.get("DJANGO_SECRET_KEY_FILE"):
+        return Path(os.environ["DJANGO_SECRET_KEY_FILE"])
+    if Path("/var/app/data").is_dir():
+        return Path("/var/app/data/secret_key")
+    return BASE_DIR / ".secret_key"
+
+
+def _machine_secret_key(path):
+    """The key saved in `path`, made (randomly, readable only by its owner)
+    the first time. Several processes starting at once all end up with the
+    same key."""
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        return path.read_text().strip()
+    key = secrets.token_urlsafe(50)
+    with os.fdopen(fd, "w") as f:
+        f.write(key)
+    return key
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
-DEV_SECRET_KEY = "django-insecure-t3w6^9tp-(094ut^o9crn+r*8hd@s@ixe7162alh78n(ar-&ho"
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or DEV_SECRET_KEY
-if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
-    warnings.warn(
-        "DJANGO_SECRET_KEY is not set; using the development key in production."
-    )
+# DJANGO_SECRET_KEY, or a random key kept on this machine. No key is in the
+# repository, so nobody can sign email links for the live site (#316).
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or _machine_secret_key(
+    _secret_key_file()
+)
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -47,6 +76,24 @@ ALLOWED_HOSTS += [
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
+
+# HTTPS (#315). Turned on with DJANGO_HTTPS=True once the site has a
+# certificate: then cookies are only sent over HTTPS, http:// redirects to
+# https://, and browsers are told to keep using HTTPS (HSTS). Off by default
+# because the site is still served over plain HTTP, where secure cookies
+# would make logging in impossible.
+HTTPS = os.environ.get("DJANGO_HTTPS", "False") == "True"
+if HTTPS:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    # nginx says whether the visitor used HTTPS.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Start short; raise once HTTPS has been working for a while.
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "3600"))
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host}" for host in ALLOWED_HOSTS if host not in ("127.0.0.1",)
+    ]
 
 
 # Application definition
