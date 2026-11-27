@@ -22,6 +22,7 @@ from .verification import (
     needs_verification,
     send_change_email,
     send_email_changed_notice,
+    send_signup_existing_email,
     send_verification_email,
     user_from_token,
 )
@@ -48,6 +49,11 @@ def home_view(request):
 def signup_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
+        if form.is_valid() and getattr(form, "existing_user", None) is not None:
+            # Same page as a new sign-up; the owner gets an email about it (#317).
+            send_signup_existing_email(request, form.existing_user)
+            request.session[SENT_TO] = form.cleaned_data["email"]
+            return redirect("verify_email_sent")
         if form.is_valid():
             user = form.save()
 

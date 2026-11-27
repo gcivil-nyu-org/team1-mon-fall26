@@ -67,12 +67,11 @@ class SignUpForm(UserCreationForm):
             self.fields[name].widget.attrs["placeholder"] = placeholder
 
     def clean_email(self):
+        # An email that already has an account isn't an error on the page:
+        # saying so would tell anyone which emails use PawPal (#317). The view
+        # emails that address instead and shows the usual "Check your email".
         email = self.cleaned_data["email"].strip().lower()
-
-        if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError(
-                "This email already has an account.", code="email_taken"
-            )
+        self.existing_user = User.objects.filter(email__iexact=email).first()
         return email
 
     class Meta:
